@@ -63,6 +63,7 @@ async function withBox(s, folder, fn) {
 
 const mock = MOCK ? require('./mock') : null;
 const studio = require('./studio');
+const aeraSync = require('./aera-sync').start(studio);   // AERA changelog from the GitHub releases of the beta repo
 const beta = require('./beta');      // /beta: Discord sign-in + private beta downloads (see beta.js)   // /admin/studio: changelogs + program downloads (writes to GitHub)
 
 const api = {
@@ -210,6 +211,7 @@ http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'), p = u.pathname;
   try {
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
+    if (p === '/hooks/aera-release' && req.method === 'POST') return aeraSync.hook(req, res, send);
     // beta area: own CSP so Discord avatars can load
     if (req.method === 'GET' && (p === '/beta' || p.startsWith('/beta/') || p.startsWith('/api/beta/'))) {
       const BETA_CSP = SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com");
@@ -221,6 +223,7 @@ http.createServer(async (req, res) => {
       if (p === '/admin/' || /^\/admin\/(app\.js|style\.css|studio\.js|studio\.css)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
       if (p === '/admin/studio' || p === '/admin/studio/') return serveFile(res, path.join(ADMIN, 'studio.html'), 'no-cache', CSP);
       // data for the public pages, kept in memory so changes from the studio show at once
+      if (p === '/api/aera-changelog/status') return send(res, 200, aeraSync.state);
       if (p === '/aera-changelog-data.js') return send(res, 200, studio.js.aera(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
       if (p === '/site-data.js') return send(res, 200, studio.js.site(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
       if (p === '/') return serveFile(res, path.join(ROOT, 'index.html'), 'no-cache', SITE_CSP);

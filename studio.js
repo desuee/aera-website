@@ -157,15 +157,16 @@ async function uploadAsset(req, name) {
 async function handle(req, res, u, p, send, readJson) {
   const r = p.slice('/api/studio/'.length);
   if (r === 'state' && req.method === 'GET') {
-    return send(res, 200, { github: !!TOKEN, repo: REPO, branch: BRANCH, aera: mem.aera, site: mem.site });
+    return send(res, 200, { github: !!TOKEN, repo: REPO, branch: BRANCH, aera: mem.aera, site: mem.site, autoVersions: [...AUTO] });
   }
   if (r === 'release' && req.method === 'GET') {
     const rel = await latestRelease();
     return send(res, 200, { tag: rel.tag_name, name: rel.name, url: rel.html_url, published: rel.published_at, assets: (rel.assets || []).map(assetInfo) });
   }
   if (r === 'aera' && req.method === 'POST') {
-    const b = await readJson(req); const list = cleanAera(b.list);
+    const b = await readJson(req); const list = cleanAera(b.list).filter(v => !AUTO.has(v.version) || b.keepAuto);
     const out = await commitJson('aera', list, str(b.message, 120) || 'Studio: AERA-Changelog aktualisiert');
+    if (LAST) mergeAuto(LAST.list, LAST.cmp);
     return send(res, 200, { ok: true, ...out, aera: mem.aera });
   }
   if (r === 'site' && req.method === 'POST') {
@@ -179,4 +180,19 @@ async function handle(req, res, u, p, send, readJson) {
   send(res, 404, { error: 'Not found' });
 }
 
-module.exports = { handle, js };
+// versions that come from GitHub releases (see aera-sync.js); versions entered by hand in the Studio win
+const AUTO = new Set();
+let LAST = null;
+function mergeAuto(list, cmp) {
+  LAST = { list, cmp };
+  let clean;
+  try { clean = cleanAera(list); } catch (e) { clean = list.filter(v => { try { cleanAera([v]); return true; } catch { return false; } }); clean = cleanAera(clean); }
+  const manual = new Map(mem.aera.filter(v => !AUTO.has(v.version)).map(v => [v.version, v]));
+  const added = [];
+  AUTO.clear();
+  for (const v of clean) { if (manual.has(v.version)) continue; AUTO.add(v.version); added.push(v); }
+  mem.aera = [...manual.values(), ...added].sort(cmp);
+  return added.map(v => v.version);
+}
+
+module.exports = { handle, js, mergeAuto, AUTO };
