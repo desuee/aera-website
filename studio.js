@@ -200,4 +200,5 @@ const mail = {
   get: () => mem.mail,
   async save(v) { mem.mail = v; if (!TOKEN) return { saved: 'memory' }; await commitJson('mail', v, 'Mail: Signatur und Vorlagen'); return { saved: 'github' }; },
 };
-module.exports = { handle, js, mergeAuto, AUTO, mail };
+const peek = () => ({ github: !!TOKEN, aera: mem.aera && mem.aera[0] ? { version: mem.aera[0].version, date: mem.aera[0].date, title: mem.aera[0].title, count: mem.aera.length } : null });
+module.exports = { handle, js, mergeAuto, AUTO, mail, peek };

@@ -66,6 +66,7 @@ async function withBox(s, folder, fn) {
 const mock = MOCK ? require('./mock') : null;
 const studio = require('./studio');
 const aeraSync = require('./aera-sync').start(studio);   // AERA changelog from the GitHub releases of the beta repo
+const mailx = require('./mailx');   // HTML mails + beta inbox helpers
 const beta = require('./beta');      // /beta: Discord sign-in + private beta downloads (see beta.js)   // /admin/studio: changelogs + program downloads (writes to GitHub)
 
 const api = {
@@ -124,17 +125,78 @@ const api = {
     if (trash && trash !== folder) return api.move(s, folder, uid, trash);
     return withBox(s, folder, c => c.messageDelete(String(uid), { uid: true }));   // already in the bin: delete for good
   },
+  async specialFolder(s, kind, re) {
+    const fl = await api.folders(s);
+    return (fl.find(f => f.special === kind) || fl.find(f => re.test(f.name)) || {}).path;
+  },
+  async dropDraft(s, uid) {
+    const d = await api.specialFolder(s, '\\Drafts', /^(drafts|entw)/i); if (!d || !uid) return;
+    if (MOCK) return mock.remove(d, uid, true);
+    return withBox(s, d, c => c.messageDelete(String(uid), { uid: true }));
+  },
+  async saveDraft(s, msg) {
+    if (MOCK) return mock.saveDraft(msg);
+    const d = await api.specialFolder(s, '\\Drafts', /^(drafts|entw)/i); if (!d) throw new Error('Kein Entwürfe-Ordner gefunden');
+    const raw = await new Promise((res, rej) => nodemailer.createTransport({ streamTransport: true, buffer: true }).sendMail({ from: s.user, to: msg.to || undefined, cc: msg.cc || undefined, subject: msg.subject, text: msg.text, date: new Date() }, (e, r) => e ? rej(e) : res(r.message)));
+    const c = await imapFor(s);
+    const r = await c.append(d, raw, ['\\Draft', '\\Seen']);
+    if (msg.draftUid) await api.dropDraft(s, msg.draftUid).catch(() => {});
+    return { uid: (r && r.uid) || 0, folder: d };
+  },
+  async ensureFolder(s, name) {
+    if (MOCK) return mock.ensure(name);
+    const fl = await api.folders(s); if (fl.some(f => f.path === name)) return name;
+    const c = await imapFor(s); await c.mailboxCreate(name); return name;
+  },
+  async bulk(s, folder, uids, action, to) {
+    uids = uids.filter(n => Number.isInteger(n) && n > 0).slice(0, 500); if (!uids.length) return;
+    if (!/^(seen|unseen|flag|unflag|move|delete)$/.test(action)) throw new Error('Unbekannte Aktion');
+    if (MOCK) { for (const u of uids) { if (action === 'delete') mock.remove(folder, u); else if (action === 'move') mock.move(folder, u, to); else mock.flag(folder, u, /seen/.test(action) ? '\\Seen' : '\\Flagged', !/^un/.test(action)); } return; }
+    if (action === 'delete') {
+      const trash = await api.specialFolder(s, '\\Trash', /^(trash|papierkorb|deleted)/i);
+      if (trash && trash !== folder) { action = 'move'; to = trash; }
+      else return withBox(s, folder, c => c.messageDelete(uids.join(','), { uid: true }));
+    }
+    return withBox(s, folder, c => {
+      const set = uids.join(',');
+      if (action === 'move') return c.messageMove(set, to, { uid: true });
+      const fl = /seen/.test(action) ? '\\Seen' : '\\Flagged';
+      return /^un/.test(action) ? c.messageFlagsRemove(set, [fl], { uid: true }) : c.messageFlagsAdd(set, [fl], { uid: true });
+    });
+  },
+  // beta requests: mails with "beta" in the subject in the inbox (= open) + everything in the three status folders
+  async betaList(s) {
+    if (MOCK) return mock.betaList(mailx.BETA);
+    const fl = await api.folders(s), have = new Set(fl.map(f => f.path)), out = [];
+    const grab = async (folder, status, crit) => {
+      if (!have.has(folder)) return;
+      await withBox(s, folder, async c => {
+        let uids = await c.search(crit, { uid: true }); uids = (uids || []).sort((a, b) => b - a).slice(0, 200);
+        if (uids.length) for await (const m of c.fetch(uids.join(','), { uid: true, envelope: true, flags: true }, { uid: true })) {
+          const e = m.envelope || {}, f = (e.from || [])[0] || {};
+          if ((f.address || '').toLowerCase() === s.user.toLowerCase()) continue;
+          out.push({ folder, uid: m.uid, status, subject: e.subject || '', from: f, date: e.date, seen: m.flags.has('\\Seen'), answered: m.flags.has('\\Answered') });
+        }
+      });
+    };
+    const inbox = (fl.find(f => f.special === '\\Inbox') || {}).path || 'INBOX';
+    await grab(inbox, 'open', { subject: 'beta' });
+    for (const [k, name] of Object.entries(mailx.BETA)) await grab(name, k, { all: true });
+    return out.sort((a, b) => new Date(b.date) - new Date(a.date));
+  },
   async send(s, msg) {
-    if (MOCK) return mock.send(msg);
+    if (MOCK) { if (msg.draftUid) mock.remove('Drafts', msg.draftUid, true); return mock.send(msg); }
     const from = msg.fromName ? { name: msg.fromName, address: s.user } : s.user;
-    const mail = { from, to: msg.to, cc: msg.cc || undefined, subject: msg.subject, text: msg.text, inReplyTo: msg.inReplyTo || undefined, references: msg.references || undefined };
+    const html = msg.html ? mailx.toHtml(msg.text) : undefined;
+    const atts = (msg.attachments || []).map(a => ({ filename: a.name, contentType: a.type || 'application/octet-stream', content: Buffer.from(String(a.data || ''), 'base64') }));
+    const mail = { from, to: msg.to, cc: msg.cc || undefined, subject: msg.subject, text: msg.text, html, attachments: atts.length ? atts : undefined, inReplyTo: msg.inReplyTo || undefined, references: msg.references || undefined };
     let info;
     if (RESEND_KEY) {
       const list = v => String(v || '').split(/[,;]/).map(x => x.trim()).filter(Boolean);
       const headers = {}; if (msg.inReplyTo) headers['In-Reply-To'] = msg.inReplyTo; if (msg.references) headers.References = msg.references;
       const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000),
         headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: msg.fromName ? `${msg.fromName} <${s.user}>` : s.user, to: list(msg.to), cc: list(msg.cc).length ? list(msg.cc) : undefined, subject: msg.subject || '(kein Betreff)', text: msg.text, reply_to: s.user, headers }) });
+        body: JSON.stringify({ from: msg.fromName ? `${msg.fromName} <${s.user}>` : s.user, to: list(msg.to), cc: list(msg.cc).length ? list(msg.cc) : undefined, subject: msg.subject || '(kein Betreff)', text: msg.text, html, reply_to: s.user, headers, attachments: atts.length ? atts.map(a => ({ filename: a.filename, content: a.content.toString('base64') })) : undefined }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error('Versand fehlgeschlagen (Resend): ' + (j.message || r.status));
       info = { messageId: `<${j.id || crypto.randomBytes(8).toString('hex')}@dev-dsue.de>` };
@@ -154,6 +216,7 @@ const api = {
       if (sent) { const c = await imapFor(s); await c.append(sent, raw, ['\\Seen']); }
     } catch {}
     if (msg.replyFolder && msg.replyUid) api.flag(s, msg.replyFolder, msg.replyUid, '\\Answered', true).catch(() => {});
+    if (msg.draftUid) api.dropDraft(s, msg.draftUid).catch(() => {});
     return { ok: true };
   },
 };
@@ -239,7 +302,7 @@ http.createServer(async (req, res) => {
     // dev-dsue.de is the main address (www.dev-dsue.de is forwarded there by the DNS provider)
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (p === '/admin') { res.writeHead(301, { Location: '/admin/' }); return res.end(); }
-      if (p === '/admin/' || /^\/admin\/(app\.js|style\.css|studio\.js|studio\.css|downloads\.js)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
+      if (p === '/admin/' || /^\/admin\/(app\.js|views\.js|style\.css|studio\.js|studio\.css|downloads\.js)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
       if (p === '/admin/studio' || p === '/admin/studio/') return serveFile(res, path.join(ADMIN, 'studio.html'), 'no-cache', CSP);
       if (p === '/admin/downloads' || p === '/admin/downloads/') return serveFile(res, path.join(ADMIN, 'downloads.html'), 'no-cache', CSP);
       // data for the public pages, kept in memory so changes from the studio show at once
@@ -280,6 +343,25 @@ http.createServer(async (req, res) => {
     if (!s) return send(res, 401, { error: 'Nicht angemeldet' });
     s.last = Date.now();
 
+    if (p === '/api/dashboard') {
+      const [fl, bl, dl, dc] = await Promise.allSettled([api.folders(s), api.betaList(s), beta.stats(), discordStats()]);
+      const val = r => r.status === 'fulfilled' ? r.value : null;
+      const folders = val(fl) || [], inbox = folders.find(f => f.special === '\\Inbox' || f.path === 'INBOX') || {};
+      let recent = [];
+      try { recent = (await api.list(s, inbox.path || 'INBOX', 1, '')).items.slice(0, 6); } catch {}
+      const b = val(bl) || [], st = val(dl);
+      const sum = r => (r.assets || []).reduce((n, a) => n + (a.downloads || 0), 0);
+      const rel = st && st.releases && st.releases[0];
+      const peek = studio.peek();
+      return send(res, 200, {
+        user: s.user, unread: inbox.unseen || 0, inboxTotal: inbox.total || 0, inbox: inbox.path || 'INBOX', recent,
+        beta: { open: b.filter(x => x.status === 'open').length, accepted: b.filter(x => x.status === 'accepted').length, waitlist: b.filter(x => x.status === 'waitlist').length, declined: b.filter(x => x.status === 'declined').length, error: bl.status === 'rejected' ? errText(bl.reason) : null },
+        downloads: st ? { latest: rel ? { tag: rel.tag, date: rel.date, n: sum(rel) } : null, total: st.releases.reduce((n, r) => n + sum(r), 0), recent: (st.log || []).slice(0, 5) } : { error: dl.reason ? String(dl.reason.message || dl.reason).slice(0, 160) : 'nicht verfügbar' },
+        discord: val(dc), aera: peek.aera, sync: aeraSync.state,
+        services: { resend: !!RESEND_KEY, github: peek.github, mock: MOCK },
+      });
+    }
+    if (p === '/api/beta/list') return send(res, 200, { items: await api.betaList(s), folders: mailx.BETA });
     if (p === '/api/mail-settings') {
       if (req.method === 'POST') { const b = await readJson(req); const v = { sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 40).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })) }; try { return send(res, 200, await studio.mail.save(v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
       return send(res, 200, { settings: studio.mail.get() });
@@ -304,9 +386,21 @@ http.createServer(async (req, res) => {
       if (p === '/api/flag') { const fl = { seen: '\\Seen', flagged: '\\Flagged' }[b.flag]; if (!fl) return send(res, 400, { error: 'bad flag' }); await api.flag(s, f, id, fl, !!b.on); return send(res, 200, { ok: true }); }
       if (p === '/api/move') { await api.move(s, f, id, String(b.to || '')); return send(res, 200, { ok: true }); }
       if (p === '/api/delete') { await api.remove(s, f, id); return send(res, 200, { ok: true }); }
+      if (p === '/api/bulk') { await api.bulk(s, f, (Array.isArray(b.uids) ? b.uids : []).map(Number), String(b.action || ''), String(b.to || '')); return send(res, 200, { ok: true }); }
+      if (p === '/api/draft') return send(res, 200, await api.saveDraft(s, { to: String(b.to || ''), cc: String(b.cc || ''), subject: String(b.subject || '').slice(0, 500), text: String(b.text || ''), draftUid: +b.draftUid || 0 }));
+      if (p === '/api/beta/decide') {
+        const st = String(b.status || ''); if (!mailx.BETA[st]) return send(res, 400, { error: 'Unbekannter Status' });
+        if (b.mail) {
+          const m = b.mail, to = String(m.to || '').trim(); if (!to) return send(res, 400, { error: 'Empfänger fehlt' });
+          await api.send(s, { to, subject: String(m.subject || '').slice(0, 500), text: String(m.text || ''), html: !!m.html, fromName: String(m.fromName || '').slice(0, 80), inReplyTo: String(m.inReplyTo || ''), references: String(m.references || ''), replyFolder: f, replyUid: id });
+        }
+        const dest = await api.ensureFolder(s, mailx.BETA[st]);
+        if (dest !== f) await api.move(s, f, id, dest);
+        return send(res, 200, { ok: true, folder: dest });
+      }
       if (p === '/api/send') {
         const to = String(b.to || '').trim(); if (!to) return send(res, 400, { error: 'Empfänger fehlt' });
-        await api.send(s, { to, cc: String(b.cc || '').trim(), subject: String(b.subject || '').slice(0, 500), text: String(b.text || ''), fromName: String(b.fromName || '').slice(0, 80), inReplyTo: String(b.inReplyTo || ''), references: String(b.references || ''), replyFolder: b.replyFolder, replyUid: +b.replyUid || 0 });
+        await api.send(s, { to, cc: String(b.cc || '').trim(), subject: String(b.subject || '').slice(0, 500), text: String(b.text || ''), fromName: String(b.fromName || '').slice(0, 80), inReplyTo: String(b.inReplyTo || ''), references: String(b.references || ''), replyFolder: b.replyFolder, replyUid: +b.replyUid || 0, html: !!b.html, draftUid: +b.draftUid || 0, attachments: (Array.isArray(b.attachments) ? b.attachments : []).slice(0, 10).map(a => ({ name: String(a.name || 'datei').slice(0, 120), type: String(a.type || ''), data: String(a.data || '') })) });
         return send(res, 200, { ok: true });
       }
     }
