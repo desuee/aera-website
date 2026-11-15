@@ -139,3 +139,13 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke
 /* link to the studio */
 .studio-link{flex:none}
 @media (max-width:700px){.studio-link span{display:none}.studio-link{width:40px;padding:0}}
+
+/* templates + signature */
+.tpl-bar{display:flex;align-items:center;gap:6px;margin-left:auto;margin-right:10px}
+.tpl-bar select,.ms-row select{height:36px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:inherit;padding:0 10px;max-width:230px}
+.mailset{height:min(760px,100%)}
+.ms-body{flex:1;overflow:auto;padding:14px 20px;display:flex;flex-direction:column;gap:8px}
+.ms-l{font-weight:600;font-size:14px;margin-top:6px}
+.ms-body textarea,.ms-body input{width:100%;border:1px solid var(--line);border-radius:10px;background:none;color:inherit;padding:10px 12px;font:inherit;line-height:1.5;resize:vertical}
+.ms-row{display:flex;gap:8px}.ms-row select{flex:1;max-width:none}
+@media (max-width:640px){.compose footer{flex-wrap:wrap;gap:8px}.tpl-bar{margin:0}#cFrom{width:100%}}

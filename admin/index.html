@@ -57,8 +57,25 @@
     <label class="row"><span>Cc</span><input id="cCc" type="text"></label>
     <label class="row"><span>Betreff</span><input id="cSubject" type="text"></label>
     <textarea id="cText" placeholder="Deine Nachricht …"></textarea>
-    <footer><span class="muted small" id="cFrom"></span><button class="btn primary" type="submit" id="cSend"><svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>Senden</button></footer>
+    <footer><span class="muted small" id="cFrom"></span><span class="tpl-bar"><select id="cTpl" title="Vorlage einfügen"><option value="">📄 Vorlage …</option></select><button type="button" class="icon-btn" id="mailSetBtn" title="Signatur &amp; Vorlagen bearbeiten"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></span><button class="btn primary" type="submit" id="cSend"><svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>Senden</button></footer>
   </form>
+</div>
+
+<!-- signature & templates -->
+<div class="modal hidden" id="mailSet">
+  <div class="compose mailset">
+    <header><b>Signatur &amp; Vorlagen</b><button type="button" class="icon-btn" id="msClose" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="ms-body">
+      <label class="ms-l">Signatur <small class="muted">– wird automatisch unter jede E-Mail gesetzt</small></label>
+      <textarea id="msSig" rows="7"></textarea>
+      <label class="ms-l">Vorlagen <small class="muted">– <code>[Name]</code> wird durch den Vornamen des Empfängers ersetzt</small></label>
+      <div class="ms-row"><select id="msList"></select><button type="button" class="btn" id="msAdd">+ Neu</button><button type="button" class="btn" id="msDel">Löschen</button></div>
+      <input id="msName" placeholder="Name der Vorlage">
+      <input id="msSubj" placeholder="Betreff (nur bei neuer E-Mail)">
+      <textarea id="msBody" rows="10" placeholder="Text …"></textarea>
+    </div>
+    <footer><button type="button" class="btn" id="msReset">Standard wiederherstellen</button><button type="button" class="btn primary" id="msSave">Speichern</button></footer>
+  </div>
 </div>
 </body>
 </html>

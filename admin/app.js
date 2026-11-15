@@ -154,6 +154,139 @@ $('reader').addEventListener('click', async e => {
 });
 function afterRemove() { items = items.filter(x => x.uid !== cur.uid); cur = null; drawList(); clearReader(); loadFolders(); }
 
+
+// ---------------- signature + templates ----------------
+const SIG_DEF = `Simon Risse
+AERA – Airspace & Enroute Radar Authority
+
+dev-dsue · Simon Bruno Julius Risse
+c/o Online-Impressum 12619
+Europaring 90, 53757 Sankt Augustin, Deutschland
+kontakt@dev-dsue.de · www.dev-dsue.de/aera
+Discord: discord.gg/aera`;
+const TPL_DEF = [
+  { name: '🇩🇪 Beta angenommen', subject: 'Dein Zugang zur AERA Beta ✈️', body: `Hallo [Name],
+
+vielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉
+
+So bekommst du deinen Zugang:
+1. Tritt unserem Discord bei: discord.gg/aera
+2. In der Kategorie „✈️ ┃ AERA“ findest du den Channel „🙋┃help“.
+3. Eröffne dort ein Ticket unter dem Reiter „Other“.
+4. Schreib kurz deinen Namen ins Ticket – danach erhältst du den Beta-Zugriff.
+
+Wir freuen uns auf dein Feedback!
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Beta accepted', subject: 'Your access to the AERA Beta ✈️', body: `Hi [Name],
+
+thanks a lot for signing up for the AERA Beta – you're in! 🎉
+
+Here's how to get your access:
+1. Join our Discord: discord.gg/aera
+2. In the category "✈️ ┃ AERA" you'll find the channel "🙋┃help".
+3. Open a ticket there under the tab "Other".
+4. Write your name in the ticket – you'll then get your beta access.
+
+We're looking forward to your feedback!
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Beta voll / Warteliste', subject: 'AERA Beta – aktuell ausgebucht', body: `Hallo [Name],
+
+vielen Dank für dein Interesse an der AERA Beta! 🙏
+
+Leider sind aktuell alle Beta-Plätze vergeben. Wir haben dich aber auf die Warteliste gesetzt und melden uns, sobald neue Plätze frei werden.
+
+Bis dahin kannst du gerne schon unserem Discord beitreten, um nichts zu verpassen: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Beta full / waitlist', subject: 'AERA Beta – currently full', body: `Hi [Name],
+
+thank you for your interest in the AERA Beta! 🙏
+
+Unfortunately, all beta spots are taken at the moment. We've added you to the waitlist and will get back to you as soon as new spots open up.
+
+In the meantime, feel free to join our Discord so you don't miss anything: discord.gg/aera
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Beta abgelehnt', subject: 'Deine Anmeldung zur AERA Beta', body: `Hallo [Name],
+
+vielen Dank für deine Anmeldung zur AERA Beta.
+
+Leider können wir dir in dieser Testphase keinen Zugang geben. Das hat nichts mit dir persönlich zu tun – die Zahl der Plätze ist stark begrenzt.
+
+Sobald AERA öffentlich erscheint, erfährst du es als Erstes in unserem Discord: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Beta declined', subject: 'Your AERA Beta application', body: `Hi [Name],
+
+thank you for applying for the AERA Beta.
+
+Unfortunately, we can't give you access during this test phase. This isn't personal – the number of spots is very limited.
+
+As soon as AERA is released publicly, you'll be the first to know in our Discord: discord.gg/aera
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Feedback / Bug erhalten', subject: 'Danke für dein Feedback zu AERA', body: `Hallo [Name],
+
+danke für deine Nachricht! Wir haben dein Feedback erhalten und schauen es uns genau an. Falls wir Rückfragen haben, melden wir uns bei dir.
+
+Bugs kannst du übrigens auch direkt in unserem Discord melden: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Feedback / bug received', subject: 'Thanks for your AERA feedback', body: `Hi [Name],
+
+thanks for your message! We've received your feedback and will take a close look at it. If we have any questions, we'll get back to you.
+
+You can also report bugs directly in our Discord: discord.gg/aera
+
+Best regards
+Simon` },
+];
+const SIG_SEP = '\n\n-- \n';
+let MS = { sig: SIG_DEF, templates: TPL_DEF };
+try { const l = JSON.parse(localStorage.getItem('dsue.mail') || 'null'); if (l && l.templates) MS = l; } catch {}
+async function loadMailSettings() {
+  try { const r = await call('mail-settings', null, 'GET'); if (r && r.settings && r.settings.templates) { MS = r.settings; try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {} } } catch {}
+  fillTpl();
+}
+function fillTpl() { $('cTpl').innerHTML = '<option value="">📄 Vorlage …</option>' + MS.templates.map((t, i) => `<option value="${i}">${t.name.replace(/</g, '&lt;')}</option>`).join(''); }
+let toName = '';
+const firstName = n => String(n || '').replace(/["']/g, '').trim().split(/[\s,]+/)[0] || '';
+$('cTpl').addEventListener('change', e => {
+  const t = MS.templates[+e.target.value]; e.target.value = ''; if (!t) return;
+  const ta = $('cText'), v = ta.value, sigAt = MS.sig ? v.indexOf(SIG_SEP) : -1;
+  const body = t.body.replace(/\[Name\]/g, toName || '').replace(/^(Hallo|Hi|Hey) ,/m, '$1,');
+  ta.value = body + (sigAt >= 0 ? v.slice(sigAt) : v.trim() ? '\n\n' + v : '');
+  if (!$('cSubject').value.trim() || !replyCtx) $('cSubject').value = replyCtx ? $('cSubject').value : t.subject;
+  ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0;
+});
+// settings modal
+let msCur = 0, msDraft = null;
+function msLoad() { const t = msDraft.templates[msCur]; $('msName').value = t ? t.name : ''; $('msSubj').value = t ? t.subject : ''; $('msBody').value = t ? t.body : ''; ['msName', 'msSubj', 'msBody'].forEach(id => $(id).disabled = !t); }
+function msStore() { const t = msDraft.templates[msCur]; if (t) { t.name = $('msName').value || 'Ohne Namen'; t.subject = $('msSubj').value; t.body = $('msBody').value; } }
+function msList() { $('msList').innerHTML = msDraft.templates.map((t, i) => `<option value="${i}"${i === msCur ? ' selected' : ''}>${t.name.replace(/</g, '&lt;')}</option>`).join(''); msLoad(); }
+$('mailSetBtn').addEventListener('click', () => { msDraft = JSON.parse(JSON.stringify(MS)); msCur = 0; $('msSig').value = msDraft.sig; msList(); $('mailSet').classList.remove('hidden'); });
+$('msClose').addEventListener('click', () => $('mailSet').classList.add('hidden'));
+$('msList').addEventListener('change', e => { msStore(); msCur = +e.target.value; msList(); });
+$('msName').addEventListener('input', () => { msStore(); const o = $('msList').options[msCur]; if (o) o.textContent = $('msName').value; });
+$('msAdd').addEventListener('click', () => { msStore(); msDraft.templates.push({ name: 'Neue Vorlage', subject: '', body: 'Hallo [Name],\n\n\n\nViele Grüße\nSimon' }); msCur = msDraft.templates.length - 1; msList(); $('msName').select(); });
+$('msDel').addEventListener('click', () => { if (!msDraft.templates[msCur] || !confirm('Vorlage „' + msDraft.templates[msCur].name + '“ löschen?')) return; msDraft.templates.splice(msCur, 1); msCur = 0; msList(); });
+$('msReset').addEventListener('click', () => { if (!confirm('Signatur und Vorlagen auf Standard zurücksetzen?')) return; msDraft = { sig: SIG_DEF, templates: JSON.parse(JSON.stringify(TPL_DEF)) }; msCur = 0; $('msSig').value = msDraft.sig; msList(); });
+$('msSave').addEventListener('click', async () => {
+  msStore(); msDraft.sig = $('msSig').value; MS = msDraft;
+  try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {}
+  fillTpl(); $('mailSet').classList.add('hidden');
+  try { const r = await call('mail-settings', MS); toast(r.saved === 'github' ? 'Gespeichert ✓ (dauerhaft)' : 'Gespeichert ✓ (in diesem Browser)'); } catch (er) { toast('Lokal gespeichert – Server: ' + er.message, true); }
+});
+
 // ---------------- compose ----------------
 let replyCtx = null;
 const quote = m => `\n\n\nAm ${new Date(m.date).toLocaleString('de-DE')} schrieb ${who((m.from || [])[0])}:\n` + (m.text || m.html.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).trim().split('\n').map(l => '> ' + l).join('\n');
@@ -173,12 +306,14 @@ function openCompose(kind, m) {
       replyCtx = { inReplyTo: m.messageId, references: (m.references ? m.references + ' ' : '') + m.messageId, replyFolder: folder, replyUid: m.uid };
     }
   }
+  toName = m && kind !== 'forward' ? firstName((((m.replyTo || []).length ? m.replyTo : m.from) || [])[0]?.name) : '';
+  if (MS.sig && MS.sig.trim()) { const sig = SIG_SEP + MS.sig.trim(); const v = $('cText').value; $('cText').value = v ? '\n' + sig + v : '\n' + sig; }
   $('cFrom').textContent = 'Von: ' + ME;
   $('compose').classList.remove('hidden');
   setTimeout(() => { const t = $('cText'); if ($('cTo').value) { t.focus(); t.setSelectionRange(0, 0); t.scrollTop = 0; } else $('cTo').focus(); }, 30);
 }
 $('composeBtn').addEventListener('click', () => openCompose('new'));
-$('composeClose').addEventListener('click', () => { if ($('cText').value.trim() && !confirmClose()) return; $('compose').classList.add('hidden'); });
+$('composeClose').addEventListener('click', () => { if ($('cText').value.replace(SIG_SEP + (MS.sig || '').trim(), '').replace(/^\s*>.*$/gm,'').trim() && !confirmClose()) return; $('compose').classList.add('hidden'); });
 function confirmClose() { return window.confirm('Entwurf verwerfen?'); }
 $('composeForm').addEventListener('submit', async e => {
   e.preventDefault(); const btn = $('cSend'); btn.disabled = true;
@@ -195,6 +330,7 @@ function startApp() {
   if (/[?&]next=studio\b/.test(location.search)) { location.href = '/admin/studio'; return; }
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
   loadFolders().then(() => loadList()).catch(e => toast(e.message, true));
+  loadMailSettings();
   clearInterval(timer); timer = setInterval(() => { if (document.visibilityState === 'visible') { loadFolders().catch(() => {}); loadList(true); } }, 60000);
 }
 (async () => {
