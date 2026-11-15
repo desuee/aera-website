@@ -1,5 +1,6 @@
 // dev-dsue.de – /admin/downloads: how often the AERA beta was downloaded – by Desue
 (function () {
+  try { if (localStorage.getItem('theme') === 'light') delete document.documentElement.dataset.theme; } catch (e) {}
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const dt = t => new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });

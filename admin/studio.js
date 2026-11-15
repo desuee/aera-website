@@ -431,7 +431,7 @@ $('logoutBtn').addEventListener('click', async () => { try { await call('logout'
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
 (async () => {
-  try { const t = localStorage.getItem('theme'); if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark'; } catch {}
+  try { if (localStorage.getItem('theme') === 'light') delete document.documentElement.dataset.theme; } catch {}
   try {
     const me = await call('me'); if (!me.user) { location.href = '/admin/?next=studio'; return; }
     ST = await call('studio/state');
