@@ -187,8 +187,8 @@ const errText = e => {
 // ---------------- AERA Discord: member count for the AERA page ----------------
 // The link on the page is DISCORD_URL. Its invite code is looked up from that link (dsc.gg forwards to discord.com/invite/…),
 // then Discord's public invite API gives the member and online count. Cached for 5 minutes; no token needed.
-const DISCORD_URL = process.env.AERA_DISCORD_URL || 'https://dsc.gg/aera-atc';
-let dcCache = { t: 0, data: { url: DISCORD_URL } }, dcCode = process.env.AERA_DISCORD_INVITE || 'TDFzYhP7yt';
+const DISCORD_URL = process.env.AERA_DISCORD_URL || 'https://discord.gg/aera';
+let dcCache = { t: 0, data: { url: DISCORD_URL } }, dcCode = process.env.AERA_DISCORD_INVITE || 'aera';
 async function discordStats() {
   if (Date.now() - dcCache.t < 300000) return dcCache.data;
   dcCache.t = Date.now();
