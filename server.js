@@ -220,8 +220,9 @@ http.createServer(async (req, res) => {
     // dev-dsue.de is the main address (www.dev-dsue.de is forwarded there by the DNS provider)
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (p === '/admin') { res.writeHead(301, { Location: '/admin/' }); return res.end(); }
-      if (p === '/admin/' || /^\/admin\/(app\.js|style\.css|studio\.js|studio\.css)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
+      if (p === '/admin/' || /^\/admin\/(app\.js|style\.css|studio\.js|studio\.css|downloads\.js)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
       if (p === '/admin/studio' || p === '/admin/studio/') return serveFile(res, path.join(ADMIN, 'studio.html'), 'no-cache', CSP);
+      if (p === '/admin/downloads' || p === '/admin/downloads/') return serveFile(res, path.join(ADMIN, 'downloads.html'), 'no-cache', CSP);
       // data for the public pages, kept in memory so changes from the studio show at once
       if (p === '/api/aera-changelog/status') return send(res, 200, aeraSync.state);
       if (p === '/aera-changelog-data.js') return send(res, 200, studio.js.aera(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
@@ -259,6 +260,7 @@ http.createServer(async (req, res) => {
     if (!s) return send(res, 401, { error: 'Nicht angemeldet' });
     s.last = Date.now();
 
+    if (p === '/api/downloads') { try { return send(res, 200, await beta.stats()); } catch (e) { return send(res, e.status || 500, { error: e.message }); } }
     if (p.startsWith('/api/studio/')) {
       try { return await studio.handle(req, res, u, p, send, readJson); }
       catch (e) { return send(res, e.status || 500, { error: String(e.message || e).slice(0, 300) }); }

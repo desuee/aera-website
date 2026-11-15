@@ -111,15 +111,37 @@ function parseText(txt) {
 
 
 // release body → plain text for the parser
+// Release texts are often written for Discord (### headings, > quotes, emoji bullets, **bold**, `code`).
+// They are turned into the website format here: topic headings become points, the lines under them sub-points.
+const EMO = /^[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}️‍]+\s*/u;
 function clean(body) {
   let t = String(body || '').replace(/\r/g, '');
   const fence = t.match(/```[a-z]*\n([\s\S]*?)```/i); if (fence) t = fence[1];
-  return t.split('\n').map(l => l
-    .replace(/^(\s*)#{1,6}\s+/, '$1')                     // markdown headings
-    .replace(/\*\*(.*?)\*\*/g, '$1').replace(/__(.*?)__/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')              // [text](link) → text
-    .replace(/^(\s*)[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F]+\s*/u, '$1')   // leading emoji of headings
-  ).join('\n');
+  const inl = l => l.replace(/\*\*(.*?)\*\*/g, '$1').replace(/__(.*?)__/g, '$1').replace(/`([^`]*)`/g, '$1').replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, '$1$2').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  const out = []; let topic = false;
+  for (let raw of t.split('\n')) {
+    if (!raw.trim()) { out.push(''); continue; }
+    let l = inl(raw);
+    const indent = l.match(/^\s*/)[0];
+    let body = l.trim();
+    if (/(^|\s)#[a-z0-9][\w-]*(\s|$)/i.test(body) && !/^#{1,6}\s/.test(body)) continue;            // "#beta-downloads · #bug-reports" footer
+    if (/^(🇬🇧|🇩🇪)[^\p{L}]*(english|englisch)?[^\p{L}]*(🇬🇧|🇩🇪)?[^\p{L}]*(deutsch|german)?\s*$/iu.test(body) || /^(🇬🇧|🇩🇪)\s*(english|deutsch)\s*[·|/]\s*(🇬🇧|🇩🇪)\s*(english|deutsch)\s*$/iu.test(body)) continue;   // language legend
+    const h = body.match(/^#{1,6}\s+(.*)$/);
+    if (h) {
+      const txt = h[1].replace(EMO, '').replace(/\s+[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}️]+\s*$/u, '').trim();
+      if (headOf(txt.replace(/:$/, '')) || /\d+\.\d+/.test(txt) || /^(english|deutsch|german|englisch)$/i.test(txt)) { out.push(txt); topic = false; continue; }
+      out.push('- ' + txt); topic = true; continue;                                                  // topic heading → point
+    }
+    const q = body.match(/^>\s?(.*)$/); if (q) body = q[1].trim();
+    const flag = body.match(/^(🇬🇧|🇩🇪)\s*(.*)$/u); if (flag) body = flag[2];
+    const emo = EMO.test(body); body = body.replace(EMO, '');
+    if (!body) continue;
+    if (/^[-–•*◦▪·]\s|^\d+[.)]\s/.test(body)) { out.push(indent + body); continue; }
+    if (headOf(body.replace(/:$/, '')) || /^(english|deutsch|german|englisch)$/i.test(body)) { out.push(body); topic = false; continue; }
+    if (q || flag || emo || /^[→↪]/.test(body)) { out.push((topic ? '  - ' : '- ') + body.replace(/^[→↪]\s*/, '')); continue; }
+    out.push(indent + body);
+  }
+  return out.join('\n');
 }
 const vnum = v => v.split(/[.-]/).map(x => +x || 0);
 const cmp = (a, b) => { const x = vnum(a.version), y = vnum(b.version); for (let i = 0; i < 4; i++) if ((x[i] || 0) !== (y[i] || 0)) return (y[i] || 0) - (x[i] || 0); return 0; };

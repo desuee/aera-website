@@ -60,7 +60,7 @@ async function releases() {
   const list = (await gh(`/repos/${REPO}/releases?per_page=10`)).filter(r => !r.draft);
   cache = { t: Date.now(), data: list.map(r => ({
     tag: r.tag_name, name: r.name || r.tag_name, notes: (r.body || '').slice(0, 6000), date: r.published_at, pre: r.prerelease,
-    assets: (r.assets || []).map(a => ({ id: a.id, name: a.name, size: a.size })) })) };
+    assets: (r.assets || []).map(a => ({ id: a.id, name: a.name, size: a.size, downloads: a.download_count || 0 })) })) };
   return cache.data;
 }
 
@@ -122,10 +122,20 @@ async function handle(req, res, u, p, send, serveFile, pagePath) {
         'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}`, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
       Readable.fromWeb(r.body).pipe(res);
       console.log('beta download', a.name, 'by', s.name);
+      LOG.unshift({ t: Date.now(), file: a.name, user: s.name }); if (LOG.length > 1000) LOG.length = 1000;
     } catch (e) { send(res, e.status || 500, { error: e.message }); }
     return true;
   }
   return false;
 }
 
-module.exports = { handle };
+// download statistics for /admin/downloads: counts from GitHub (kept forever) + who downloaded since the last restart
+const LOG = [];
+async function stats() {
+  cache.t = 0;   // fresh numbers
+  const rel = await releases();
+  return { since: STARTED, releases: rel.map(r => ({ tag: r.tag, name: r.name, date: r.date, assets: r.assets.map(a => ({ name: a.name, size: a.size, downloads: a.downloads })) })),
+    log: LOG.slice(0, 300), users: Object.entries(LOG.reduce((m, x) => (m[x.user] = (m[x.user] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]) };
+}
+const STARTED = Date.now();
+module.exports = { handle, stats };
