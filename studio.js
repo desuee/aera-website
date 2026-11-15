@@ -19,11 +19,11 @@ const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const API = process.env.GITHUB_API || 'https://api.github.com';
 const UPLOADS = process.env.GITHUB_UPLOADS || 'https://uploads.github.com';
 const DATA = path.join(__dirname, 'data');
-const FILES = { aera: 'data/aera-changelog.json', site: 'data/apps.json' };
+const FILES = { aera: 'data/aera-changelog.json', site: 'data/apps.json', mail: 'data/mail.json' };
 
 // ---------------- data in memory ----------------
 const load = f => JSON.parse(fs.readFileSync(path.join(__dirname, f), 'utf8'));
-const mem = { aera: load(FILES.aera), site: load(FILES.site) };
+const mem = { aera: load(FILES.aera), site: load(FILES.site), mail: (() => { try { return load(FILES.mail); } catch { return null; } })() };
 const js = {
   aera: () => '// AERA changelog – generated from data/aera-changelog.json (edit at /admin/studio)\nwindow.AERA_CHANGELOG = ' + JSON.stringify(mem.aera) + ';\n',
   site: () => '// dev-dsue.de apps and changelog – generated from data/apps.json (edit at /admin/studio)\nwindow.DSUE_DATA = ' + JSON.stringify(mem.site) + ';\n',
@@ -195,4 +195,9 @@ function mergeAuto(list, cmp) {
   return added.map(v => v.version);
 }
 
-module.exports = { handle, js, mergeAuto, AUTO };
+// webmail: signature + templates (kept in data/mail.json so they survive every deploy)
+const mail = {
+  get: () => mem.mail,
+  async save(v) { mem.mail = v; if (!TOKEN) return { saved: 'memory' }; await commitJson('mail', v, 'Mail: Signatur und Vorlagen'); return { saved: 'github' }; },
+};
+module.exports = { handle, js, mergeAuto, AUTO, mail };

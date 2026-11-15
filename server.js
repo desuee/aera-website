@@ -18,6 +18,8 @@ const IMAP_HOST = process.env.IMAP_HOST || 'dmail01.bero-host.de';
 const IMAP_PORT = +process.env.IMAP_PORT || 993;
 const SMTP_HOST = process.env.SMTP_HOST || IMAP_HOST;
 const SMTP_PORT = +process.env.SMTP_PORT || 465;
+// Railway (Hobby plan) blocks outgoing SMTP. With RESEND_API_KEY set, mail is sent over HTTPS via resend.com instead.
+const RESEND_KEY = process.env.RESEND_API_KEY || '';
 const IDLE_MS = (+process.env.SESSION_MINUTES || 60) * 60000;
 const MOCK = process.env.MOCK === '1';
 const ROOT = __dirname, ADMIN = path.join(__dirname, 'admin');
@@ -124,10 +126,27 @@ const api = {
   },
   async send(s, msg) {
     if (MOCK) return mock.send(msg);
-    const pass = open(s.pass);
-    const t = nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: s.user, pass } });
-    const mail = { from: msg.fromName ? { name: msg.fromName, address: s.user } : s.user, to: msg.to, cc: msg.cc || undefined, subject: msg.subject, text: msg.text, inReplyTo: msg.inReplyTo || undefined, references: msg.references || undefined };
-    const info = await t.sendMail(mail);
+    const from = msg.fromName ? { name: msg.fromName, address: s.user } : s.user;
+    const mail = { from, to: msg.to, cc: msg.cc || undefined, subject: msg.subject, text: msg.text, inReplyTo: msg.inReplyTo || undefined, references: msg.references || undefined };
+    let info;
+    if (RESEND_KEY) {
+      const list = v => String(v || '').split(/[,;]/).map(x => x.trim()).filter(Boolean);
+      const headers = {}; if (msg.inReplyTo) headers['In-Reply-To'] = msg.inReplyTo; if (msg.references) headers.References = msg.references;
+      const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000),
+        headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: msg.fromName ? `${msg.fromName} <${s.user}>` : s.user, to: list(msg.to), cc: list(msg.cc).length ? list(msg.cc) : undefined, subject: msg.subject || '(kein Betreff)', text: msg.text, reply_to: s.user, headers }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error('Versand fehlgeschlagen (Resend): ' + (j.message || r.status));
+      info = { messageId: `<${j.id || crypto.randomBytes(8).toString('hex')}@dev-dsue.de>` };
+    } else {
+      const pass = open(s.pass);
+      const t = nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: s.user, pass }, connectionTimeout: 12000, greetingTimeout: 10000, socketTimeout: 20000 });
+      try { info = await t.sendMail(mail); }
+      catch (e) {
+        if (/ETIMEDOUT|ECONNREFUSED|timeout|ECONNRESET/i.test(String(e.code || e.message))) throw new Error('Der Server erreicht den Mail-Server nicht (Railway blockiert SMTP im Hobby-Plan). Lösung: RESEND_API_KEY auf Railway setzen – siehe RAILWAY.md.');
+        throw e;
+      }
+    }
     // keep a copy in "Sent"
     try {
       const raw = await new Promise((res, rej) => nodemailer.createTransport({ streamTransport: true, buffer: true }).sendMail({ ...mail, messageId: info.messageId, date: new Date() }, (e, r) => e ? rej(e) : res(r.message)));
@@ -260,6 +279,10 @@ http.createServer(async (req, res) => {
     if (!s) return send(res, 401, { error: 'Nicht angemeldet' });
     s.last = Date.now();
 
+    if (p === '/api/mail-settings') {
+      if (req.method === 'POST') { const b = await readJson(req); const v = { sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 40).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })) }; try { return send(res, 200, await studio.mail.save(v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
+      return send(res, 200, { settings: studio.mail.get() });
+    }
     if (p === '/api/downloads') { try { return send(res, 200, await beta.stats()); } catch (e) { return send(res, e.status || 500, { error: e.message }); } }
     if (p.startsWith('/api/studio/')) {
       try { return await studio.handle(req, res, u, p, send, readJson); }
