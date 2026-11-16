@@ -313,13 +313,164 @@ You can also report bugs directly in our Discord: discord.gg/aera
 
 Best regards
 Simon` },
+  { name: '🇩🇪 Rückfrage: mehr Infos', subject: 'Kurze Rückfrage zu deiner AERA-Beta-Anmeldung', body: `Hallo [Name],
+
+danke für deine Anmeldung zur AERA Beta! 🙌
+
+Damit ich deine Anfrage einordnen kann, bräuchte ich noch ein paar Infos:
+• Wie heißt du auf Discord?
+• Hast du schon Erfahrung mit ATC (z. B. VATSIM, IVAO oder andere Lotsen-Spiele)?
+• Spielst du lieber auf Deutsch oder Englisch?
+• Läuft AERA bei dir auf Windows 10 oder 11?
+
+Antworte einfach direkt auf diese Mail.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Follow-up: more info', subject: 'Quick question about your AERA Beta application', body: `Hi [Name],
+
+thanks for signing up for the AERA Beta! 🙌
+
+To process your application, I'd need a few more details:
+• What's your Discord username?
+• Do you have any ATC experience (e.g. VATSIM, IVAO or other controller games)?
+• Do you prefer playing in English or German?
+• Would you run AERA on Windows 10 or 11?
+
+Just reply directly to this email.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Bereits dabei / doppelt', subject: 'Du bist schon in der AERA Beta', body: `Hallo [Name],
+
+gute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊
+
+Den aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Already in / duplicate', subject: "You're already in the AERA Beta", body: `Hi [Name],
+
+good news: you already have access to the AERA Beta – no need to sign up again. 😊
+
+You can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Erinnerung: Discord fehlt', subject: 'AERA Beta – nur noch ein Schritt', body: `Hallo [Name],
+
+du bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂
+
+1. Tritt unserem Discord bei: discord.gg/aera
+2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.
+3. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen.
+
+Ohne die Discord-Rolle klappt der Download leider nicht.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Reminder: Discord missing', subject: 'AERA Beta – just one more step', body: `Hi [Name],
+
+you've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂
+
+1. Join our Discord: discord.gg/aera
+2. Post in the "🧪┃beta-apply" channel and you'll get the beta role.
+3. Then you can download the beta at www.dev-dsue.de/beta.
+
+Unfortunately the download doesn't work without the Discord role.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Hilfe: Download / Login', subject: 'Hilfe zum AERA-Beta-Download', body: `Hallo [Name],
+
+danke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:
+
+1. Melde dich unter www.dev-dsue.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.
+2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.
+3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.
+
+Klappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Help: download / sign-in', subject: 'Help with the AERA Beta download', body: `Hi [Name],
+
+thanks for your message! If the beta download doesn't work, it's usually one of these:
+
+1. Sign in at www.dev-dsue.de/beta with exactly the Discord account you use on our server.
+2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.
+3. If Windows warns you on launch ("Windows protected your PC"), click "More info" and then "Run anyway".
+
+If it still doesn't work, feel free to send me a screenshot of the error.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Nur Windows (Mac/Linux)', subject: 'AERA Beta – aktuell nur für Windows', body: `Hallo [Name],
+
+danke für dein Interesse an der AERA Beta! 🙏
+
+AERA läuft im Moment leider nur unter Windows 10 und 11. Eine Version für macOS oder Linux gibt es noch nicht. Ich habe mir deinen Wunsch aber notiert.
+
+Wenn du einen Windows-PC hast, melde dich gern nochmal. Neuigkeiten gibt es immer zuerst im Discord: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Windows only (Mac/Linux)', subject: 'AERA Beta – currently Windows only', body: `Hi [Name],
+
+thanks for your interest in the AERA Beta! 🙏
+
+Right now AERA only runs on Windows 10 and 11 – there's no macOS or Linux version yet. I've noted your request though.
+
+If you have a Windows PC, feel free to get back to me. News always comes first on our Discord: discord.gg/aera
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Bitte um Feedback', subject: 'Wie läuft AERA bei dir?', body: `Hallo [Name],
+
+du bist jetzt seit ein paar Tagen in der AERA Beta – danke, dass du mittestest! ✈️
+
+Mich würde interessieren:
+• Was gefällt dir bisher am besten?
+• Was nervt oder ist unklar?
+• Sind dir Bugs aufgefallen?
+
+Ein paar Stichpunkte reichen völlig – einfach auf diese Mail antworten oder im Discord posten: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Feedback request', subject: "How's AERA working for you?", body: `Hi [Name],
+
+you've been in the AERA Beta for a few days now – thanks for testing! ✈️
+
+I'd love to know:
+• What do you like most so far?
+• What's annoying or unclear?
+• Have you noticed any bugs?
+
+A few bullet points are plenty – just reply to this email or post on Discord: discord.gg/aera
+
+Best regards
+Simon` },
 ];
 const SIG_SEP = '\n\n-- \n';
-let MS = { sig: SIG_DEF, templates: TPL_DEF };
-try { const l = JSON.parse(localStorage.getItem('dsue.mail') || 'null'); if (l && l.templates) MS = l; } catch {}
+let MS = { sig: SIG_DEF, templates: TPL_DEF, known: TPL_DEF.map(t => t.name) };
+// default templates that came later are added once to saved settings; deleted ones stay deleted (MS.known remembers them)
+function withNewDefaults(v) {
+  // settings saved before this list existed already knew the first 8 defaults
+  const known = new Set(v.known || v.templates.map(t => t.name).concat(TPL_DEF.slice(0, 8).map(t => t.name))), add = TPL_DEF.filter(t => !known.has(t.name) && !v.templates.some(x => x.name === t.name));
+  return { ...v, templates: [...v.templates, ...add.map(t => ({ ...t }))], known: TPL_DEF.map(t => t.name).concat([...known]).filter((n, i, a) => a.indexOf(n) === i), added: add.length };
+}
+try { const l = JSON.parse(localStorage.getItem('dsue.mail') || 'null'); if (l && l.templates) MS = withNewDefaults(l); } catch {}
 async function loadMailSettings() {
-  try { const r = await call('mail-settings'); if (r && r.settings && r.settings.templates) { MS = r.settings; try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {} } } catch {}
-  fillTpl();
+  try {
+    const r = await call('mail-settings');
+    if (r && r.settings && r.settings.templates) {
+      MS = withNewDefaults(r.settings);
+      try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {}
+      if (MS.added) { const n = MS.added; delete MS.added; try { await call('mail-settings', MS); } catch {} toast(n + ' neue Vorlagen hinzugefügt'); }
+    }
+  } catch {}
+  delete MS.added; fillTpl();
 }
 function fillTpl() { $('cTpl').innerHTML = '<option value="">📄 Vorlage …</option>' + MS.templates.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join(''); }
 let toName = '';
@@ -344,7 +495,7 @@ $('msList').addEventListener('change', e => { msStore(); msCur = +e.target.value
 $('msName').addEventListener('input', () => { msStore(); const o = $('msList').options[msCur]; if (o) o.textContent = $('msName').value; });
 $('msAdd').addEventListener('click', () => { msStore(); msDraft.templates.push({ name: 'Neue Vorlage', subject: '', body: 'Hallo [Name],\n\n\n\nViele Grüße\nSimon' }); msCur = msDraft.templates.length - 1; msList(); $('msName').select(); });
 $('msDel').addEventListener('click', () => { if (!msDraft.templates[msCur] || !confirm('Vorlage „' + msDraft.templates[msCur].name + '“ löschen?')) return; msDraft.templates.splice(msCur, 1); msCur = 0; msList(); });
-$('msReset').addEventListener('click', () => { if (!confirm('Signatur und Vorlagen auf Standard zurücksetzen?')) return; msDraft = { sig: SIG_DEF, templates: JSON.parse(JSON.stringify(TPL_DEF)) }; msCur = 0; $('msSig').value = msDraft.sig; msList(); });
+$('msReset').addEventListener('click', () => { if (!confirm('Signatur und Vorlagen auf Standard zurücksetzen?')) return; msDraft = { sig: SIG_DEF, templates: JSON.parse(JSON.stringify(TPL_DEF)), known: TPL_DEF.map(t => t.name) }; msCur = 0; $('msSig').value = msDraft.sig; msList(); });
 $('msSave').addEventListener('click', async () => {
   msStore(); msDraft.sig = $('msSig').value; MS = msDraft;
   try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {}
