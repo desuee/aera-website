@@ -78,12 +78,15 @@
           <div class="list-head">
             <label class="chk" title="Alle auswählen"><input type="checkbox" id="selAll"><span></span></label>
             <b id="folderTitle">Posteingang</b>
+            <button class="icon-btn" id="keysBtn" title="Tastenkürzel (?)"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
             <button class="icon-btn" id="refreshBtn" title="Aktualisieren"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
           </div>
+          <div class="fchips hidden" id="fchips"></div>
           <div class="bulk hidden" id="bulk">
             <span id="bulkN"></span>
             <button class="icon-btn" data-bulk="seen" title="Als gelesen markieren"><svg viewBox="0 0 24 24"><path d="M21.2 8.4c.5.4.8 1 .8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0z"/><path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"/></svg></button>
             <button class="icon-btn" data-bulk="unseen" title="Als ungelesen markieren"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button>
+            <button class="icon-btn" data-bulk="answered" title="Als erledigt markieren"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>
             <button class="icon-btn" data-bulk="flag" title="Markieren"><svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg></button>
             <select id="bulkMove" title="Verschieben"><option value="">Verschieben …</option></select>
             <button class="icon-btn danger" data-bulk="delete" title="Löschen"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
@@ -96,6 +99,23 @@
         </section>
       </div>
     </section>
+
+    <div class="keys hidden" id="keys" role="dialog" aria-label="Tastenkürzel">
+      <div class="keys-card">
+        <div class="keys-head"><b>Tastenkürzel</b><button class="icon-btn" data-close title="Schließen"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+        <dl>
+          <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Nächste / vorherige E-Mail</dd>
+          <dt><kbd>n</kbd></dt><dd>Nächste offene E-Mail (noch nicht beantwortet)</dd>
+          <dt><kbd>r</kbd> <kbd>a</kbd> <kbd>f</kbd></dt><dd>Antworten / Allen antworten / Weiterleiten</dd>
+          <dt><kbd>e</kbd></dt><dd>Als erledigt markieren (ohne Antwort)</dd>
+          <dt><kbd>s</kbd> <kbd>u</kbd></dt><dd>Markieren ★ / Als ungelesen markieren</dd>
+          <dt><kbd>#</kbd> <kbd>Entf</kbd></dt><dd>Löschen</dd>
+          <dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Filter: Alle · Offen · Ungelesen · Beantwortet · ★</dd>
+          <dt><kbd>c</kbd> <kbd>/</kbd></dt><dd>Neue E-Mail / Suchen</dd>
+          <dt><kbd>Strg</kbd>+<kbd>Enter</kbd></dt><dd>E-Mail senden</dd>
+        </dl>
+      </div>
+    </div>
 
     <!-- BETA -->
     <section class="view" id="vBeta">
