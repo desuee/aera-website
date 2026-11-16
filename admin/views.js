@@ -64,7 +64,7 @@
   const otherTpls = () => {
     const isDec = t => Object.values(TPL_RE).some(r => r.test(t.name));
     const en = t => /🇬🇧|english|\(en\)/i.test(t.name);
-    const list = A.MS.templates.map((t, i) => [t, i]).filter(([t]) => !isDec(t));
+    const list = A.MS.templates.map((t, i) => [t, i]).filter(([t]) => !isDec(t) && !/team/i.test(t.name));
     list.sort((a, b) => ((en(a[0]) === (bLang === 'en')) ? 0 : 1) - ((en(b[0]) === (bLang === 'en')) ? 0 : 1));
     return list.map(([t, i]) => `<option value="${i}">${esc(t.name)}</option>`).join('');
   };
