@@ -451,6 +451,142 @@ A few bullet points are plenty – just reply to this email or post on Discord: 
 
 Best regards
 Simon` },
+  { name: '🇩🇪 Team: Eingang bestätigt', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
+
+vielen Dank für deine Bewerbung als [Rolle] im AERA-Team! 🙌
+
+Ich habe sie gut erhalten und schaue sie mir in den nächsten Tagen in Ruhe an. Danach melde ich mich bei dir – per E-Mail oder auf Discord.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: application received', subject: 'Your application for the AERA team', body: `Hi [Name],
+
+thanks a lot for applying as [Rolle] on the AERA team! 🙌
+
+I've received your application and will take a proper look at it over the next few days. After that I'll get back to you – by email or on Discord.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Team: Einladung Kennenlernen', subject: 'AERA-Team: Lass uns kurz kennenlernen', body: `Hallo [Name],
+
+deine Bewerbung als [Rolle] hat mir richtig gut gefallen – ich würde dich gerne kurz kennenlernen! 😊
+
+Das Gespräch findet ganz locker im Discord statt (Sprach-Chat, ca. 15–20 Minuten). Schick mir einfach zwei, drei Termine, die dir in den nächsten Tagen passen, oder schreib mir direkt auf Discord.
+
+Falls du noch nicht auf dem AERA-Discord bist: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: invitation to meet', subject: "AERA team: let's get to know each other", body: `Hi [Name],
+
+I really liked your application as [Rolle] – I'd love to get to know you a bit! 😊
+
+We'll have a relaxed chat on Discord (voice, about 15–20 minutes). Just send me two or three times that suit you over the next few days, or message me directly on Discord.
+
+If you're not on the AERA Discord yet: discord.gg/aera
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Team: Zusage + Vereinbarung', subject: 'Willkommen im AERA-Team! ✈️', body: `Hallo [Name],
+
+danke für das nette Gespräch – ich freue mich sehr, dich als [Rolle] im AERA-Team zu begrüßen! 🎉
+
+Bevor es losgeht, noch ein kleiner Schritt: Im Anhang findest du die Mitwirkungsvereinbarung mit Verschwiegenheitserklärung. Darin geht es vor allem um unveröffentlichte Infos zum Spiel. Lies sie dir bitte in Ruhe durch, unterschreib sie und schick sie mir als Antwort auf diese Mail zurück (ein Foto oder Scan reicht).
+
+Sobald sie da ist, bekommst du deine Team-Rolle im Discord und Zugang zu allen internen Kanälen und Versionen.
+
+Willkommen an Bord!
+Simon` },
+  { name: '🇬🇧 Team: welcome + agreement', subject: 'Welcome to the AERA team! ✈️', body: `Hi [Name],
+
+thanks for the great chat – I'm really happy to welcome you to the AERA team as [Rolle]! 🎉
+
+One small step before we start: attached you'll find the contributor agreement with a confidentiality clause. It's mainly about unreleased information about the game. Please read it carefully, sign it and send it back as a reply to this email (a photo or scan is fine).
+
+As soon as I have it, you'll get your team role on Discord and access to all internal channels and builds.
+
+Welcome aboard!
+Simon` },
+  { name: '🇩🇪 Team: Rückfrage', subject: 'Kurze Rückfrage zu deiner AERA-Bewerbung', body: `Hallo [Name],
+
+danke für deine Bewerbung als [Rolle]! Bevor ich mich entscheide, hätte ich noch ein paar kurze Fragen:
+
+• Wie viel Zeit kannst du ungefähr pro Woche einbringen?
+• Hast du schon Erfahrung in dem Bereich (z. B. Moderation, Discord-Server, Videos, Social Media)?
+• Hast du Beispiele, die du mir zeigen kannst (Links zu Videos, Kanälen, Servern)?
+
+Antworte einfach direkt auf diese Mail.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: follow-up questions', subject: 'Quick questions about your AERA application', body: `Hi [Name],
+
+thanks for applying as [Rolle]! Before I decide, I have a few quick questions:
+
+• Roughly how much time could you put in per week?
+• Do you have experience in this area (e.g. moderation, Discord servers, videos, social media)?
+• Do you have examples you can show me (links to videos, channels, servers)?
+
+Just reply directly to this email.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Team: Lead-Platz vergeben', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
+
+danke für deine Bewerbung als [Rolle]! 🙏
+
+Den Lead-Platz habe ich inzwischen leider schon vergeben. Deine Bewerbung hat mir aber gut gefallen – hättest du Lust, stattdessen im Team mitzumachen (ohne Lead-Rolle)? Dann melde ich mich für ein kurzes Kennenlernen im Discord.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: lead spot taken', subject: 'Your application for the AERA team', body: `Hi [Name],
+
+thanks for applying as [Rolle]! 🙏
+
+Unfortunately the lead spot has already been filled. I did like your application though – would you be up for joining the team without the lead role instead? Then I'll get in touch for a quick chat on Discord.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Team: Absage', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
+
+vielen Dank für deine Bewerbung als [Rolle] und dein Interesse an AERA! 🙏
+
+Ich habe mich diesmal für andere Bewerbungen entschieden. Das ist keine Entscheidung gegen dich als Person – es gab einfach nur wenige Plätze.
+
+Ich würde mich freuen, wenn du AERA trotzdem verfolgst und im Discord dabei bleibst: discord.gg/aera. Wenn wieder Plätze frei werden, sage ich dort Bescheid.
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: not this time', subject: 'Your application for the AERA team', body: `Hi [Name],
+
+thank you very much for applying as [Rolle] and for your interest in AERA! 🙏
+
+This time I've decided to go with other applications. It's not a decision against you personally – there were just very few spots.
+
+I'd be glad if you keep following AERA and stay on our Discord: discord.gg/aera. Whenever new spots open up, I'll announce it there.
+
+Best regards
+Simon` },
+  { name: '🇩🇪 Team: unter 18', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
+
+vielen Dank für deine Bewerbung und dein Interesse an AERA! 🙏
+
+Für das Team brauche ich leider Mitglieder ab 18 Jahren – auch wegen der Vereinbarung, die alle Teammitglieder unterschreiben. Deshalb kann ich dich im Moment nicht aufnehmen.
+
+Als Spieler bist du aber jederzeit herzlich willkommen, zum Beispiel im Discord: discord.gg/aera
+
+Viele Grüße
+Simon` },
+  { name: '🇬🇧 Team: under 18', subject: 'Your application for the AERA team', body: `Hi [Name],
+
+thank you very much for applying and for your interest in AERA! 🙏
+
+Unfortunately, team members need to be at least 18 – partly because of the agreement every team member signs. So I can't take you on at the moment.
+
+You're always welcome as a player though, for example on our Discord: discord.gg/aera
+
+Best regards
+Simon` },
 ];
 const SIG_SEP = '\n\n-- \n';
 let MS = { sig: SIG_DEF, templates: TPL_DEF, known: TPL_DEF.map(t => t.name) };
@@ -473,13 +609,13 @@ async function loadMailSettings() {
   delete MS.added; fillTpl();
 }
 function fillTpl() { $('cTpl').innerHTML = '<option value="">📄 Vorlage …</option>' + MS.templates.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join(''); }
-let toName = '';
+let toName = '', toRole = '';
 const firstName = n => String(n || '').replace(/["']/g, '').trim().split(/[\s,]+/)[0] || '';
 const fillName = (txt, name) => txt.replace(/\[Name\]/g, name || '').replace(/^(Hallo|Hi|Hey) ,/m, '$1,');
 function applyTemplate(i) {
   const t = MS.templates[i]; if (!t) return;
   const ta = $('cText'), v = ta.value, sigAt = MS.sig ? v.indexOf(SIG_SEP) : -1;
-  ta.value = fillName(t.body, toName) + (sigAt >= 0 ? v.slice(sigAt) : v.trim() ? '\n\n' + v : '');
+  ta.value = fillName(t.body, toName).replace(/\[(Rolle|Role)\]/g, toRole || 'Teammitglied') + (sigAt >= 0 ? v.slice(sigAt) : v.trim() ? '\n\n' + v : '');
   if (!replyCtx) $('cSubject').value = t.subject;
   dirty = true; ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0;
 }
@@ -531,6 +667,13 @@ function openCompose(kind, m) {
     }
   }
   toName = m && kind !== 'forward' && kind !== 'draft' ? firstName((((m.replyTo || []).length ? m.replyTo : m.from) || [])[0]?.name) : '';
+  // team applications from the website: name and role are in the mail text ("Name: …", "Bereich: …")
+  toRole = '';
+  if (m && kind !== 'forward' && kind !== 'draft' && m.text) {
+    const nm = m.text.match(/^Name:\s*(.+)$/m), rl = m.text.match(/^Bereich:\s*(.+)$/m);
+    if (nm && (!toName || /aera|bewerbung|dsue/i.test(toName))) toName = firstName(nm[1]);
+    if (rl) toRole = rl[1].trim();
+  }
   if (addSig && MS.sig && MS.sig.trim()) { const sig = SIG_SEP + MS.sig.trim(); const v = $('cText').value; $('cText').value = v ? '\n' + sig + v : '\n' + sig; }
   $('cFrom').textContent = ME;
   $('compose').classList.remove('hidden');
