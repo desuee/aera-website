@@ -352,3 +352,7 @@ code{font:12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background
   .tile .v{font-size:32px}
 }
 .item .subj .tag{flex:none}
+
+/* beta: reply with a template without deciding */
+.bd-other{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bd-other select{flex:1;min-width:240px;height:40px;border-radius:11px;border:1px solid var(--line);background:var(--soft);padding:0 10px;font-weight:600;color:var(--ink2);outline:none}
