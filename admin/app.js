@@ -17,13 +17,14 @@ const ICON = {
   star: '<svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>',
   unread: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
   file: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
 };
 const NAMES = { '\\Inbox': 'Posteingang', '\\Sent': 'Gesendet', '\\Drafts': 'Entwürfe', '\\Junk': 'Spam', '\\Trash': 'Papierkorb', '\\Archive': 'Archiv' };
 const ICONS = { '\\Inbox': 'inbox', '\\Sent': 'sent', '\\Drafts': 'drafts', '\\Junk': 'junk', '\\Trash': 'trash', '\\Archive': 'archive' };
 const ORDER = ['\\Inbox', '\\Drafts', '\\Sent', '\\Archive', '\\Junk', '\\Trash'];
 
-let ME = '', folders = [], folder = 'INBOX', page = 1, q = '', items = [], cur = null, timer = 0;
+let ME = '', folders = [], folder = 'INBOX', page = 1, q = '', items = [], cur = null, timer = 0, filter = 'all', counts = null, own = false;
 const picked = new Set();
 
 // ---------------- api ----------------
@@ -105,20 +106,49 @@ $('menuBtn').addEventListener('click', () => $('panes').classList.toggle('menu-o
 // ---------------- list + multi-select ----------------
 async function loadList(quiet) {
   try {
-    const r = await call(`list?folder=${encodeURIComponent(folder)}&page=${page}&q=${encodeURIComponent(q)}`);
-    items = r.items; for (const u of [...picked]) if (!items.some(m => m.uid === u)) picked.delete(u);
+    const r = await call(`list?folder=${encodeURIComponent(folder)}&page=${page}&q=${encodeURIComponent(q)}&filter=${filter}`);
+    items = r.items.sort((a, b) => new Date(b.date) - new Date(a.date)); counts = r.counts || null; own = !!r.own; drawChips(); for (const u of [...picked]) if (!items.some(m => m.uid === u)) picked.delete(u);
     drawList();
     const pages = Math.max(1, Math.ceil(r.total / r.per));
     $('pager').innerHTML = pages > 1 ? `<button class="icon-btn" data-pg="-1" ${page <= 1 ? 'disabled' : ''}>‹</button><span>Seite ${page} von ${pages} · ${r.total} E-Mails</span><button class="icon-btn" data-pg="1" ${page >= pages ? 'disabled' : ''}>›</button>` : '';
   } catch (e) { if (!quiet) toast(e.message, true); }
 }
+// ---- smart bits: answered / waiting / groups / tags ----
+const NOREPLY = /(no-?reply|do-?not-?reply|newsletter|notifications?@|notify|mailer-daemon|postmaster|billing|bounce|news@)/i;
+const sender = m => (m.replyTo || (m.from && m.from.address) || '').toLowerCase();
+const needsReply = m => !own && !m.answered && !NOREPLY.test(sender(m));
+const ageDays = d => Math.floor((Date.now() - new Date(d)) / 864e5);
+const longDate = d => new Date(d).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+function groupOf(d) {
+  const t = new Date(d), n = new Date(), day = 864e5, start = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+  if (t >= start) return 'Heute'; if (t >= start - day) return 'Gestern'; if (t >= start - 6 * day) return 'Letzte 7 Tage'; if (t >= start - 30 * day) return 'Letzte 30 Tage'; return 'Älter';
+}
+function kindTag(m) {
+  if (/team-bewerbung/i.test(m.subject)) return '<span class="tag team">Team</span>';
+  if (/beta/i.test(m.subject)) return '<span class="tag">Beta</span>';
+  return '';
+}
+function drawChips() {
+  const el = $('fchips'); if (!el) return;
+  if (own || !counts) { el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const c = (k, label, n, title) => `<button data-filter="${k}" class="${filter === k ? 'on' : ''}" title="${title}">${label}${n != null ? `<i>${n}</i>` : ''}</button>`;
+  el.innerHTML = c('all', 'Alle', null, 'Alle E-Mails (Taste 1)') + c('open', 'Offen', counts.open, 'Noch nicht beantwortet (Taste 2)') + c('unread', 'Ungelesen', counts.unread, 'Ungelesen (Taste 3)') + c('answered', 'Beantwortet', null, 'Schon beantwortet (Taste 4)') + c('flagged', '★', counts.flagged, 'Markiert (Taste 5)');
+}
+function setFilter(f) { if (filter === f) f = 'all'; filter = f; page = 1; picked.clear(); loadList(); }
 function drawList() {
-  const sentLike = /\\Sent|\\Drafts/.test((folders.find(f => f.path === folder) || {}).special || '');
-  $('items').innerHTML = items.length ? items.map(m => `<div class="item${m.seen ? '' : ' unread'}${cur && cur.uid === m.uid ? ' on' : ''}${picked.has(m.uid) ? ' picked' : ''}" data-uid="${m.uid}" role="button" tabindex="0">
+  const sentLike = own;
+  let g = '';
+  $('items').innerHTML = items.length ? items.map(m => {
+    const grp = groupOf(m.date), head = grp !== g ? `<div class="grp">${grp}</div>` : ''; g = grp;
+    const wait = needsReply(m) && ageDays(m.date) >= 1 ? `<span class="wait${ageDays(m.date) >= 3 ? ' late' : ''}" title="Wartet seit ${ageDays(m.date)} Tag(en) auf Antwort">${ageDays(m.date)} T.</span>` : '';
+    const ans = !sentLike && m.answered ? `<span class="ans" title="${m.answeredAt ? 'Beantwortet am ' + esc(longDate(m.answeredAt)) : 'Beantwortet'}">${ICON.reply}</span>` : '';
+    return `${head}<div class="item${m.seen ? '' : ' unread'}${!sentLike && m.answered ? ' answered' : ''}${cur && cur.uid === m.uid ? ' on' : ''}${picked.has(m.uid) ? ' picked' : ''}" data-uid="${m.uid}" role="button" tabindex="0">
     <label class="chk" data-pick="${m.uid}"><input type="checkbox"${picked.has(m.uid) ? ' checked' : ''}><span></span></label>
-    <div class="c"><div class="r1"><span class="who">${esc(sentLike ? 'An: ' + (m.to || []).map(who).join(', ') : who(m.from))}</span><time>${esc(when(m.date))}</time></div>
-    <div class="subj">${/beta/i.test(m.subject) && !sentLike ? '<span class="tag">Beta</span>' : ''}<span>${esc(m.subject || '(kein Betreff)')}</span>${m.att ? ICON.clip : ''}${m.flagged ? `<span class="star" style="flex:none">${ICON.star}</span>` : ''}</div></div></div>`).join('')
-    : `<div class="noitems">${q ? 'Nichts gefunden.' : 'Keine E-Mails in diesem Ordner.'}</div>`;
+    <div class="c"><div class="r1"><span class="who">${esc(sentLike ? 'An: ' + (m.to || []).map(who).join(', ') : (/team-bewerbung/i.test(m.subject) && / – ([^–]+)$/.test(m.subject) ? m.subject.match(/ – ([^–]+)$/)[1].trim() : m.replyTo && (m.from || {}).address === ME ? m.replyTo : who(m.from)))}</span>${ans}${wait}<time>${esc(when(m.date))}</time></div>
+    <div class="subj">${sentLike ? '' : kindTag(m)}<span>${esc(m.subject || '(kein Betreff)')}</span>${m.att ? ICON.clip : ''}${m.flagged ? `<span class="star" style="flex:none">${ICON.star}</span>` : ''}</div></div></div>`;
+  }).join('')
+    : `<div class="noitems">${q ? 'Nichts gefunden.' : filter === 'open' ? '🎉 Alles beantwortet – nichts mehr offen.' : filter !== 'all' ? 'Keine passenden E-Mails.' : 'Keine E-Mails in diesem Ordner.'}</div>`;
   drawBulk();
 }
 function drawBulk() {
@@ -133,13 +163,14 @@ $('items').addEventListener('click', e => {
   if (e.shiftKey || e.metaKey || e.ctrlKey) { const u = +b.dataset.uid; picked.has(u) ? picked.delete(u) : picked.add(u); drawList(); return; }
   openMsg(+b.dataset.uid);
 });
+$('fchips').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) setFilter(b.dataset.filter); });
 $('selAll').addEventListener('change', e => { picked.clear(); if (e.target.checked) items.forEach(m => picked.add(m.uid)); drawList(); });
 async function bulk(action, to) {
   const uids = [...picked]; if (!uids.length) return;
   if (action === 'delete' && !confirm(uids.length + ' E-Mail(s) löschen?')) return;
   try {
     await call('bulk', { folder, uids, action, to });
-    toast({ seen: 'Als gelesen markiert', unseen: 'Als ungelesen markiert', flag: 'Markiert', move: 'Verschoben', delete: 'Gelöscht' }[action] + ' ✓');
+    toast({ seen: 'Als gelesen markiert', unseen: 'Als ungelesen markiert', flag: 'Markiert', answered: 'Als erledigt markiert', move: 'Verschoben', delete: 'Gelöscht' }[action] + ' ✓');
     if (action === 'move' || action === 'delete') { if (cur && picked.has(cur.uid)) { cur = null; clearReader(); } }
     picked.clear(); await loadFolders(); await loadList();
   } catch (er) { toast(er.message, true); }
@@ -165,7 +196,8 @@ async function openMsg(uid) {
     const m = await call(`message?folder=${encodeURIComponent(folder)}&uid=${uid}`);
     if (isDrafts()) return openCompose('draft', m);
     cur = m;
-    const it = items.find(x => x.uid === uid); if (it && !it.seen) { it.seen = true; const f = folders.find(x => x.path === folder); if (f && f.unseen) f.unseen--; drawFolders(); }
+    const it = items.find(x => x.uid === uid);
+    if (it) { m.answered = m.answered || it.answered; m.answeredAt = it.answeredAt; } if (it && !it.seen) { it.seen = true; const f = folders.find(x => x.path === folder); if (f && f.unseen) f.unseen--; drawFolders(); }
     drawList(); drawReader(false);
     $('panes').classList.add('reading');
   } catch (e) { toast(e.message, true); }
@@ -182,6 +214,7 @@ function drawReader(images) {
       <button class="icon-btn" data-act="forward" title="Weiterleiten">${ICON.forward}</button>
       <select id="tplReply" title="Mit Vorlage antworten"><option value="">↩︎ Mit Vorlage …</option>${tpls}</select>
       <span class="sp"></span>
+      ${own ? '' : `<button class="icon-btn${m.answered ? ' on-ok' : ''}" data-act="done" title="${m.answered ? 'Beantwortet' : 'Als erledigt markieren (E)'}"${m.answered ? ' disabled' : ''}>${ICON.check}</button>`}
       <button class="icon-btn" data-act="star" title="Markieren" style="${m.flagged ? 'color:#f5a623' : ''}">${ICON.star}</button>
       <button class="icon-btn" data-act="unread" title="Als ungelesen markieren">${ICON.unread}</button>
       <select id="moveSel" title="Verschieben"><option value="">Verschieben …</option>${moveOpts}</select>
@@ -193,6 +226,8 @@ function drawReader(images) {
         <div style="min-width:0"><b>${esc(f.name || f.address)}</b><div class="addr">${esc(f.address)}</div></div>
         <time>${esc(new Date(m.date).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }))}</time></div>
       <div class="to">An: ${esc((m.to || []).map(a => a.name ? `${a.name} <${a.address}>` : a.address).join(', '))}${(m.cc || []).length ? ' · Cc: ' + esc(m.cc.map(a => a.address).join(', ')) : ''}</div>
+      ${own ? '' : m.answered ? `<div class="rstate ok">${ICON.check}<span>Beantwortet${m.answeredAt ? ' am ' + esc(longDate(m.answeredAt)) : ''}</span></div>`
+        : `<div class="rstate open">${ICON.reply}<span>Noch nicht beantwortet${ageDays(m.date) >= 1 ? ` · wartet seit ${ageDays(m.date)} Tag${ageDays(m.date) === 1 ? '' : 'en'}` : ''}</span><button class="link" data-act="done">Als erledigt markieren</button></div>`}
     </div>
     ${!images && hasRemote(m) ? '<div class="blocked">Externe Bilder wurden zu deinem Schutz blockiert. <button id="loadImgs">Bilder laden</button></div>' : ''}
     ${(m.attachments || []).filter(a => !a.cid).length ? `<div class="atts">${m.attachments.filter(a => !a.cid).map(a => `<a class="att" href="/api/attachment?folder=${encodeURIComponent(folder)}&uid=${m.uid}&i=${a.i}">${ICON.file}<span>${esc(a.name)}</span><small>${(a.size / 1024).toFixed(0)} KB</small></a>`).join('')}</div>` : ''}
@@ -213,11 +248,14 @@ $('reader').addEventListener('click', async e => {
     if (a === 'reply' || a === 'replyAll' || a === 'forward') return openCompose(a, m);
     if (a === 'beta') return show('beta', { folder, uid: m.uid });
     if (a === 'star') { await call('flag', { folder, uid: m.uid, flag: 'flagged', on: !m.flagged }); m.flagged = !m.flagged; const it = items.find(x => x.uid === m.uid); if (it) it.flagged = m.flagged; drawList(); drawReader(false); }
+    if (a === 'done') { await call('flag', { folder, uid: m.uid, flag: 'answered', on: true }); m.answered = true; const it = items.find(x => x.uid === m.uid); if (it) it.answered = true; if (counts && counts.open) counts.open--; toast('Als erledigt markiert ✓'); if (filter === 'open') { order = items.map(x => x.uid); items = items.filter(x => x.uid !== m.uid); const nx = nextAfter(m.uid); order = []; drawChips(); drawList(); nx ? openMsg(nx) : (cur = null, clearReader()); } else { drawChips(); drawList(); drawReader(false); } return; }
     if (a === 'unread') { await call('flag', { folder, uid: m.uid, flag: 'seen', on: false }); const it = items.find(x => x.uid === m.uid); if (it) it.seen = false; cur = null; drawList(); clearReader(); loadFolders(); }
     if (a === 'delete') { await call('delete', { folder, uid: m.uid }); toast('Gelöscht'); afterRemove(); }
   } catch (er) { toast(er.message, true); }
 });
-function afterRemove() { items = items.filter(x => x.uid !== cur.uid); cur = null; drawList(); clearReader(); loadFolders(); }
+let order = [];   // uids in list order before the last change, for "open the next mail"
+function nextAfter(uid) { const ids = order.length ? order : items.map(x => x.uid), i = ids.indexOf(uid); for (const u of ids.slice(i + 1).concat(ids.slice(0, Math.max(0, i)).reverse())) if (u !== uid && items.some(x => x.uid === u)) return u; return 0; }
+function afterRemove() { order = items.map(x => x.uid); const id = cur.uid; items = items.filter(x => x.uid !== id); const nx = window.innerWidth > 900 ? nextAfter(id) : 0; order = []; cur = null; drawList(); if (nx) openMsg(nx); else clearReader(); loadFolders(); loadList(true); }
 
 // ---------------- signature + templates ----------------
 const SIG_DEF = `Simon Risse
@@ -716,6 +754,7 @@ $('composeForm').addEventListener('submit', async e => {
   try {
     await call('send', { to: $('cTo').value, cc: $('cCc').value, subject: $('cSubject').value, text: $('cText').value, html: $('cHtml').checked, fromName: 'dev-dsue', draftUid, attachments: atts.map(a => ({ name: a.name, type: a.type, data: a.data })), ...(replyCtx || {}) });
     clearTimeout(autoT); dirty = false;
+    if (replyCtx && replyCtx.replyUid && replyCtx.replyFolder === folder) { const now = new Date(); const it = items.find(x => x.uid === replyCtx.replyUid); if (it) { it.answered = true; it.answeredAt = now; } if (cur && cur.uid === replyCtx.replyUid) { cur.answered = true; cur.answeredAt = now; if (view === 'mail') drawReader(false); } }
     $('compose').classList.add('hidden'); toast('Gesendet ✓'); if (view === 'mail') { loadFolders(); loadList(true); }
   } catch (er) { toast(er.message, true); }
   btn.disabled = false; btn.lastChild.textContent = 'Senden';
@@ -727,8 +766,28 @@ document.addEventListener('keydown', e => {
   if (typing || !$('compose').classList.contains('hidden') || $('app').classList.contains('hidden')) return;
   if (e.key === 'c') { e.preventDefault(); openCompose('new'); }
   if (e.key === '/' ) { e.preventDefault(); show('mail', { keep: view === 'mail' }); $('q').focus(); }
-  if (e.key === 'r' && view === 'mail' && cur) { e.preventDefault(); openCompose('reply', cur); }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === '?') { e.preventDefault(); $('keys').classList.toggle('hidden'); return; }
+  if (e.key === 'Escape' && !$('keys').classList.contains('hidden')) { $('keys').classList.add('hidden'); return; }
+  if (view !== 'mail') return;
+  const act = a => { const b = document.querySelector(`#reader [data-act="${a}"]`); if (b && !b.disabled) b.click(); };
+  const step = d => { if (!items.length) return; const i = cur ? items.findIndex(x => x.uid === cur.uid) : -1, n = items[Math.min(items.length - 1, Math.max(0, i + d))]; if (n && (!cur || n.uid !== cur.uid)) { openMsg(n.uid); setTimeout(() => { const el = document.querySelector(`.item[data-uid="${n.uid}"]`); if (el) el.scrollIntoView({ block: 'nearest' }); }, 60); } };
+  const k = e.key;
+  if (k === 'j' || k === 'ArrowDown') { e.preventDefault(); step(1); }
+  else if (k === 'k' || k === 'ArrowUp') { e.preventDefault(); step(-1); }
+  else if (k === 'n') { e.preventDefault(); const i = cur ? items.findIndex(x => x.uid === cur.uid) : -1, n = items.slice(i + 1).find(needsReply) || items.find(needsReply); if (n) openMsg(n.uid); else toast('Keine offenen E-Mails mehr 🎉'); }
+  else if (/^[1-5]$/.test(k) && !own) { e.preventDefault(); filter = ['all', 'open', 'unread', 'answered', 'flagged'][+k - 1]; page = 1; picked.clear(); loadList(); }
+  else if (!cur) return;
+  else if (k === 'r') { e.preventDefault(); openCompose('reply', cur); }
+  else if (k === 'a') { e.preventDefault(); openCompose('replyAll', cur); }
+  else if (k === 'f') { e.preventDefault(); openCompose('forward', cur); }
+  else if (k === 'e') { e.preventDefault(); act('done'); }
+  else if (k === 's') { e.preventDefault(); act('star'); }
+  else if (k === 'u') { e.preventDefault(); act('unread'); }
+  else if (k === '#' || k === 'Delete') { e.preventDefault(); act('delete'); }
 });
+$('keysBtn').addEventListener('click', () => $('keys').classList.remove('hidden'));
+$('keys').addEventListener('click', e => { if (e.target === $('keys') || e.target.closest('[data-close]')) $('keys').classList.add('hidden'); });
 
 // ---------------- start ----------------
 async function pollUnread() { try { const f = await call('folders'); const i = f.find(x => x.special === '\\Inbox' || x.path === 'INBOX') || {}; setBadge('navUnread', i.unseen || 0); if (view === 'mail') { folders = f; loadFolders().catch(() => {}); loadList(true); } } catch {} }
