@@ -60,6 +60,14 @@
     const list = A.MS.templates.filter(t => TPL_RE[st].test(t.name));
     return list.find(t => (lang === 'en') === /🇬🇧|english|\(en\)/i.test(t.name)) || list[0] || null;
   };
+  // every template that is not one of the three decisions, the ones in the request's language first
+  const otherTpls = () => {
+    const isDec = t => Object.values(TPL_RE).some(r => r.test(t.name));
+    const en = t => /🇬🇧|english|\(en\)/i.test(t.name);
+    const list = A.MS.templates.map((t, i) => [t, i]).filter(([t]) => !isDec(t));
+    list.sort((a, b) => ((en(a[0]) === (bLang === 'en')) ? 0 : 1) - ((en(b[0]) === (bLang === 'en')) ? 0 : 1));
+    return list.map(([t, i]) => `<option value="${i}">${esc(t.name)}</option>`).join('');
+  };
   const looksEn = t => { const s = ' ' + String(t || '').toLowerCase() + ' '; const en = (s.match(/\b(the|and|would|could|please|thanks|hi|hello|cheers|access|join|looks)\b/g) || []).length, de = (s.match(/\b(ich|und|der|die|das|bitte|danke|hallo|gerne|würde|viele|grüße)\b/g) || []).length; return en > de; };
   async function loadBeta(opts) {
     if (opts && opts.uid) bWant = opts;
@@ -118,10 +126,14 @@
             <button class="btn primary" id="bdGo">Bestätigen</button>
           </div>
         </div>
-        <div class="opts"><button class="link" id="bdOpen">Im Postfach öffnen →</button></div>
+        <div class="bd-other">
+          <select id="bdTpl" title="Antworten, ohne zu entscheiden"><option value="">💬 Mit Vorlage antworten (ohne Entscheidung) …</option>${otherTpls()}</select>
+          <button class="link" id="bdOpen">Im Postfach öffnen →</button>
+        </div>
       </div>`;
     $('bDetail').querySelectorAll('[data-dec]').forEach(b => b.onclick = () => choose(b.dataset.dec));
     $('bdOpen').onclick = () => A.openMail(it.folder, it.uid);
+    $('bdTpl').onchange = e => { const i = e.target.value; e.target.value = ''; if (i === '') return; A.openCompose('reply', bMsg); A.applyTemplate(+i); };
   }
   function fillChoice() {
     const f = (bMsg.from || [])[0] || {}, t = tplFor(bChoice, bLang), name = A.firstName(f.name);
