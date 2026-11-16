@@ -406,3 +406,19 @@ details p a{color:var(--sky)}
   .dc-logo .dc-ic{width:48px;height:48px}
   .dc-side{justify-items:start;text-align:left}
 }
+
+/* story + team teaser */
+.more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.more-card{display:block;text-decoration:none;color:inherit;padding:30px 30px 26px;border:1px solid var(--line2);border-radius:18px;background:linear-gradient(160deg,var(--panel2),var(--panel));transition:transform .25s,border-color .25s,box-shadow .25s}
+.more-card:hover{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 14px 40px #0006}
+.more-card h3{margin:6px 0 10px;font-size:26px;color:#fff}
+.more-card p:not(.eyebrow){color:var(--grey);line-height:1.6;margin:0 0 18px}
+.more-go{font-weight:650;color:var(--blue)}
+@media (max-width:720px){.more-grid{grid-template-columns:minmax(0,1fr)}}
+.nav nav a{white-space:nowrap}
+@media (max-width:1500px){.nav .in .brand small{display:none!important}}
+@media (max-width:1360px){.nav nav{gap:16px}}
+@media (max-width:1180px){.nav nav{display:none}.nav .nav-dc{margin-left:auto}}
+.nav .in{max-width:1340px}
+.nav .brand{flex-shrink:0}
+.nav nav{gap:18px}

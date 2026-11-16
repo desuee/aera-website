@@ -36,6 +36,7 @@ function endSession(t) { const s = sessions.get(t); if (!s) return; sessions.del
 
 // sign-in protection: 5 wrong tries per address per 15 minutes, 20 overall per hour
 const fails = new Map(); let globalFails = [];
+const teamHits = new Map();
 function blocked(ip) {
   const now = Date.now(); globalFails = globalFails.filter(t => now - t < 3600000);
   const f = (fails.get(ip) || []).filter(t => now - t < 900000); fails.set(ip, f);
@@ -251,7 +252,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -314,6 +315,7 @@ http.createServer(async (req, res) => {
       if (p === '/aera') return serveFile(res, path.join(ROOT, 'aera.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/lizenz' || p === '/aera/license' || p === '/aera/licence') return serveFile(res, path.join(ROOT, 'aera-lizenz.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/about' || p === '/aera/ueber' || p === '/aera/über' || p === '/aera/%C3%BCber') return serveFile(res, path.join(ROOT, 'aera-about.html'), 'no-cache', SITE_CSP);
+      if (p === '/aera/team' || p === '/aera/mitmachen' || p === '/aera/join') return serveFile(res, path.join(ROOT, 'aera-team.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/changelog' || p === '/aera/changelog/') return serveFile(res, path.join(ROOT, 'aera-changelog.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/discord.json') return send(res, 200, await discordStats(), 'application/json', { 'Cache-Control': 'public, max-age=120', 'X-Robots-Tag': 'noindex' });
       const name = decodeURIComponent(p.slice(1));
@@ -324,6 +326,32 @@ http.createServer(async (req, res) => {
     // every change needs this header: a plain form or link from another site cannot set it
     if ((req.method === 'POST' || req.method === 'PUT') && req.headers['x-dsue'] !== '1') return send(res, 403, { error: 'Forbidden' });
 
+    // public: volunteer application (community / social media) – sent as mail to the inbox, nothing is stored on the server
+    if (p === '/api/team-apply' && req.method === 'POST') {
+      const ip = ipOf(req), now = Date.now(), h = (teamHits.get(ip) || []).filter(t => now - t < 3600e3);
+      if (h.length >= 3) return send(res, 429, { error: 'Zu viele Bewerbungen von dieser Adresse – bitte später nochmal. · Too many applications, please try later.' });
+      const b = await readJson(req); const de = b.lang !== 'en';
+      if (b.website) return send(res, 200, { ok: true });   // honeypot: bots fill in the hidden field
+      const c = (v, n) => String(v || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
+      const d = { role: { 'community-lead': 'Leading Community & Moderation Manager', community: 'Community & Moderation Manager', 'social-lead': 'Leading Social Media Manager', social: 'Social Media Manager' }[b.role] || 'Community & Moderation Manager',
+        name: c(b.name, 80), email: c(b.email, 120), discord: c(b.discord, 60), langs: c(b.langs, 80), exp: String(b.exp || '').trim().slice(0, 1500),
+        links: c(b.links, 300), why: String(b.why || '').trim().slice(0, 1500), time: c(b.time, 80) };
+      if (!d.name || !d.discord || !d.why || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail, Discord und „Warum“ ausfüllen.' : 'Please fill in name, a valid email, Discord and "why".' });
+      if (b.adult !== true || b.privacy !== true) return send(res, 400, { error: de ? 'Bitte Alter (18+) und Datenschutz bestätigen.' : 'Please confirm age (18+) and the privacy note.' });
+      h.push(now); teamHits.set(ip, h);
+      const text = `Neue Bewerbung über dev-dsue.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
+      const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
+                      : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
+      if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
+      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an kontakt@dev-dsue.de schreiben.' : 'Applications are not available right now – please write to kontakt@dev-dsue.de.' });
+      const to = process.env.TEAM_MAIL_TO || 'kontakt@dev-dsue.de', from = process.env.TEAM_MAIL_FROM || 'kontakt@dev-dsue.de';
+      const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
+      try {
+        await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: d.email, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
+        await mail({ from: `Simon (AERA) <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
+      } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@dev-dsue.de schreiben.' : 'Sending failed – please write to kontakt@dev-dsue.de.' }); }
+      return send(res, 200, { ok: true });
+    }
     if (p === '/api/login' && req.method === 'POST') {
       const ip = ipOf(req);
       if (blocked(ip)) return send(res, 429, { error: 'Zu viele Versuche – bitte in 15 Minuten nochmal.' });
