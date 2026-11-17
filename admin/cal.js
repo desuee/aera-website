@@ -32,7 +32,8 @@
   // ---------- load ----------
   async function enter(opts) {
     if (opts && opts.date) anchor = startOfDay(opts.date);
-    if (!status) { $('calMain').innerHTML = '<div class="cal-empty">Kalender wird geladen …</div>'; try { status = await A.call('cal/status'); } catch (e) { status = { configured: true, error: e.message }; } }
+    if (status && status.for !== ME) status = null;
+    if (!status) { $('calMain').innerHTML = '<div class="cal-empty">Kalender wird geladen …</div>'; try { status = await A.call('cal/status'); } catch (e) { status = { configured: true, error: e.message }; } status.for = ME; }
     drawSide();
     if (!status.configured) return drawSetup();
     await load();
@@ -66,7 +67,7 @@
     const s = status || {}, cals = (data.calendars && data.calendars.length ? data.calendars : s.calendars) || [];
     if (!s.configured) { $('calSide').innerHTML = ''; return; }
     $('calSide').innerHTML = `
-      <div class="cal-acc"><span class="dot ${s.error ? 'bad' : 'ok'}"></span><div><b>${s.mock ? 'Demo-Kalender' : 'iCloud-Kalender'}</b><small>${esc(s.error ? s.error : s.user || '')}</small></div></div>
+      <div class="cal-acc"><span class="dot ${s.error ? 'bad' : 'ok'}"></span><div><b>${s.mock ? 'Demo-Kalender' : 'iCloud-Kalender'}</b><small>${esc(s.error ? s.error : s.user || '')}</small>${s.canDisconnect ? '<button class="link cal-off" id="calOff">Verbindung trennen</button>' : ''}</div></div>
       <div class="cal-sec">Meine Kalender</div>
       ${cals.length && !cals.some(c => !c.readOnly) ? '<p class="muted small cal-warn">Alle Kalender sind nur lesbar – neue Termine gehen gerade nicht.</p>' : ''}
       ${cals.map(c => `<label class="cal-item"><input type="checkbox" data-cal="${esc(c.id)}"${hidden.has(c.id) ? '' : ' checked'}><span class="sw" style="--c:${esc(c.color)}"></span><span class="nm">${esc(c.name)}</span>${c.readOnly ? '<small title="Nur lesen">🔒</small>' : ''}</label>`).join('') || '<div class="muted small">Keine Kalender gefunden.</div>'}
@@ -77,17 +78,33 @@
 
   function drawSetup() {
     $('calTitle').textContent = 'Kalender';
-    $('calMain').innerHTML = `<div class="cal-setup panel">
-      <h2>iCloud-Kalender verbinden</h2>
-      <p class="muted">Damit der Admin deinen Apple-Kalender lesen und Termine eintragen kann, braucht er ein <b>App-spezifisches Passwort</b>. Dein normales Apple-Passwort wird dafür nicht verwendet – und du kannst den Zugang jederzeit wieder löschen.</p>
+    $('calMain').innerHTML = `<form class="cal-setup panel" id="calConnect" autocomplete="off">
+      <h2>Deinen iCloud-Kalender verbinden</h2>
+      <p class="muted">Jedes Admin-Konto hat seinen eigenen Kalender. Verbinde hier deinen – andere sehen ihn nicht. Termine, die du hier einträgst, landen direkt in deiner Kalender-App auf iPhone und Mac.</p>
       <ol>
         <li>Öffne <a href="https://account.apple.com/account/manage" target="_blank" rel="noopener">account.apple.com</a> → <b>Anmelden und Sicherheit</b> → <b>App-spezifische Passwörter</b>.</li>
-        <li>Neues Passwort erstellen, z. B. mit dem Namen <code>dev-dsue Admin</code>, und kopieren (Format <code>xxxx-xxxx-xxxx-xxxx</code>).</li>
-        <li>In <b>Railway</b> → dein Projekt → <b>Variables</b> zwei Einträge anlegen:<br><code>ICLOUD_USER</code> = deine Apple-ID (E-Mail)<br><code>ICLOUD_APP_PASSWORD</code> = das neue Passwort</li>
-        <li>Railway startet die Seite neu – danach diese Seite neu laden. Fertig.</li>
+        <li>Neues Passwort erstellen, z. B. „dev-dsue Admin“, und unten einfügen (Format <code>xxxx-xxxx-xxxx-xxxx</code>). Dein normales Apple-Passwort wird nicht gebraucht.</li>
       </ol>
-      <p class="muted small">Bitte das Passwort nirgendwo anders hineinkopieren (auch nicht in Chats) – es gehört nur in Railway.</p></div>`;
+      <label>Apple-ID (E-Mail)<input id="ccUser" type="email" required placeholder="name@icloud.com" autocomplete="off"></label>
+      <label>App-spezifisches Passwort<input id="ccPass" type="password" required placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="new-password"></label>
+      <details class="cc-more"><summary>Anderer Kalender-Server (statt iCloud)</summary><label>CalDAV-Adresse<input id="ccUrl" type="url" placeholder="https://…"></label></details>
+      <button class="btn primary" id="ccBtn">Kalender verbinden</button>
+      <p class="muted small">Das Passwort wird verschlüsselt auf dem Server gespeichert und nur für deinen Kalender benutzt. Du kannst die Verbindung jederzeit trennen oder das Passwort bei Apple löschen.${status && status.persist === false ? ' <b>Hinweis:</b> Auf dem Server ist kein Datenspeicher eingerichtet (AERA_DATA_DIR) – nach einem Update musst du dich neu verbinden.' : ''}</p>
+    </form>`;
+    $('calConnect').addEventListener('submit', async e => {
+      e.preventDefault(); $('ccBtn').disabled = true; $('ccBtn').textContent = 'Verbinde …';
+      try {
+        const r = await A.call('cal/connect', { user: $('ccUser').value, pass: $('ccPass').value, url: $('ccUrl').value });
+        A.toast(`Verbunden ✓ – ${r.calendars} Kalender gefunden`); status = null; enter();
+      } catch (err) { A.toast(err.message, true); $('ccBtn').disabled = false; $('ccBtn').textContent = 'Kalender verbinden'; }
+    });
   }
+  $('calSide').addEventListener('click', async e => {
+    if (!e.target.closest('#calOff')) return;
+    const b = e.target.closest('#calOff');
+    if (!b.dataset.arm) { b.dataset.arm = '1'; b.textContent = 'Wirklich trennen?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.textContent = 'Verbindung trennen'; } }, 4000); return; }
+    try { await A.call('cal/disconnect', {}); A.toast('Kalender getrennt'); status = null; data = { events: [], calendars: [] }; enter(); } catch (err) { A.toast(err.message, true); }
+  });
 
   // ---------- views ----------
   function draw() {
@@ -288,7 +305,8 @@
     return { team, name, first: A.firstName(name) || name, role: field(t, 'Bereich'), discord: field(t, 'Discord'), email };
   }
   function fromMailOpen(m) {
-    if (!status) return A.call('cal/status').then(s => { status = s; fromMailOpen(m); }).catch(e => A.toast(e.message, true));
+    if (status && status.for !== ME) status = null;
+    if (!status) return A.call('cal/status').then(s => { status = s; status.for = ME; fromMailOpen(m); }).catch(e => A.toast(e.message, true));
     if (!status.configured) { A.toast('Kalender ist noch nicht verbunden – unter „Kalender“ einrichten', true); return; }
     const i = mailInfo(m), s = new Date(); s.setDate(s.getDate() + 1); s.setHours(18, 0, 0, 0);
     const notes = [i.email && 'E-Mail: ' + i.email, i.discord && 'Discord: ' + i.discord, i.role && 'Bewerbung als: ' + i.role, 'Mail: ' + (m.subject || '')].filter(Boolean).join('\n');
@@ -324,7 +342,7 @@
 
   // ---------- dashboard panel ----------
   function dashPanel(c) {
-    if (!c || c.configured === false) return `<div class="empty">Noch nicht verbunden. <button class="link" data-view="cal">Jetzt einrichten →</button></div>`;
+    if (!c || c.configured === false) return `<div class="empty">Dein Kalender ist noch nicht verbunden. <button class="link" data-view="cal">Jetzt verbinden →</button></div>`;
     if (c.error) return `<div class="empty">${esc(c.error)}</div>`;
     const cals = c.calendars || [], list = (c.events || []).filter(e => !hidden.has(e.cal));
     if (!list.length) return '<div class="empty">Keine Termine in den nächsten zwei Wochen.</div>';
