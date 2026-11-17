@@ -9,6 +9,7 @@ Die Installer bleiben bei GitHub Releases.
    - `ALLOWED_USERS` = `kontakt@dev-dsue.de`
    - `IMAP_HOST` = IMAP-Server deines Mail-Anbieters (Standard `dmail01.bero-host.de`, Port 993)
    - `SMTP_HOST` = SMTP-Server (Standard wie IMAP, Port 465)
+   - `RESEND_API_KEY` = API-Key von resend.com (nötig zum **Senden**, siehe unten)
 3. **Settings → Networking → Custom Domain** → `www.dev-dsue.de`. Railway zeigt ein CNAME-Ziel an.
 4. Beim Domain-Anbieter den CNAME-Eintrag `www` auf dieses Ziel ändern (statt `desuee.github.io`).
 5. Wenn alles läuft: GitHub → Settings → Pages ausschalten.
@@ -36,3 +37,31 @@ nur an angemeldete Tester weiter.
 
 Neuen Build veröffentlichen: github.com/desuee/aera-beta → Releases → Draft a new release → Tag z. B. `v0.9.3`,
 Titel, Text („Was ist neu“), Exe reinziehen → Publish. Die Seite zeigt ihn sofort (spätestens nach 1 Minute).
+
+
+## E-Mails senden (Resend)
+Railway sperrt im Hobby-Plan alle ausgehenden SMTP-Verbindungen. Ohne Umweg lädt „Senden“ deshalb ewig.
+Mit `RESEND_API_KEY` verschickt der Server die Mails stattdessen über HTTPS (resend.com, 3.000 Mails/Monat gratis).
+Empfangen, Ordner und die Kopie in „Gesendet“ laufen weiter über deinen Mail-Anbieter.
+1. resend.com → Konto anlegen → **Domains → Add Domain** → `dev-dsue.de` (Region EU).
+2. Die angezeigten DNS-Einträge (TXT für DKIM, MX + TXT für `send.dev-dsue.de`) beim Domain-Anbieter eintragen.
+   Deine normalen MX-Einträge bleiben unverändert. Warten, bis die Domain „Verified“ ist.
+3. **API Keys → Create API Key** (Berechtigung „Sending access“, Domain `dev-dsue.de`).
+4. Auf Railway die Variable `RESEND_API_KEY` setzen → der Service startet neu.
+Alternative: Railway Pro-Plan, dann funktioniert SMTP direkt (dann `RESEND_API_KEY` weglassen).
+
+## Signatur & Vorlagen
+Im Fenster „Neue E-Mail“ unten: **Vorlage …** fügt eine Vorlage ein (`[Name]` = Vorname des Empfängers),
+das Zahnrad öffnet „Signatur & Vorlagen“. Mit `GITHUB_TOKEN` wird beides als `data/mail.json` dauerhaft gespeichert,
+sonst nur im Browser.
+
+## AERA Online (Ranked, Multiplayer, Login mit Discord im Spiel)
+Läuft im selben Server (`aera-online.js`) und nutzt dieselbe Discord-App wie der Beta-Bereich.
+1. Discord Developer Portal → deine App → **OAuth2 → Redirects** → zusätzlich eintragen:
+   `https://www.dev-dsue.de/aera/auth/callback` (die Beta-Redirect-URL bleibt drin).
+   `DISCORD_CLIENT_ID` und `DISCORD_CLIENT_SECRET` sind schon gesetzt – nichts Neues nötig.
+2. Railway → Service → **Volumes → New Volume** → Mount Path `/data`.
+   Dann unter **Variables**: `AERA_DATA_DIR` = `/data`. Ohne Volume gehen Ratings bei jedem Deploy verloren.
+3. Fertig. Prüfen: `https://www.dev-dsue.de/api/aera/status` zeigt `"login":true,"storage":true`.
+   Bestenliste: `https://www.dev-dsue.de/aera/ranked`. Multiplayer läuft über WebSocket `wss://www.dev-dsue.de/aera/ws`.
+Niemals `AERA_DEV_AUTH` oder `AERA_DEV_FAST` auf Railway setzen – das ist nur für lokale Tests.

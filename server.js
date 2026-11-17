@@ -68,6 +68,7 @@ const mock = MOCK ? require('./mock') : null;
 const studio = require('./studio');
 const aeraSync = require('./aera-sync').start(studio);   // AERA changelog from the GitHub releases of the beta repo
 const mailx = require('./mailx');   // HTML mails + beta inbox helpers
+const aeraOnline = require('./aera-online');   // AERA game: Discord sign-in, ranked, multiplayer rooms (see aera-online.js)
 const beta = require('./beta');      // /beta: Discord sign-in + private beta downloads (see beta.js)   // /admin/studio: changelogs + program downloads (writes to GitHub)
 
 const api = {
@@ -77,58 +78,20 @@ const api = {
     const list = await c.list({ statusQuery: { unseen: true, messages: true } });
     return list.filter(f => !f.flags || !f.flags.has('\\Noselect')).map(f => ({ path: f.path, name: f.name, special: f.specialUse || '', unseen: f.status ? f.status.unseen : 0, total: f.status ? f.status.messages : 0 }));
   },
-  // "answered" = IMAP \Answered flag, or a mail in "Sent" that replies to it (In-Reply-To, or same address + same subject after it).
-  // Mails found that way get the flag set once, so the IMAP filters (open/answered) stay exact.
-  async sentIndex(s) {
-    if (s._sent && Date.now() - s._sent.at < 90e3) return s._sent;
-    const idx = { at: Date.now(), ids: new Map(), keys: new Map() };
-    try {
-      const fl = await api.folders(s), sent = (fl.find(f => f.special === '\\Sent') || fl.find(f => /^(sent|gesendet)/i.test(f.name)) || {}).path;
-      if (sent) await withBox(s, sent, async c => {
-        let uids = await c.search({ all: true }, { uid: true }); uids = (uids || []).sort((a, b) => b - a).slice(0, 600);
-        if (uids.length) for await (const m of c.fetch(uids.join(','), { uid: true, envelope: true }, { uid: true })) {
-          const e = m.envelope || {}, d = new Date(e.date || 0).getTime();
-          if (e.inReplyTo) for (const id of String(e.inReplyTo).split(/\s+/)) if (id) idx.ids.set(id, Math.max(idx.ids.get(id) || 0, d));
-          for (const a of [...(e.to || []), ...(e.cc || [])]) { const k = (a.address || '').toLowerCase() + '|' + normSubj(e.subject); idx.keys.set(k, Math.max(idx.keys.get(k) || 0, d)); }
-        }
-      });
-    } catch {}
-    return (s._sent = idx);
-  },
-  async list(s, folder, page, q, filter) {
-    if (MOCK) return mock.list(folder, page, q, filter);
-    const fl = await api.folders(s), fo = fl.find(f => f.path === folder) || {};
-    const own = /\\(Sent|Drafts|Trash|Junk)/.test(fo.special || '') || /^(sent|gesendet|drafts|entw)/i.test(folder);
-    const idx = own ? null : await api.sentIndex(s);
+  async list(s, folder, page, q) {
+    if (MOCK) return mock.list(folder, page, q);
     return withBox(s, folder, async c => {
       const per = 50;
-      if (idx) {   // heal: flag mails that were answered (seen in Sent) but carry no flag yet
-        s._healed = s._healed || {};
-        if (!s._healed[folder] || s._healed[folder] < idx.at) {
-          s._healed[folder] = idx.at;
-          let open = await c.search({ answered: false }, { uid: true }); open = (open || []).sort((a, b) => b - a).slice(0, 400);
-          const done = [];
-          if (open.length) for await (const m of c.fetch(open.join(','), { uid: true, envelope: true }, { uid: true })) if (answeredAt(idx, m.envelope)) done.push(m.uid);
-          if (done.length) await c.messageFlagsAdd(done.join(','), ['\\Answered'], { uid: true }).catch(() => {});
-        }
-      }
-      const base = q ? { or: [{ subject: q }, { from: q }, { to: q }, { body: q }] } : { all: true };
-      const crit = { ...base, ...({ open: { answered: false }, answered: { answered: true }, unread: { seen: false }, flagged: { flagged: true } }[filter] || {}) };
-      let uids = await c.search(crit, { uid: true });
+      let uids = await c.search(q ? { or: [{ subject: q }, { from: q }, { to: q }, { body: q }] } : { all: true }, { uid: true });
       uids = (uids || []).sort((a, b) => b - a);
       const total = uids.length, pick = uids.slice((page - 1) * per, page * per);
       const out = [];
       if (pick.length) for await (const m of c.fetch(pick.join(','), { uid: true, envelope: true, flags: true, size: true, bodyStructure: true }, { uid: true })) {
-        const e = m.envelope || {}, at = idx ? answeredAt(idx, e) : 0;
-        out.push({ uid: m.uid, subject: e.subject || '', from: (e.from || [])[0] || {}, replyTo: ((e.replyTo || [])[0] || {}).address || '', to: e.to || [], date: e.date, seen: m.flags.has('\\Seen'), flagged: m.flags.has('\\Flagged'), answered: m.flags.has('\\Answered') || !!at, answeredAt: at ? new Date(at) : null, size: m.size, att: hasAtt(m.bodyStructure) });
+        const e = m.envelope || {};
+        out.push({ uid: m.uid, subject: e.subject || '', from: (e.from || [])[0] || {}, to: e.to || [], date: e.date, seen: m.flags.has('\\Seen'), flagged: m.flags.has('\\Flagged'), answered: m.flags.has('\\Answered'), size: m.size, att: hasAtt(m.bodyStructure) });
       }
       out.sort((a, b) => b.uid - a.uid);
-      let counts = null;
-      if (!own) {
-        const n = async x => ((await c.search({ ...base, ...x }, { uid: true })) || []).length;
-        counts = { open: await n({ answered: false }), unread: await n({ seen: false }), flagged: await n({ flagged: true }) };
-      }
-      return { total, page, per, items: out, counts, own };
+      return { total, page, per, items: out };
     });
   },
   async message(s, folder, uid) {
@@ -189,8 +152,8 @@ const api = {
   },
   async bulk(s, folder, uids, action, to) {
     uids = uids.filter(n => Number.isInteger(n) && n > 0).slice(0, 500); if (!uids.length) return;
-    if (!/^(seen|unseen|flag|unflag|answered|unanswered|move|delete)$/.test(action)) throw new Error('Unbekannte Aktion');
-    if (MOCK) { for (const u of uids) { if (action === 'delete') mock.remove(folder, u); else if (action === 'move') mock.move(folder, u, to); else mock.flag(folder, u, /seen/.test(action) ? '\\Seen' : /answered/.test(action) ? '\\Answered' : '\\Flagged', !/^un/.test(action)); } return; }
+    if (!/^(seen|unseen|flag|unflag|move|delete)$/.test(action)) throw new Error('Unbekannte Aktion');
+    if (MOCK) { for (const u of uids) { if (action === 'delete') mock.remove(folder, u); else if (action === 'move') mock.move(folder, u, to); else mock.flag(folder, u, /seen/.test(action) ? '\\Seen' : '\\Flagged', !/^un/.test(action)); } return; }
     if (action === 'delete') {
       const trash = await api.specialFolder(s, '\\Trash', /^(trash|papierkorb|deleted)/i);
       if (trash && trash !== folder) { action = 'move'; to = trash; }
@@ -199,7 +162,7 @@ const api = {
     return withBox(s, folder, c => {
       const set = uids.join(',');
       if (action === 'move') return c.messageMove(set, to, { uid: true });
-      const fl = /seen/.test(action) ? '\\Seen' : /answered/.test(action) ? '\\Answered' : '\\Flagged';
+      const fl = /seen/.test(action) ? '\\Seen' : '\\Flagged';
       return /^un/.test(action) ? c.messageFlagsRemove(set, [fl], { uid: true }) : c.messageFlagsAdd(set, [fl], { uid: true });
     });
   },
@@ -254,28 +217,18 @@ const api = {
       const fl = await api.folders(s), sent = (fl.find(f => f.special === '\\Sent') || fl.find(f => /^(sent|gesendet)/i.test(f.name)) || {}).path;
       if (sent) { const c = await imapFor(s); await c.append(sent, raw, ['\\Seen']); }
     } catch {}
-    s._sent = null;
     if (msg.replyFolder && msg.replyUid) api.flag(s, msg.replyFolder, msg.replyUid, '\\Answered', true).catch(() => {});
     if (msg.draftUid) api.dropDraft(s, msg.draftUid).catch(() => {});
     return { ok: true };
   },
 };
-function normSubj(t) { let x = String(t || '').trim(), y; do { y = x; x = x.replace(/^\s*(re|aw|antw|fw|fwd|wg|wtr)(\[\d+\])?\s*:\s*/i, ''); } while (x !== y); return x.replace(/\s+/g, ' ').toLowerCase(); }
-function answeredAt(idx, e) {
-  if (!e) return 0;
-  const d = new Date(e.date || 0).getTime();
-  if (e.messageId && idx.ids.has(e.messageId)) return idx.ids.get(e.messageId);
-  const subj = normSubj(e.subject);
-  for (const a of [...(e.replyTo || []), ...(e.from || [])]) { const t = idx.keys.get((a.address || '').toLowerCase() + '|' + subj); if (t && t >= d) return t; }
-  return 0;
-}
 function hasAtt(bs) { if (!bs) return false; if (bs.disposition === 'attachment') return true; return (bs.childNodes || []).some(hasAtt); }
 function addr(a) { return a && a.value ? a.value.map(v => ({ name: v.name || '', address: v.address || '' })) : []; }
 function shape(p, uid, flags) {
   return {
     uid, subject: p.subject || '', date: p.date, from: addr(p.from), to: addr(p.to), cc: addr(p.cc), replyTo: addr(p.replyTo),
     messageId: p.messageId || '', references: [].concat(p.references || []).join(' '),
-    html: p.html || '', text: p.text || '', flagged: flags ? flags.has('\\Flagged') : false, answered: flags ? flags.has('\\Answered') : false,
+    html: p.html || '', text: p.text || '', flagged: flags ? flags.has('\\Flagged') : false,
     attachments: (p.attachments || []).map((a, i) => ({ i, name: a.filename || 'attachment', size: a.size, type: a.contentType, cid: a.contentDisposition === 'inline' && a.cid ? a.cid : '' })),
     inline: Object.fromEntries((p.attachments || []).filter(a => a.cid && /^image\//.test(a.contentType) && a.size < 3e6).map(a => [a.cid, `data:${a.contentType};base64,${a.content.toString('base64')}`])),
   };
@@ -300,7 +253,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -338,11 +291,12 @@ async function discordStats() {
   return dcCache.data;
 }
 
-http.createServer(async (req, res) => {
+const SERVER = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'), p = u.pathname;
   try {
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
     if (p === '/hooks/aera-release' && req.method === 'POST') return aeraSync.hook(req, res, send);
+    if (p.startsWith('/aera/auth/') || p.startsWith('/api/aera/')) { if (await aeraOnline.handle(req, res, u, p, send, readJson)) return; }
     // beta area: own CSP so Discord avatars can load
     if (req.method === 'GET' && (p === '/beta' || p.startsWith('/beta/') || p.startsWith('/api/beta/'))) {
       const BETA_CSP = SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com");
@@ -364,6 +318,7 @@ http.createServer(async (req, res) => {
       if (p === '/aera/lizenz' || p === '/aera/license' || p === '/aera/licence') return serveFile(res, path.join(ROOT, 'aera-lizenz.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/about' || p === '/aera/ueber' || p === '/aera/über' || p === '/aera/%C3%BCber') return serveFile(res, path.join(ROOT, 'aera-about.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/team' || p === '/aera/mitmachen' || p === '/aera/join') return serveFile(res, path.join(ROOT, 'aera-team.html'), 'no-cache', SITE_CSP);
+      if (p === '/aera/ranked' || p === '/aera/leaderboard' || p === '/aera/bestenliste') return serveFile(res, path.join(ROOT, 'aera-ranked.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com"));
       if (p === '/aera/changelog' || p === '/aera/changelog/') return serveFile(res, path.join(ROOT, 'aera-changelog.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/discord.json') return send(res, 200, await discordStats(), 'application/json', { 'Cache-Control': 'public, max-age=120', 'X-Robots-Tag': 'noindex' });
       const name = decodeURIComponent(p.slice(1));
@@ -395,7 +350,7 @@ http.createServer(async (req, res) => {
       const to = process.env.TEAM_MAIL_TO || 'kontakt@dev-dsue.de', from = process.env.TEAM_MAIL_FROM || 'kontakt@dev-dsue.de';
       const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
       try {
-        await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
+        await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: d.email, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
         await mail({ from: `Simon (AERA) <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
       } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@dev-dsue.de schreiben.' : 'Sending failed – please write to kontakt@dev-dsue.de.' }); }
       return send(res, 200, { ok: true });
@@ -424,14 +379,14 @@ http.createServer(async (req, res) => {
       const [fl, bl, dl, dc] = await Promise.allSettled([api.folders(s), api.betaList(s), beta.stats(), discordStats()]);
       const val = r => r.status === 'fulfilled' ? r.value : null;
       const folders = val(fl) || [], inbox = folders.find(f => f.special === '\\Inbox' || f.path === 'INBOX') || {};
-      let recent = [], open = null;
-      try { const l = await api.list(s, inbox.path || 'INBOX', 1, ''); recent = l.items.slice(0, 6); open = l.counts ? l.counts.open : null; } catch {}
+      let recent = [];
+      try { recent = (await api.list(s, inbox.path || 'INBOX', 1, '')).items.slice(0, 6); } catch {}
       const b = val(bl) || [], st = val(dl);
       const sum = r => (r.assets || []).reduce((n, a) => n + (a.downloads || 0), 0);
       const rel = st && st.releases && st.releases[0];
       const peek = studio.peek();
       return send(res, 200, {
-        user: s.user, unread: inbox.unseen || 0, open, inboxTotal: inbox.total || 0, inbox: inbox.path || 'INBOX', recent,
+        user: s.user, unread: inbox.unseen || 0, inboxTotal: inbox.total || 0, inbox: inbox.path || 'INBOX', recent,
         beta: { open: b.filter(x => x.status === 'open').length, accepted: b.filter(x => x.status === 'accepted').length, waitlist: b.filter(x => x.status === 'waitlist').length, declined: b.filter(x => x.status === 'declined').length, error: bl.status === 'rejected' ? errText(bl.reason) : null },
         downloads: st ? { latest: rel ? { tag: rel.tag, date: rel.date, n: sum(rel) } : null, total: st.releases.reduce((n, r) => n + sum(r), 0), recent: (st.log || []).slice(0, 5) } : { error: dl.reason ? String(dl.reason.message || dl.reason).slice(0, 160) : 'nicht verfügbar' },
         discord: val(dc), aera: peek.aera, sync: aeraSync.state,
@@ -440,7 +395,7 @@ http.createServer(async (req, res) => {
     }
     if (p === '/api/beta/list') return send(res, 200, { items: await api.betaList(s), folders: mailx.BETA });
     if (p === '/api/mail-settings') {
-      if (req.method === 'POST') { const b = await readJson(req); const v = { sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 60).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })), known: (Array.isArray(b.known) ? b.known : []).slice(0, 200).map(n => String(n).slice(0, 80)) }; try { return send(res, 200, await studio.mail.save(v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
+      if (req.method === 'POST') { const b = await readJson(req); const v = { sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 40).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })) }; try { return send(res, 200, await studio.mail.save(v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
       return send(res, 200, { settings: studio.mail.get() });
     }
     if (p === '/api/downloads') { try { return send(res, 200, await beta.stats()); } catch (e) { return send(res, e.status || 500, { error: e.message }); } }
@@ -451,7 +406,7 @@ http.createServer(async (req, res) => {
     if (p === '/api/logout' && req.method === 'POST') { endSession(t); return send(res, 200, { ok: true }, 'application/json', { 'Set-Cookie': 'dm_s=; Max-Age=0; Path=/' }); }
     if (p === '/api/folders') return send(res, 200, await api.folders(s));
     const folder = u.searchParams.get('folder') || 'INBOX', uid = +u.searchParams.get('uid') || 0;
-    if (p === '/api/list') return send(res, 200, await api.list(s, folder, Math.max(1, +u.searchParams.get('page') || 1), (u.searchParams.get('q') || '').slice(0, 100), String(u.searchParams.get('filter') || '')));
+    if (p === '/api/list') return send(res, 200, await api.list(s, folder, Math.max(1, +u.searchParams.get('page') || 1), (u.searchParams.get('q') || '').slice(0, 100)));
     if (p === '/api/message') return send(res, 200, await api.message(s, folder, uid));
     if (p === '/api/attachment') {
       const a = await api.attachment(s, folder, uid, +u.searchParams.get('i') || 0);
@@ -460,7 +415,7 @@ http.createServer(async (req, res) => {
     if (req.method === 'POST') {
       const b = await readJson(req);
       const f = String(b.folder || 'INBOX'), id = +b.uid || 0;
-      if (p === '/api/flag') { const fl = { seen: '\\Seen', flagged: '\\Flagged', answered: '\\Answered' }[b.flag]; if (!fl) return send(res, 400, { error: 'bad flag' }); await api.flag(s, f, id, fl, !!b.on); return send(res, 200, { ok: true }); }
+      if (p === '/api/flag') { const fl = { seen: '\\Seen', flagged: '\\Flagged' }[b.flag]; if (!fl) return send(res, 400, { error: 'bad flag' }); await api.flag(s, f, id, fl, !!b.on); return send(res, 200, { ok: true }); }
       if (p === '/api/move') { await api.move(s, f, id, String(b.to || '')); return send(res, 200, { ok: true }); }
       if (p === '/api/delete') { await api.remove(s, f, id); return send(res, 200, { ok: true }); }
       if (p === '/api/bulk') { await api.bulk(s, f, (Array.isArray(b.uids) ? b.uids : []).map(Number), String(b.action || ''), String(b.to || '')); return send(res, 200, { ok: true }); }
@@ -485,4 +440,6 @@ http.createServer(async (req, res) => {
   } catch (e) {
     send(res, 500, { error: errText(e) });
   }
-}).listen(PORT, () => console.log(`dsue Mail on :${PORT}${MOCK ? ' (MOCK)' : ''} – IMAP ${IMAP_HOST}:${IMAP_PORT}, SMTP ${SMTP_HOST}:${SMTP_PORT}`));
+});
+aeraOnline.attach(SERVER);
+SERVER.listen(PORT, () => console.log(`dsue Mail on :${PORT}${MOCK ? ' (MOCK)' : ''} – IMAP ${IMAP_HOST}:${IMAP_PORT}, SMTP ${SMTP_HOST}:${SMTP_PORT}`));
