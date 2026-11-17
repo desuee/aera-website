@@ -540,3 +540,5 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border-radius:6px;border
   .dt input[type=time]{width:96px}
   .ag-ev .t{width:78px;font-size:12.5px}
 }
+.cal-diag{display:inline-block;margin:10px 4px 0;font-size:12.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.cal-warn{margin:0 4px 10px;color:var(--warn)}

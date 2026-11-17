@@ -68,7 +68,9 @@
     $('calSide').innerHTML = `
       <div class="cal-acc"><span class="dot ${s.error ? 'bad' : 'ok'}"></span><div><b>${s.mock ? 'Demo-Kalender' : 'iCloud-Kalender'}</b><small>${esc(s.error ? s.error : s.user || '')}</small></div></div>
       <div class="cal-sec">Meine Kalender</div>
+      ${cals.length && !cals.some(c => !c.readOnly) ? '<p class="muted small cal-warn">Alle Kalender sind nur lesbar – neue Termine gehen gerade nicht.</p>' : ''}
       ${cals.map(c => `<label class="cal-item"><input type="checkbox" data-cal="${esc(c.id)}"${hidden.has(c.id) ? '' : ' checked'}><span class="sw" style="--c:${esc(c.color)}"></span><span class="nm">${esc(c.name)}</span>${c.readOnly ? '<small title="Nur lesen">🔒</small>' : ''}</label>`).join('') || '<div class="muted small">Keine Kalender gefunden.</div>'}
+      <a class="cal-diag" href="/api/cal/debug" target="_blank" rel="noopener">Diagnose anzeigen</a>
       <p class="muted small cal-hint">Änderungen landen direkt in deiner Apple-Kalender-App – auf iPhone und Mac meist nach wenigen Sekunden.</p>`;
   }
   $('calSide').addEventListener('change', e => { const c = e.target.dataset.cal; if (!c) return; e.target.checked ? hidden.delete(c) : hidden.add(c); store('hidden', [...hidden]); draw(); });
@@ -257,7 +259,7 @@
     if (allDay && en < s) return A.toast('Das Ende liegt vor dem Beginn', true);
     const body = { cal: $('evCal').value, title: $('evTitle').value.trim(), location: $('evLoc').value.trim(), notes: $('evNotes').value, allDay, alarm: $('evAlarm').value,
       start: allDay ? key(s) : s.toISOString(), end: allDay ? key(addDays(en, 1)) : en.toISOString(), ...(edit ? { href: edit.href, etag: edit.etag } : {}) };
-    if (!body.cal) return A.toast('Kein beschreibbarer Kalender gefunden', true);
+    if (!body.cal) return A.toast(status && status.error ? 'Kalender: ' + status.error : !writable().length && ((data.calendars || []).length || (status && (status.calendars || []).length)) ? 'Alle Kalender sind schreibgeschützt – siehe „Diagnose anzeigen“ im Kalender' : 'Keine Kalender gefunden – siehe „Diagnose anzeigen“ im Kalender', true);
     $('evSave').disabled = true;
     try {
       await A.call('cal/save', body);
