@@ -53,10 +53,11 @@ $('theme').addEventListener('click', () => {
 function showLogin() { clearInterval(timer); $('app').classList.add('hidden'); $('login').classList.remove('hidden'); $('lPass').value = ''; setTimeout(() => ($('lUser').value ? $('lPass') : $('lUser')).focus(), 50); }
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault(); $('lErr').textContent = ''; $('lBtn').disabled = true; $('lBtn').textContent = 'Anmelden …';
-  try { const r = await call('login', { user: $('lUser').value, pass: $('lPass').value }); $('lPass').value = ''; ME = r.user; startApp(); }
+  try { const r = await call('login', { user: $('lUser').value, pass: $('lPass').value, remember: $('lRemember').checked }); try { localStorage.setItem('dm.remember', $('lRemember').checked ? '1' : '0'); } catch {} $('lPass').value = ''; ME = r.user; startApp(); }
   catch (err) { $('lErr').textContent = err.message; }
   $('lBtn').disabled = false; $('lBtn').textContent = 'Anmelden';
 });
+try { if (localStorage.getItem('dm.remember') === '0') $('lRemember').checked = false; } catch {}
 $('logoutBtn').addEventListener('click', async () => { try { await call('logout', {}); } catch {} ME = ''; showLogin(); });
 
 // ---------------- router ----------------
