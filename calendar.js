@@ -3,28 +3,18 @@
 // No dependencies: plain fetch + a small iCalendar parser (incl. RRULE expansion) – by Desue
 const crypto = require('crypto');
 
-const MOCK = process.env.MOCK === '1';
-const USER = (process.env.ICLOUD_USER || process.env.CALDAV_USER || '').trim();
-const PASS = (process.env.ICLOUD_APP_PASSWORD || process.env.CALDAV_PASSWORD || '').replace(/\s+/g, '');
-const ROOT = process.env.CALDAV_URL || 'https://caldav.icloud.com/';
+const fs = require('fs'), path = require('path');
+const MOCK_ENV = process.env.MOCK === '1';
+// The calendar from the Railway variables belongs to ONE admin login (CAL_OWNER, default: first entry of ALLOWED_USERS).
+// Every other login connects its own iCloud account in the admin; those logins are stored encrypted in CAL_DATA_DIR / AERA_DATA_DIR.
+const ENV_USER = (process.env.ICLOUD_USER || process.env.CALDAV_USER || '').trim();
+const ENV_PASS = (process.env.ICLOUD_APP_PASSWORD || process.env.CALDAV_PASSWORD || '').replace(/\s+/g, '');
+const ROOT_DEFAULT = process.env.CALDAV_URL || 'https://caldav.icloud.com/';
+const OWNER = (process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || (MOCK_ENV ? 'kontakt@dev-dsue.de' : '')).trim().toLowerCase();
+const DATA_DIR = process.env.CAL_DATA_DIR || process.env.AERA_DATA_DIR || '';
 const TZ = 'Europe/Berlin';
-const configured = MOCK || !!(USER && PASS);
 
-// ---------------------------------------------------------------- HTTP / XML
-async function dav(method, url, body, headers = {}) {
-  let u = url;
-  for (let i = 0; i < 4; i++) {   // follow redirects by hand: fetch drops the Authorization header on cross-host redirects
-    const r = await fetch(u, {
-      method, body, redirect: 'manual', signal: AbortSignal.timeout(20000),
-      headers: { Authorization: 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64'), 'User-Agent': 'dev-dsue-admin/1.0', ...(body && !headers['Content-Type'] ? { 'Content-Type': 'application/xml; charset=utf-8' } : {}), ...headers },
-    });
-    if ([301, 302, 307, 308].includes(r.status) && r.headers.get('location')) { u = new URL(r.headers.get('location'), u).href; continue; }
-    const text = await r.text();
-    if (r.status === 401) throw httpErr(401, 'iCloud hat die Anmeldung abgelehnt – App-spezifisches Passwort prüfen.');
-    return { status: r.status, text, etag: r.headers.get('etag'), url: u };
-  }
-  throw httpErr(502, 'Zu viele Weiterleitungen vom Kalender-Server');
-}
+// ---------------------------------------------------------------- XML
 function httpErr(status, msg) { const e = new Error(msg); e.status = status; return e; }
 const NS = '(?:[\\w-]+:)?';
 const decodeXml = s => String(s || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
@@ -42,36 +32,6 @@ function responses(xml) {
   return out;
 }
 const abs = (href, base) => new URL(href, base).href;
-
-// ---------------------------------------------------------------- discovery
-let disc = null;
-async function discover(force) {
-  if (disc && !force && Date.now() - disc.at < 10 * 60e3) return disc;
-  const p1 = await dav('PROPFIND', ROOT, '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:current-user-principal/></d:prop></d:propfind>', { Depth: '0' });
-  const pr = tag(tag(p1.text, 'current-user-principal'), 'href');
-  if (!pr) throw httpErr(502, 'Kalender-Server: kein Benutzerkonto gefunden (' + p1.status + ')');
-  const principal = abs(decodeXml(pr.trim()), p1.url);
-  const p2 = await dav('PROPFIND', principal, '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><c:calendar-home-set/></d:prop></d:propfind>', { Depth: '0' });
-  const hh = tag(tag(p2.text, 'calendar-home-set'), 'href');
-  if (!hh) throw httpErr(502, 'Kalender-Server: keine Kalender gefunden (' + p2.status + ')');
-  const home = abs(decodeXml(hh.trim()), p2.url);
-  const p3 = await dav('PROPFIND', home, `<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:a="http://apple.com/ns/ical/" xmlns:cs="http://calendarserver.org/ns/">
-<d:prop><d:displayname/><d:resourcetype/><a:calendar-color/><a:calendar-order/><c:supported-calendar-component-set/><d:current-user-privilege-set/><cs:getctag/></d:prop></d:propfind>`, { Depth: '1' });
-  const cals = [], seen = [], names = x => (String(x || '').match(/<([\w-]+:)?[\w-]+/g) || []).map(t => t.replace(/^<([\w-]+:)?/, '')).filter(n => !/^(privilege|prop)$/.test(n));
-  for (const r of responses(p3.text)) {
-    const rt = tag(r.props, 'resourcetype') || '', comps = tag(r.props, 'supported-calendar-component-set'), priv = tag(r.props, 'current-user-privilege-set');
-    const info = { href: r.href.replace(/\d{4,}/g, '…'), name: decodeXml(tag(r.props, 'displayname') || '').trim(), type: names(rt), comps: comps == null ? null : (comps.match(/V[A-Z]+/g) || []), priv: priv == null ? null : names(priv) };
-    const isCal = info.type.includes('calendar'), events = !comps || /VEVENT/i.test(comps);
-    // write access: anything beyond plain reading (write, write-content, bind, all …). No privilege info = assume writable.
-    const readOnly = priv != null && info.priv.length > 0 && !info.priv.some(n => /^(write|write-content|bind|all)$/i.test(n));
-    seen.push({ ...info, used: isCal && events, readOnly });
-    if (!isCal || !events) continue;   // skip reminders lists, inbox/outbox, notifications
-    const color = ((tag(r.props, 'calendar-color') || '').trim().match(/#[0-9a-f]{6}/i) || ['#3b82f6'])[0];
-    cals.push({ id: abs(r.href, p3.url), name: info.name || 'Kalender', color, readOnly, order: +(tag(r.props, 'calendar-order') || 99) });
-  }
-  cals.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
-  return (disc = { at: Date.now(), home, cals, debug: { home: home.replace(/\d{4,}/g, '…'), status: [p1.status, p2.status, p3.status], bytes: p3.text.length, responses: seen, sample: seen.length ? '' : p3.text.slice(0, 1500).replace(/\d{4,}/g, '…') } });
-}
 
 // ---------------------------------------------------------------- time zones
 const dtf = {};
@@ -256,6 +216,53 @@ function patchIcs(text, e) {
   return out.map(fold).join('\r\n') + '\r\n';
 }
 
+// ---------------------------------------------------------------- one CalDAV account (iCloud or other server)
+function createAccount(USER, PASS, ROOT, MOCK) {
+  const configured = true;
+async function dav(method, url, body, headers = {}) {
+  let u = url;
+  for (let i = 0; i < 4; i++) {   // follow redirects by hand: fetch drops the Authorization header on cross-host redirects
+    const r = await fetch(u, {
+      method, body, redirect: 'manual', signal: AbortSignal.timeout(20000),
+      headers: { Authorization: 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64'), 'User-Agent': 'dev-dsue-admin/1.0', ...(body && !headers['Content-Type'] ? { 'Content-Type': 'application/xml; charset=utf-8' } : {}), ...headers },
+    });
+    if ([301, 302, 307, 308].includes(r.status) && r.headers.get('location')) { u = new URL(r.headers.get('location'), u).href; continue; }
+    const text = await r.text();
+    if (r.status === 401) throw httpErr(401, 'iCloud hat die Anmeldung abgelehnt – App-spezifisches Passwort prüfen.');
+    return { status: r.status, text, etag: r.headers.get('etag'), url: u };
+  }
+  throw httpErr(502, 'Zu viele Weiterleitungen vom Kalender-Server');
+}
+// ---------------------------------------------------------------- discovery
+let disc = null;
+async function discover(force) {
+  if (disc && !force && Date.now() - disc.at < 10 * 60e3) return disc;
+  const p1 = await dav('PROPFIND', ROOT, '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:current-user-principal/></d:prop></d:propfind>', { Depth: '0' });
+  const pr = tag(tag(p1.text, 'current-user-principal'), 'href');
+  if (!pr) throw httpErr(502, 'Kalender-Server: kein Benutzerkonto gefunden (' + p1.status + ')');
+  const principal = abs(decodeXml(pr.trim()), p1.url);
+  const p2 = await dav('PROPFIND', principal, '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><c:calendar-home-set/></d:prop></d:propfind>', { Depth: '0' });
+  const hh = tag(tag(p2.text, 'calendar-home-set'), 'href');
+  if (!hh) throw httpErr(502, 'Kalender-Server: keine Kalender gefunden (' + p2.status + ')');
+  const home = abs(decodeXml(hh.trim()), p2.url);
+  const p3 = await dav('PROPFIND', home, `<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:a="http://apple.com/ns/ical/" xmlns:cs="http://calendarserver.org/ns/">
+<d:prop><d:displayname/><d:resourcetype/><a:calendar-color/><a:calendar-order/><c:supported-calendar-component-set/><d:current-user-privilege-set/><cs:getctag/></d:prop></d:propfind>`, { Depth: '1' });
+  const cals = [], seen = [], names = x => (String(x || '').match(/<([\w-]+:)?[\w-]+/g) || []).map(t => t.replace(/^<([\w-]+:)?/, '')).filter(n => !/^(privilege|prop)$/.test(n));
+  for (const r of responses(p3.text)) {
+    const rt = tag(r.props, 'resourcetype') || '', comps = tag(r.props, 'supported-calendar-component-set'), priv = tag(r.props, 'current-user-privilege-set');
+    const info = { href: r.href.replace(/\d{4,}/g, '…'), name: decodeXml(tag(r.props, 'displayname') || '').trim(), type: names(rt), comps: comps == null ? null : (comps.match(/V[A-Z]+/g) || []), priv: priv == null ? null : names(priv) };
+    const isCal = info.type.includes('calendar'), events = !comps || /VEVENT/i.test(comps);
+    // write access: anything beyond plain reading (write, write-content, bind, all …). No privilege info = assume writable.
+    const readOnly = priv != null && info.priv.length > 0 && !info.priv.some(n => /^(write|write-content|bind|all)$/i.test(n));
+    seen.push({ ...info, used: isCal && events, readOnly });
+    if (!isCal || !events) continue;   // skip reminders lists, inbox/outbox, notifications
+    const color = ((tag(r.props, 'calendar-color') || '').trim().match(/#[0-9a-f]{6}/i) || ['#3b82f6'])[0];
+    cals.push({ id: abs(r.href, p3.url), name: info.name || 'Kalender', color, readOnly, order: +(tag(r.props, 'calendar-order') || 99) });
+  }
+  cals.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+  return (disc = { at: Date.now(), home, cals, debug: { home: home.replace(/\d{4,}/g, '…'), status: [p1.status, p2.status, p3.status], bytes: p3.text.length, responses: seen, sample: seen.length ? '' : p3.text.slice(0, 1500).replace(/\d{4,}/g, '…') } });
+}
+
 // ---------------------------------------------------------------- demo data (MOCK=1)
 let mockStore = null;
 function mockInit() {
@@ -370,26 +377,75 @@ async function upcoming(n = 5) {
   return { configured: true, calendars: v.calendars, events: v.events.filter(e => Date.parse(e.end + (e.allDay ? 'T00:00:00Z' : '')) > now).slice(0, n) };
 }
 
-async function handle(req, res, u, p, send, readJson) {
-  if (p === '/api/cal/status') {
-    if (!configured) return send(res, 200, { configured: false });
-    try { const c = await calendars(); return send(res, 200, { configured: true, mock: MOCK, user: MOCK ? 'demo@icloud.com' : USER.replace(/^(.).*(@.*)$/, '$1…$2'), calendars: c }); }
-    catch (e) { return send(res, 200, { configured: true, error: e.message }); }
+  return { user: USER, mock: MOCK, discover, calendars, events, save, remove, upcoming, clearCache: () => cache.clear() };
+}
+
+// ---------------------------------------------------------------- per-login accounts
+let KEY = crypto.randomBytes(32);
+const FILE = DATA_DIR ? path.join(DATA_DIR, 'admin-calendars.json') : '';
+let store = {};   // admin login -> { u: Apple ID, p: encrypted app password, url, at }
+function init(o = {}) {
+  if (o.key) KEY = crypto.createHash('sha256').update('dsue-cal-v1|').update(o.key).digest();
+  if (FILE) try { store = JSON.parse(fs.readFileSync(FILE, 'utf8')) || {}; } catch { store = {}; }
+}
+function persist() { if (!FILE) return; try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(FILE + '.tmp', JSON.stringify(store)); fs.renameSync(FILE + '.tmp', FILE); } catch (e) { console.warn('calendar save', e.message); } }
+const enc = t => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', KEY, iv); return Buffer.concat([iv, c.update(t, 'utf8'), c.final(), c.getAuthTag()]).toString('base64'); };
+const dec = t => { const b = Buffer.from(t, 'base64'), d = crypto.createDecipheriv('aes-256-gcm', KEY, b.subarray(0, 12)); d.setAuthTag(b.subarray(b.length - 16)); return Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]).toString('utf8'); };
+const accts = new Map();
+const mask = u => String(u || '').replace(/^(.).*(@.*)$/, '$1…$2');
+const isDemo = u => MOCK_ENV && /^demo(@|$)/i.test(u || '');
+function accountFor(login) {
+  login = String(login || '').toLowerCase();
+  if (login && login === OWNER && (MOCK_ENV || (ENV_USER && ENV_PASS))) {
+    const k = 'env'; if (!accts.has(k)) accts.set(k, { src: 'env', a: createAccount(MOCK_ENV ? 'demo@icloud.com' : ENV_USER, ENV_PASS, ROOT_DEFAULT, MOCK_ENV) }); return accts.get(k);
   }
-  if (p === '/api/cal/debug') {   // what iCloud answered while looking for calendars (no passwords, long numbers masked)
-    if (!configured) return send(res, 200, { configured: false });
-    try { const d = await discover(true); cache.clear(); return send(res, 200, { configured: true, user: USER.replace(/^(.).*(@.*)$/, '$1…$2'), calendars: d.cals.map(c => ({ name: c.name, readOnly: c.readOnly })), ...(d.debug || {}) }); }
+  const s = store[login]; if (!s) return null;
+  const k = 'u:' + login + ':' + s.at;
+  if (!accts.has(k)) { let pw; try { pw = dec(s.p); } catch { return null; } accts.set(k, { src: 'own', a: createAccount(s.u, pw, s.url || ROOT_DEFAULT, isDemo(s.u)) }); }
+  return accts.get(k);
+}
+const isConfigured = login => !!accountFor(login);
+async function upcoming(login, n = 5) { const x = accountFor(login); return x ? x.a.upcoming(n) : { configured: false }; }
+
+async function handle(req, res, u, p, send, readJson, login) {
+  login = String(login || '').toLowerCase();
+  if (req.method === 'POST' && p === '/api/cal/connect') {   // connect this login's own iCloud / CalDAV account
+    const b = await readJson(req);
+    const user = String(b.user || '').trim(), pw = String(b.pass || '').replace(/\s+/g, ''), url = String(b.url || '').trim();
+    if (!user || !pw) return send(res, 400, { error: 'Apple-ID und App-Passwort eingeben' });
+    if (url && !/^https:\/\/[^\s/]+/i.test(url)) return send(res, 400, { error: 'Server-Adresse muss mit https:// beginnen' });
+    const test = createAccount(user, pw, url || ROOT_DEFAULT, isDemo(user));
+    let cals; try { cals = test.mock ? await test.calendars() : (await test.discover(true)).cals; } catch (e) { return send(res, 400, { error: e.status === 401 ? 'Anmeldung abgelehnt – Apple-ID oder App-Passwort stimmt nicht.' : e.message }); }
+    if (!cals.length) return send(res, 400, { error: 'Verbunden, aber keine Kalender gefunden.' });
+    store[login] = { u: user, p: enc(pw), url: url || '', at: Date.now() }; persist();
+    return send(res, 200, { ok: true, calendars: cals.length, persist: !!FILE });
+  }
+  if (req.method === 'POST' && p === '/api/cal/disconnect') {
+    if (!store[login]) return send(res, 400, { error: 'Dieser Kalender kommt aus den Railway-Variablen und lässt sich hier nicht trennen.' });
+    delete store[login]; persist(); for (const k of accts.keys()) if (k.startsWith('u:' + login + ':')) accts.delete(k);
+    return send(res, 200, { ok: true });
+  }
+  const x = accountFor(login), A = x && x.a;
+  if (p === '/api/cal/status') {
+    if (!A) return send(res, 200, { configured: false, persist: !!FILE });
+    const base = { configured: true, mock: A.mock, source: x.src, canDisconnect: x.src === 'own', persist: !!FILE, user: A.mock ? 'demo@icloud.com' : mask(A.user) };
+    try { return send(res, 200, { ...base, calendars: await A.calendars() }); }
+    catch (e) { return send(res, 200, { ...base, error: e.message }); }
+  }
+  if (!A) return send(res, 200, { configured: false, events: [], calendars: [] });
+  if (p === '/api/cal/debug') {   // what the server answered while looking for calendars (no passwords, long numbers masked)
+    try { const d = await A.discover(true); A.clearCache(); return send(res, 200, { configured: true, user: mask(A.user), calendars: d.cals.map(c => ({ name: c.name, readOnly: c.readOnly })), ...(d.debug || {}) }); }
     catch (e) { return send(res, 200, { configured: true, error: e.message }); }
   }
   if (p === '/api/cal/events') {
     const from = Date.parse(u.searchParams.get('from')), to = Date.parse(u.searchParams.get('to'));
     if (!isFinite(from) || !isFinite(to) || to <= from || to - from > 100 * 864e5) return send(res, 400, { error: 'Zeitraum ungültig' });
-    if (u.searchParams.get('fresh')) cache.clear();
-    return send(res, 200, { configured, ...(await events(from, to)) });
+    if (u.searchParams.get('fresh')) A.clearCache();
+    return send(res, 200, { configured: true, ...(await A.events(from, to)) });
   }
-  if (req.method === 'POST' && p === '/api/cal/save') return send(res, 200, await save(await readJson(req)));
-  if (req.method === 'POST' && p === '/api/cal/delete') return send(res, 200, await remove(await readJson(req)));
+  if (req.method === 'POST' && p === '/api/cal/save') return send(res, 200, await A.save(await readJson(req)));
+  if (req.method === 'POST' && p === '/api/cal/delete') return send(res, 200, await A.remove(await readJson(req)));
   return send(res, 404, { error: 'Not found' });
 }
 
-module.exports = { configured, handle, upcoming, _t: { parseIcs, eventsFromIcs, responses, tag, decodeXml, patchIcs, buildIcs, wallToUtc } };
+module.exports = { init, isConfigured, handle, upcoming, OWNER, _t: { parseIcs, eventsFromIcs, responses, tag, decodeXml, patchIcs, buildIcs, wallToUtc } };
