@@ -1,0 +1,217 @@
+{
+ "users": {
+  "apply-aera@dev-dsue.de": {
+   "sender": "Simon B. J. Risse",
+   "role": "Leading Developer & Executive",
+   "sig": "Simon B. J. Risse\nLeading Developer & Executive · AERA – Airspace & Enroute Radar Authority\nkontakt@dev-dsue.de · www.dev-dsue.de/aera\nDiscord: discord.gg/aera",
+   "templates": [
+    {
+     "name": "🇩🇪 Beta angenommen",
+     "subject": "Dein Zugang zur AERA Beta ✈️",
+     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉\n\nSo bekommst du deinen Zugang:\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.\n3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.\n4. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen (Anmeldung mit Discord).\n\nWir freuen uns auf dein Feedback!\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Beta accepted",
+     "subject": "Your access to the AERA Beta ✈️",
+     "body": "Hi [Name],\n\nthanks a lot for signing up for the AERA Beta – you're in! 🎉\n\nHere's how to get your access:\n1. Join our Discord: discord.gg/aera\n2. Open the channel \"🧪┃beta-apply\" and click \"Apply (English)\".\n3. Under \"Why do you want to test AERA?\" mention that you were accepted by email – we'll unlock you right away.\n4. Then download the beta at www.dev-dsue.de/beta (sign in with Discord).\n\nWe're looking forward to your feedback!\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Beta voll / Warteliste",
+     "subject": "AERA Beta – aktuell ausgebucht",
+     "body": "Hallo [Name],\n\nvielen Dank für dein Interesse an der AERA Beta! 🙏\n\nLeider sind aktuell alle Beta-Plätze vergeben. Wir haben dich aber auf die Warteliste gesetzt und melden uns, sobald neue Plätze frei werden.\n\nBis dahin kannst du gerne schon unserem Discord beitreten, um nichts zu verpassen: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Beta full / waitlist",
+     "subject": "AERA Beta – currently full",
+     "body": "Hi [Name],\n\nthank you for your interest in the AERA Beta! 🙏\n\nUnfortunately, all beta spots are taken at the moment. We've added you to the waitlist and will get back to you as soon as new spots open up.\n\nIn the meantime, feel free to join our Discord so you don't miss anything: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Beta abgelehnt",
+     "subject": "Deine Anmeldung zur AERA Beta",
+     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta.\n\nLeider können wir dir in dieser Testphase keinen Zugang geben. Das hat nichts mit dir persönlich zu tun – die Zahl der Plätze ist stark begrenzt.\n\nSobald AERA öffentlich erscheint, erfährst du es als Erstes in unserem Discord: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Beta declined",
+     "subject": "Your AERA Beta application",
+     "body": "Hi [Name],\n\nthank you for applying for the AERA Beta.\n\nUnfortunately, we can't give you access during this test phase. This isn't personal – the number of spots is very limited.\n\nAs soon as AERA is released publicly, you'll be the first to know in our Discord: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Feedback / Bug erhalten",
+     "subject": "Danke für dein Feedback zu AERA",
+     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wir haben dein Feedback erhalten und schauen es uns genau an. Falls wir Rückfragen haben, melden wir uns bei dir.\n\nBugs kannst du übrigens auch direkt in unserem Discord melden: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Feedback / bug received",
+     "subject": "Thanks for your AERA feedback",
+     "body": "Hi [Name],\n\nthanks for your message! We've received your feedback and will take a close look at it. If we have any questions, we'll get back to you.\n\nYou can also report bugs directly in our Discord: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Rückfrage: mehr Infos",
+     "subject": "Kurze Rückfrage zu deiner AERA-Beta-Anmeldung",
+     "body": "Hallo [Name],\n\ndanke für deine Anmeldung zur AERA Beta! 🙌\n\nDamit ich deine Anfrage einordnen kann, bräuchte ich noch ein paar Infos:\n• Wie heißt du auf Discord?\n• Hast du schon Erfahrung mit ATC (z. B. VATSIM, IVAO oder andere Lotsen-Spiele)?\n• Spielst du lieber auf Deutsch oder Englisch?\n• Läuft AERA bei dir auf Windows 10 oder 11?\n\nAntworte einfach direkt auf diese Mail.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Follow-up: more info",
+     "subject": "Quick question about your AERA Beta application",
+     "body": "Hi [Name],\n\nthanks for signing up for the AERA Beta! 🙌\n\nTo process your application, I'd need a few more details:\n• What's your Discord username?\n• Do you have any ATC experience (e.g. VATSIM, IVAO or other controller games)?\n• Do you prefer playing in English or German?\n• Would you run AERA on Windows 10 or 11?\n\nJust reply directly to this email.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Bereits dabei / doppelt",
+     "subject": "Du bist schon in der AERA Beta",
+     "body": "Hallo [Name],\n\ngute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊\n\nDen aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Already in / duplicate",
+     "subject": "You're already in the AERA Beta",
+     "body": "Hi [Name],\n\ngood news: you already have access to the AERA Beta – no need to sign up again. 😊\n\nYou can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Erinnerung: Discord fehlt",
+     "subject": "AERA Beta – nur noch ein Schritt",
+     "body": "Hallo [Name],\n\ndu bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂\n\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.\n3. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen.\n\nOhne die Discord-Rolle klappt der Download leider nicht.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Reminder: Discord missing",
+     "subject": "AERA Beta – just one more step",
+     "body": "Hi [Name],\n\nyou've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂\n\n1. Join our Discord: discord.gg/aera\n2. Post in the \"🧪┃beta-apply\" channel and you'll get the beta role.\n3. Then you can download the beta at www.dev-dsue.de/beta.\n\nUnfortunately the download doesn't work without the Discord role.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Hilfe: Download / Login",
+     "subject": "Hilfe zum AERA-Beta-Download",
+     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:\n\n1. Melde dich unter www.dev-dsue.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.\n2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.\n3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.\n\nKlappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Help: download / sign-in",
+     "subject": "Help with the AERA Beta download",
+     "body": "Hi [Name],\n\nthanks for your message! If the beta download doesn't work, it's usually one of these:\n\n1. Sign in at www.dev-dsue.de/beta with exactly the Discord account you use on our server.\n2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.\n3. If Windows warns you on launch (\"Windows protected your PC\"), click \"More info\" and then \"Run anyway\".\n\nIf it still doesn't work, feel free to send me a screenshot of the error.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Nur Windows (Mac/Linux)",
+     "subject": "AERA Beta – aktuell nur für Windows",
+     "body": "Hallo [Name],\n\ndanke für dein Interesse an der AERA Beta! 🙏\n\nAERA läuft im Moment leider nur unter Windows 10 und 11. Eine Version für macOS oder Linux gibt es noch nicht. Ich habe mir deinen Wunsch aber notiert.\n\nWenn du einen Windows-PC hast, melde dich gern nochmal. Neuigkeiten gibt es immer zuerst im Discord: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Windows only (Mac/Linux)",
+     "subject": "AERA Beta – currently Windows only",
+     "body": "Hi [Name],\n\nthanks for your interest in the AERA Beta! 🙏\n\nRight now AERA only runs on Windows 10 and 11 – there's no macOS or Linux version yet. I've noted your request though.\n\nIf you have a Windows PC, feel free to get back to me. News always comes first on our Discord: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Bitte um Feedback",
+     "subject": "Wie läuft AERA bei dir?",
+     "body": "Hallo [Name],\n\ndu bist jetzt seit ein paar Tagen in der AERA Beta – danke, dass du mittestest! ✈️\n\nMich würde interessieren:\n• Was gefällt dir bisher am besten?\n• Was nervt oder ist unklar?\n• Sind dir Bugs aufgefallen?\n\nEin paar Stichpunkte reichen völlig – einfach auf diese Mail antworten oder im Discord posten: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Feedback request",
+     "subject": "How's AERA working for you?",
+     "body": "Hi [Name],\n\nyou've been in the AERA Beta for a few days now – thanks for testing! ✈️\n\nI'd love to know:\n• What do you like most so far?\n• What's annoying or unclear?\n• Have you noticed any bugs?\n\nA few bullet points are plenty – just reply to this email or post on Discord: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Eingang bestätigt",
+     "subject": "Deine Bewerbung fürs AERA-Team",
+     "body": "Hallo [Name],\n\nvielen Dank für deine Bewerbung als [Rolle] im AERA-Team! 🙌\n\nIch habe sie gut erhalten und schaue sie mir in den nächsten Tagen in Ruhe an. Danach melde ich mich bei dir – per E-Mail oder auf Discord.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: application received",
+     "subject": "Your application for the AERA team",
+     "body": "Hi [Name],\n\nthanks a lot for applying as [Rolle] on the AERA team! 🙌\n\nI've received your application and will take a proper look at it over the next few days. After that I'll get back to you – by email or on Discord.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Einladung Kennenlernen",
+     "subject": "AERA-Team: Lass uns kurz kennenlernen",
+     "body": "Hallo [Name],\n\ndeine Bewerbung als [Rolle] hat mir richtig gut gefallen – ich würde dich gerne kurz kennenlernen! 😊\n\nDas Gespräch findet ganz locker im Discord statt (Sprach-Chat, ca. 15–20 Minuten). Schick mir einfach zwei, drei Termine, die dir in den nächsten Tagen passen, oder schreib mir direkt auf Discord.\n\nFalls du noch nicht auf dem AERA-Discord bist: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: invitation to meet",
+     "subject": "AERA team: let's get to know each other",
+     "body": "Hi [Name],\n\nI really liked your application as [Rolle] – I'd love to get to know you a bit! 😊\n\nWe'll have a relaxed chat on Discord (voice, about 15–20 minutes). Just send me two or three times that suit you over the next few days, or message me directly on Discord.\n\nIf you're not on the AERA Discord yet: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Zusage + Vereinbarung",
+     "subject": "Willkommen im AERA-Team! ✈️",
+     "body": "Hallo [Name],\n\ndanke für das nette Gespräch – ich freue mich sehr, dich als [Rolle] im AERA-Team zu begrüßen! 🎉\n\nBevor es losgeht, noch ein kleiner Schritt: Im Anhang findest du die Mitwirkungsvereinbarung mit Verschwiegenheitserklärung. Darin geht es vor allem um unveröffentlichte Infos zum Spiel. Lies sie dir bitte in Ruhe durch, unterschreib sie und schick sie mir als Antwort auf diese Mail zurück (ein Foto oder Scan reicht).\n\nSobald sie da ist, bekommst du deine Team-Rolle im Discord und Zugang zu allen internen Kanälen und Versionen.\n\nWillkommen an Bord!\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: welcome + agreement",
+     "subject": "Welcome to the AERA team! ✈️",
+     "body": "Hi [Name],\n\nthanks for the great chat – I'm really happy to welcome you to the AERA team as [Rolle]! 🎉\n\nOne small step before we start: attached you'll find the contributor agreement with a confidentiality clause. It's mainly about unreleased information about the game. Please read it carefully, sign it and send it back as a reply to this email (a photo or scan is fine).\n\nAs soon as I have it, you'll get your team role on Discord and access to all internal channels and builds.\n\nWelcome aboard!\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Rückfrage",
+     "subject": "Kurze Rückfrage zu deiner AERA-Bewerbung",
+     "body": "Hallo [Name],\n\ndanke für deine Bewerbung als [Rolle]! Bevor ich mich entscheide, hätte ich noch ein paar kurze Fragen:\n\n• Wie viel Zeit kannst du ungefähr pro Woche einbringen?\n• Hast du schon Erfahrung in dem Bereich (z. B. Moderation, Discord-Server, Videos, Social Media)?\n• Hast du Beispiele, die du mir zeigen kannst (Links zu Videos, Kanälen, Servern)?\n\nAntworte einfach direkt auf diese Mail.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: follow-up questions",
+     "subject": "Quick questions about your AERA application",
+     "body": "Hi [Name],\n\nthanks for applying as [Rolle]! Before I decide, I have a few quick questions:\n\n• Roughly how much time could you put in per week?\n• Do you have experience in this area (e.g. moderation, Discord servers, videos, social media)?\n• Do you have examples you can show me (links to videos, channels, servers)?\n\nJust reply directly to this email.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Lead-Platz vergeben",
+     "subject": "Deine Bewerbung fürs AERA-Team",
+     "body": "Hallo [Name],\n\ndanke für deine Bewerbung als [Rolle]! 🙏\n\nDen Lead-Platz habe ich inzwischen leider schon vergeben. Deine Bewerbung hat mir aber gut gefallen – hättest du Lust, stattdessen im Team mitzumachen (ohne Lead-Rolle)? Dann melde ich mich für ein kurzes Kennenlernen im Discord.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: lead spot taken",
+     "subject": "Your application for the AERA team",
+     "body": "Hi [Name],\n\nthanks for applying as [Rolle]! 🙏\n\nUnfortunately the lead spot has already been filled. I did like your application though – would you be up for joining the team without the lead role instead? Then I'll get in touch for a quick chat on Discord.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: Absage",
+     "subject": "Deine Bewerbung fürs AERA-Team",
+     "body": "Hallo [Name],\n\nvielen Dank für deine Bewerbung als [Rolle] und dein Interesse an AERA! 🙏\n\nIch habe mich diesmal für andere Bewerbungen entschieden. Das ist keine Entscheidung gegen dich als Person – es gab einfach nur wenige Plätze.\n\nIch würde mich freuen, wenn du AERA trotzdem verfolgst und im Discord dabei bleibst: discord.gg/aera. Wenn wieder Plätze frei werden, sage ich dort Bescheid.\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: not this time",
+     "subject": "Your application for the AERA team",
+     "body": "Hi [Name],\n\nthank you very much for applying as [Rolle] and for your interest in AERA! 🙏\n\nThis time I've decided to go with other applications. It's not a decision against you personally – there were just very few spots.\n\nI'd be glad if you keep following AERA and stay on our Discord: discord.gg/aera. Whenever new spots open up, I'll announce it there.\n\nBest regards\n[Mein Name]"
+    },
+    {
+     "name": "🇩🇪 Team: unter 18",
+     "subject": "Deine Bewerbung fürs AERA-Team",
+     "body": "Hallo [Name],\n\nvielen Dank für deine Bewerbung und dein Interesse an AERA! 🙏\n\nFür das Team brauche ich leider Mitglieder ab 18 Jahren – auch wegen der Vereinbarung, die alle Teammitglieder unterschreiben. Deshalb kann ich dich im Moment nicht aufnehmen.\n\nAls Spieler bist du aber jederzeit herzlich willkommen, zum Beispiel im Discord: discord.gg/aera\n\nViele Grüße\n[Mein Name]"
+    },
+    {
+     "name": "🇬🇧 Team: under 18",
+     "subject": "Your application for the AERA team",
+     "body": "Hi [Name],\n\nthank you very much for applying and for your interest in AERA! 🙏\n\nUnfortunately, team members need to be at least 18 – partly because of the agreement every team member signs. So I can't take you on at the moment.\n\nYou're always welcome as a player though, for example on our Discord: discord.gg/aera\n\nBest regards\n[Mein Name]"
+    }
+   ],
+   "known": [
+    "🇩🇪 Beta angenommen",
+    "🇬🇧 Beta accepted",
+    "🇩🇪 Beta voll / Warteliste",
+    "🇬🇧 Beta full / waitlist",
+    "🇩🇪 Beta abgelehnt",
+    "🇬🇧 Beta declined",
+    "🇩🇪 Feedback / Bug erhalten",
+    "🇬🇧 Feedback / bug received",
+    "🇩🇪 Rückfrage: mehr Infos",
+    "🇬🇧 Follow-up: more info",
+    "🇩🇪 Bereits dabei / doppelt",
+    "🇬🇧 Already in / duplicate",
+    "🇩🇪 Erinnerung: Discord fehlt",
+    "🇬🇧 Reminder: Discord missing",
+    "🇩🇪 Hilfe: Download / Login",
+    "🇬🇧 Help: download / sign-in",
+    "🇩🇪 Nur Windows (Mac/Linux)",
+    "🇬🇧 Windows only (Mac/Linux)",
+    "🇩🇪 Bitte um Feedback",
+    "🇬🇧 Feedback request",
+    "🇩🇪 Team: Eingang bestätigt",
+    "🇬🇧 Team: application received",
+    "🇩🇪 Team: Einladung Kennenlernen",
+    "🇬🇧 Team: invitation to meet",
+    "🇩🇪 Team: Zusage + Vereinbarung",
+    "🇬🇧 Team: welcome + agreement",
+    "🇩🇪 Team: Rückfrage",
+    "🇬🇧 Team: follow-up questions",
+    "🇩🇪 Team: Lead-Platz vergeben",
+    "🇬🇧 Team: lead spot taken",
+    "🇩🇪 Team: Absage",
+    "🇬🇧 Team: not this time",
+    "🇩🇪 Team: unter 18",
+    "🇬🇧 Team: under 18"
+   ]
+  }
+ }
+}
