@@ -31,6 +31,36 @@ const KEY = crypto.randomBytes(32);   // new on every start: a restart signs eve
 const seal = s => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', KEY, iv); const e = Buffer.concat([c.update(s, 'utf8'), c.final()]); return Buffer.concat([iv, c.getAuthTag(), e]); };
 const open = b => { const d = crypto.createDecipheriv('aes-256-gcm', KEY, b.subarray(0, 12)); d.setAuthTag(b.subarray(12, 28)); return Buffer.concat([d.update(b.subarray(28)), d.final()]).toString('utf8'); };
 const sessions = new Map();   // token -> { user, pass(sealed), last, client }
+// "Angemeldet bleiben": an encrypted cookie (dm_r, 30 days) lets a new server start (deploy, idle timeout) restore the session.
+// Its key must survive restarts: SESSION_SECRET if set, otherwise derived from the other fixed secrets on Railway.
+// Changing SESSION_SECRET (or, without it, those secrets) signs every device out.
+const REMEMBER_DAYS = +process.env.REMEMBER_DAYS || 30;
+const RSRC = process.env.SESSION_SECRET || [process.env.RESEND_API_KEY, process.env.GITHUB_TOKEN, process.env.DISCORD_CLIENT_SECRET, process.env.ICLOUD_APP_PASSWORD, process.env.IMAP_HOST].filter(Boolean).join('|');
+const RKEY = (RSRC.length >= 16 || MOCK) ? crypto.createHash('sha256').update('dsue-remember-v1|' + (RSRC || 'mock')).digest() : null;
+if (!RKEY) console.warn('Remember-me is off: set SESSION_SECRET (any long random text) on Railway.');
+const rSeal = o => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', RKEY, iv); const e = Buffer.concat([c.update(JSON.stringify(o), 'utf8'), c.final()]); return Buffer.concat([iv, c.getAuthTag(), e]).toString('base64url'); };
+const rOpen = t => { const b = Buffer.from(t, 'base64url'), d = crypto.createDecipheriv('aes-256-gcm', RKEY, b.subarray(0, 12)); d.setAuthTag(b.subarray(12, 28)); return JSON.parse(Buffer.concat([d.update(b.subarray(28)), d.final()]).toString('utf8')); };
+const rCookie = (req, u, pw) => `dm_r=${rSeal({ u, p: pw, exp: Date.now() + REMEMBER_DAYS * 864e5 })}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${REMEMBER_DAYS * 86400}${secure(req)}`;
+const restoring = new Map();   // cookie -> promise (parallel requests right after a restart share one restore)
+async function restoreSession(req, res) {
+  const raw = cookie(req, 'dm_r'); if (!raw || !RKEY) return null;
+  if (!restoring.has(raw)) {
+    restoring.set(raw, (async () => {
+      let d; try { d = rOpen(raw); } catch { return { clear: true }; }
+      if (!d || !d.u || d.exp < Date.now() || (!MOCK && !ALLOWED.includes(d.u))) return { clear: true };
+      const s = { user: d.u, pass: seal(d.p), last: Date.now(), client: null };
+      if (!MOCK) { try { await imapFor(s); } catch (e) { return e.authenticationFailed || /auth|credential|login failed/i.test(e.message || '') ? { clear: true } : null; } }
+      const t = crypto.randomBytes(32).toString('hex'); sessions.set(t, s);
+      return { t, s, fresh: rCookie(req, d.u, d.p) };
+    })());
+    setTimeout(() => restoring.delete(raw), 15000).unref();
+  }
+  const r = await restoring.get(raw);
+  if (!r) return null;
+  if (r.clear) { res.setHeader('Set-Cookie', 'dm_r=; Max-Age=0; Path=/'); return null; }
+  res.setHeader('Set-Cookie', [`dm_s=${r.t}; HttpOnly; SameSite=Strict; Path=/${secure(req)}`, r.fresh]);
+  return r;
+}
 setInterval(() => { const now = Date.now(); for (const [t, s] of sessions) if (now - s.last > IDLE_MS) endSession(t); }, 60000).unref();
 function endSession(t) { const s = sessions.get(t); if (!s) return; sessions.delete(t); try { s.client && s.client.logout().catch(() => {}); } catch {} }
 
@@ -416,10 +446,12 @@ const SERVER = http.createServer(async (req, res) => {
       else { try { await imapFor(s); } catch (e) { failed(ip); await new Promise(r => setTimeout(r, 800)); return send(res, 401, { error: 'Anmeldung fehlgeschlagen' }); } }
       const t = crypto.randomBytes(32).toString('hex');
       sessions.set(t, s);
-      return send(res, 200, { ok: true, user }, 'application/json', { 'Set-Cookie': `dm_s=${t}; HttpOnly; SameSite=Strict; Path=/${secure(req)}` });
+      const ck = [`dm_s=${t}; HttpOnly; SameSite=Strict; Path=/${secure(req)}`, b.remember && RKEY ? rCookie(req, user, pass) : 'dm_r=; Max-Age=0; Path=/'];
+      return send(res, 200, { ok: true, user, remember: !!(b.remember && RKEY) }, 'application/json', { 'Set-Cookie': ck });
     }
 
-    const t = cookie(req, 'dm_s'), s = t && sessions.get(t);
+    let t = cookie(req, 'dm_s'), s = t && sessions.get(t);
+    if (!s) { const r = await restoreSession(req, res); if (r) { t = r.t; s = r.s; } }
     if (p === '/api/me') return send(res, 200, s ? { user: s.user } : { user: null });
     if (!s) return send(res, 401, { error: 'Nicht angemeldet' });
     s.last = Date.now();
@@ -456,7 +488,7 @@ const SERVER = http.createServer(async (req, res) => {
       try { return await studio.handle(req, res, u, p, send, readJson); }
       catch (e) { return send(res, e.status || 500, { error: String(e.message || e).slice(0, 300) }); }
     }
-    if (p === '/api/logout' && req.method === 'POST') { endSession(t); return send(res, 200, { ok: true }, 'application/json', { 'Set-Cookie': 'dm_s=; Max-Age=0; Path=/' }); }
+    if (p === '/api/logout' && req.method === 'POST') { endSession(t); return send(res, 200, { ok: true }, 'application/json', { 'Set-Cookie': ['dm_s=; Max-Age=0; Path=/', 'dm_r=; Max-Age=0; Path=/'] }); }
     if (p === '/api/folders') return send(res, 200, await api.folders(s));
     const folder = u.searchParams.get('folder') || 'INBOX', uid = +u.searchParams.get('uid') || 0;
     if (p === '/api/list') return send(res, 200, await api.list(s, folder, Math.max(1, +u.searchParams.get('page') || 1), (u.searchParams.get('q') || '').slice(0, 100), String(u.searchParams.get('filter') || '')));
