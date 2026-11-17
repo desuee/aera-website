@@ -317,7 +317,7 @@
   function icsFor(ev, info) {
     const z = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     const e = v => String(v || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
-    const title = info.team ? 'AERA – Kennenlernen mit Simon' : ev.title;
+    const me = A.myName(), title = info.team ? 'AERA – Kennenlernen' + (me ? ' mit ' + me.split(/\s+/)[0] : '') : ev.title;
     const desc = info.team ? 'Kurzes Kennenlernen fürs AERA-Team im Discord-Sprach-Chat.\nDiscord: https://discord.gg/aera' : '';
     const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dev-dsue.de//Admin//DE', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '@dev-dsue.de'), 'DTSTAMP:' + z(new Date()),
       ...(ev.allDay ? ['DTSTART;VALUE=DATE:' + ev.start.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + ev.end.replace(/-/g, '')] : ['DTSTART:' + z(ev.startD), 'DTEND:' + z(ev.endD)]),
@@ -334,9 +334,9 @@
       : (ev.allDay ? d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : `${d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} at ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} (German time)`);
     const mins = ev.allDay ? 0 : Math.round((en - d) / 60e3), hi = info.first ? (de ? 'Hallo ' + info.first : 'Hi ' + info.first) : (de ? 'Hallo' : 'Hi');
     const body = info.team
-      ? (de ? `${hi},\n\ndanke für deine Bewerbung${info.role ? ' als ' + info.role : ''}! Ich würde dich gerne kurz kennenlernen – wie wäre es mit ${when}?\n\nWir treffen uns im AERA-Discord im Sprach-Chat (ca. ${mins || 30} Minuten). Falls du noch nicht auf dem Server bist: discord.gg/aera\n\nIm Anhang findest du den Termin für deinen Kalender. Wenn es dir nicht passt, schreib mir einfach einen anderen Vorschlag.\n\nViele Grüße\nSimon`
-        : `${hi},\n\nthanks for your application${info.role ? ' as ' + info.role : ''}! I'd love to get to know you – how about ${when}?\n\nWe'll meet in the AERA Discord in a voice channel (about ${mins || 30} minutes). If you're not on the server yet: discord.gg/aera\n\nThe appointment is attached for your calendar. If it doesn't suit you, just suggest another time.\n\nBest regards\nSimon`)
-      : (de ? `${hi},\n\nich habe uns den Termin eingetragen: ${when}${ev.location ? ', ' + ev.location : ''}. Im Anhang findest du ihn für deinen Kalender.\n\nViele Grüße\nSimon` : `${hi},\n\nI've put it in the calendar: ${when}${ev.location ? ', ' + ev.location : ''}. The appointment is attached for your calendar.\n\nBest regards\nSimon`);
+      ? (de ? `${hi},\n\ndanke für deine Bewerbung${info.role ? ' als ' + info.role : ''}! Ich würde dich gerne kurz kennenlernen – wie wäre es mit ${when}?\n\nWir treffen uns im AERA-Discord im Sprach-Chat (ca. ${mins || 30} Minuten). Falls du noch nicht auf dem Server bist: discord.gg/aera\n\nIm Anhang findest du den Termin für deinen Kalender. Wenn es dir nicht passt, schreib mir einfach einen anderen Vorschlag.\n\nViele Grüße\n${A.myName()}`
+        : `${hi},\n\nthanks for your application${info.role ? ' as ' + info.role : ''}! I'd love to get to know you – how about ${when}?\n\nWe'll meet in the AERA Discord in a voice channel (about ${mins || 30} minutes). If you're not on the server yet: discord.gg/aera\n\nThe appointment is attached for your calendar. If it doesn't suit you, just suggest another time.\n\nBest regards\n${A.myName()}`)
+      : (de ? `${hi},\n\nich habe uns den Termin eingetragen: ${when}${ev.location ? ', ' + ev.location : ''}. Im Anhang findest du ihn für deinen Kalender.\n\nViele Grüße\n${A.myName()}` : `${hi},\n\nI've put it in the calendar: ${when}${ev.location ? ', ' + ev.location : ''}. The appointment is attached for your calendar.\n\nBest regards\n${A.myName()}`);
     A.composeFill(body, [icsFor(ev, info)]);
   }
 
