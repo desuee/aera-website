@@ -1,0 +1,62 @@
+{
+  "name": "dev-dsue Admin",
+  "short_name": "DSUE Admin",
+  "description": "Postfach, Kalender, Beta-Tester und AERA-Studio von dev-dsue.de",
+  "id": "/admin/",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "background_color": "#060708",
+  "theme_color": "#060708",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Posteingang",
+      "url": "/admin/#mail",
+      "icons": [
+        {
+          "src": "/img/logo.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Kalender",
+      "url": "/admin/#cal",
+      "icons": [
+        {
+          "src": "/img/logo.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Neue E-Mail",
+      "url": "/admin/#compose",
+      "icons": [
+        {
+          "src": "/img/logo.png",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  ]
+}
