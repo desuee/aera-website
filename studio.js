@@ -19,14 +19,15 @@ const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const API = process.env.GITHUB_API || 'https://api.github.com';
 const UPLOADS = process.env.GITHUB_UPLOADS || 'https://uploads.github.com';
 const DATA = path.join(__dirname, 'data');
-const FILES = { aera: 'data/aera-changelog.json', site: 'data/apps.json', mail: 'data/mail.json' };
+const FILES = { aera: 'data/aera-changelog.json', site: 'data/apps.json', mail: 'data/mail.json', team: 'data/team.json' };
 
 // ---------------- data in memory ----------------
 const load = f => JSON.parse(fs.readFileSync(path.join(__dirname, f), 'utf8'));
-const mem = { aera: load(FILES.aera), site: load(FILES.site), mail: (() => { try { return load(FILES.mail); } catch { return null; } })() };
+const mem = { aera: load(FILES.aera), site: load(FILES.site), mail: (() => { try { return load(FILES.mail); } catch { return null; } })(), team: (() => { try { return load(FILES.team); } catch { return { members: [], filled: [] }; } })() };
 const js = {
   aera: () => '// AERA changelog – generated from data/aera-changelog.json (edit at /admin/studio)\nwindow.AERA_CHANGELOG = ' + JSON.stringify(mem.aera) + ';\n',
   site: () => '// dev-dsue.de apps and changelog – generated from data/apps.json (edit at /admin/studio)\nwindow.DSUE_DATA = ' + JSON.stringify(mem.site) + ';\n',
+  team: () => '// AERA team – generated from data/team.json (edit at /admin/studio#team)\nwindow.AERA_TEAM = ' + JSON.stringify(mem.team).replace(/</g, '\\x3c') + ';\n',
 };
 
 // ---------------- validation ----------------
@@ -106,6 +107,25 @@ function ghError(code, j) {
 }
 const needToken = () => { if (!TOKEN) { const e = new Error('GITHUB_TOKEN ist auf Railway nicht gesetzt'); e.status = 503; throw e; } };
 
+// AERA team page: members + which lead spots are taken (application form greys them out)
+const LEAD_SPOTS = ['community-lead', 'social-lead'];
+const okUrl = v => /^(https:\/\/[^\s"'<>]+|\/[\w\-./]+)$/i.test(v);
+function cleanTeam(d) {
+  if (!d || !Array.isArray(d.members)) bad('Team-Daten fehlen');
+  if (d.members.length > 60) bad('Zu viele Mitglieder');
+  const members = d.members.map((m, i) => {
+    const name = str(m && m.name, 60); if (!name) bad(`Mitglied ${i + 1}: Name fehlt`);
+    const role = { de: str(m.role && m.role.de, 80), en: str(m.role && m.role.en, 80) }; if (!role.de && !role.en) bad(`${name}: Rolle fehlt`);
+    if (!role.de) role.de = role.en; if (!role.en) role.en = role.de;
+    const bio = { de: str(m.bio && m.bio.de, 400), en: str(m.bio && m.bio.en, 400) };
+    const avatar = str(m.avatar, 400); if (avatar && !okUrl(avatar)) bad(`${name}: Bild-Adresse muss mit https:// oder / beginnen`);
+    const links = (Array.isArray(m.links) ? m.links : []).slice(0, 6).map(l => ({ label: str(l && l.label, 40), url: str(l && l.url, 300) })).filter(l => l.label || l.url);
+    for (const l of links) { if (!l.url || !okUrl(l.url)) bad(`${name}: Link „${l.label || l.url}“ muss mit https:// beginnen`); if (!l.label) l.label = l.url.replace(/^https:\/\/(www\.)?/, '').split('/')[0]; }
+    return { name, real: str(m.real, 60), role, lead: !!m.lead, bio, avatar, links };
+  });
+  return { members, filled: (Array.isArray(d.filled) ? d.filled : []).filter(x => LEAD_SPOTS.includes(x)) };
+}
+
 async function commitJson(key, value, message) {
   needToken();
   const file = FILES[key], url = `${API}/repos/${REPO}/contents/${file}`;
@@ -157,7 +177,7 @@ async function uploadAsset(req, name) {
 async function handle(req, res, u, p, send, readJson) {
   const r = p.slice('/api/studio/'.length);
   if (r === 'state' && req.method === 'GET') {
-    return send(res, 200, { github: !!TOKEN, repo: REPO, branch: BRANCH, aera: mem.aera, site: mem.site, autoVersions: [...AUTO] });
+    return send(res, 200, { github: !!TOKEN, repo: REPO, branch: BRANCH, aera: mem.aera, site: mem.site, team: mem.team, autoVersions: [...AUTO] });
   }
   if (r === 'release' && req.method === 'GET') {
     const rel = await latestRelease();
@@ -173,6 +193,11 @@ async function handle(req, res, u, p, send, readJson) {
     const b = await readJson(req); const data = cleanSite(b.data);
     const out = await commitJson('site', data, str(b.message, 120) || 'Studio: Apps/Changelog aktualisiert');
     return send(res, 200, { ok: true, ...out, site: mem.site });
+  }
+  if (r === 'team' && req.method === 'POST') {
+    const b = await readJson(req); const data = cleanTeam(b.data);
+    const out = await commitJson('team', data, str(b.message, 120) || 'Studio: AERA-Team aktualisiert');
+    return send(res, 200, { ok: true, ...out, team: mem.team });
   }
   if (r === 'upload' && req.method === 'PUT') {
     return send(res, 200, { ok: true, ...(await uploadAsset(req, String(u.searchParams.get('name') || ''))) });
@@ -201,4 +226,5 @@ const mail = {
   async save(v) { mem.mail = v; if (!TOKEN) return { saved: 'memory' }; await commitJson('mail', v, 'Mail: Signatur und Vorlagen'); return { saved: 'github' }; },
 };
 const peek = () => ({ github: !!TOKEN, aera: mem.aera && mem.aera[0] ? { version: mem.aera[0].version, date: mem.aera[0].date, title: mem.aera[0].title, count: mem.aera.length } : null });
-module.exports = { handle, js, mergeAuto, AUTO, mail, peek };
+const team = () => mem.team;
+module.exports = { handle, js, mergeAuto, AUTO, mail, peek, team };
