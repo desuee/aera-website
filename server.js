@@ -480,8 +480,8 @@ const SERVER = http.createServer(async (req, res) => {
     }
     if (p === '/api/beta/list') return send(res, 200, { items: await api.betaList(s), folders: mailx.BETA });
     if (p === '/api/mail-settings') {
-      if (req.method === 'POST') { const b = await readJson(req); const v = { sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 60).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })), known: (Array.isArray(b.known) ? b.known : []).slice(0, 200).map(n => String(n).slice(0, 80)) }; try { return send(res, 200, await studio.mail.save(v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
-      return send(res, 200, { settings: studio.mail.get() });
+      if (req.method === 'POST') { const b = await readJson(req); const v = { sender: String(b.sender || '').slice(0, 80), role: String(b.role || '').slice(0, 80), sig: String(b.sig || '').slice(0, 4000), templates: (Array.isArray(b.templates) ? b.templates : []).slice(0, 60).map(t => ({ name: String(t.name || '').slice(0, 80), subject: String(t.subject || '').slice(0, 300), body: String(t.body || '').slice(0, 12000) })), known: (Array.isArray(b.known) ? b.known : []).slice(0, 200).map(n => String(n).slice(0, 80)) }; try { return send(res, 200, await studio.mail.save(s.user, v)); } catch (e) { return send(res, 200, { saved: 'memory', warn: e.message }); } }
+      return send(res, 200, { settings: studio.mail.get(s.user) });
     }
     if (p === '/api/downloads') { try { return send(res, 200, await beta.stats()); } catch (e) { return send(res, e.status || 500, { error: e.message }); } }
     if (p.startsWith('/api/cal/')) {
