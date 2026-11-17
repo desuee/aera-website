@@ -60,7 +60,7 @@ async function releases() {
   const list = (await gh(`/repos/${REPO}/releases?per_page=10`)).filter(r => !r.draft);
   cache = { t: Date.now(), data: list.map(r => ({
     tag: r.tag_name, name: r.name || r.tag_name, notes: (r.body || '').slice(0, 6000), date: r.published_at, pre: r.prerelease,
-    assets: (r.assets || []).map(a => ({ id: a.id, name: a.name, size: a.size, downloads: a.download_count || 0 })) })) };
+    assets: (r.assets || []).map(a => ({ id: a.id, name: a.name, size: a.size, downloads: a.download_count || 0, sha256: /^sha256:[0-9a-f]{64}$/.test(a.digest || '') ? a.digest.slice(7) : '' })) })) };
   return cache.data;
 }
 
@@ -138,4 +138,30 @@ async function stats() {
     log: LOG.slice(0, 300), users: Object.entries(LOG.reduce((m, x) => (m[x.user] = (m[x.user] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1]) };
 }
 const STARTED = Date.now();
-module.exports = { handle, stats };
+// ---------------- shared with aera-online.js (in-game beta gate + auto-update) ----------------
+// roles of a user on the AERA server, from a Discord user access token with scope guilds.members.read
+// → { ok, beta, reason }   reason: 'notmember' | 'norole' | 'discord' | 'off'
+async function memberCheck(accessToken) {
+  if (!GUILD || !ROLES.length) return { ok: false, beta: false, reason: 'off' };
+  const mr = await fetch(`https://discord.com/api/v10/users/@me/guilds/${GUILD}/member`, { headers: { Authorization: 'Bearer ' + accessToken } });
+  if (mr.status === 404) return { ok: true, beta: false, reason: 'notmember' };
+  if (!mr.ok) return { ok: false, beta: false, reason: 'discord' };
+  const m = await mr.json();
+  const beta = (m.roles || []).some(r => ROLES.includes(r));
+  return { ok: true, beta, reason: beta ? '' : 'norole', nick: m.nick || '' };
+}
+// stream one release asset (by id) to the response; returns false when the asset is unknown
+async function pipeAsset(res, id, who) {
+  const rel = await releases(), a = rel.flatMap(r => r.assets).find(x => String(x.id) === String(id));
+  if (!a) return false;
+  const r = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${a.id}`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/octet-stream', 'User-Agent': 'dev-dsue-beta' }, redirect: 'follow' });
+  if (!r.ok || !r.body) { const e = new Error('Download failed (' + r.status + ')'); e.status = 502; throw e; }
+  res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': r.headers.get('content-length') || a.size,
+    'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}`, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
+  Readable.fromWeb(r.body).pipe(res);
+  console.log('aera update download', a.name, 'by', who);
+  LOG.unshift({ t: Date.now(), file: a.name, user: who + ' (in-game)' }); if (LOG.length > 1000) LOG.length = 1000;
+  return true;
+}
+const gateReady = () => !!(GUILD && ROLES.length);
+module.exports = { handle, stats, releases, memberCheck, pipeAsset, gateReady, DAYS };

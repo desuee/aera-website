@@ -22,6 +22,11 @@ const SECRET = crypto.createHash('sha256').update(process.env.AERA_SECRET || ('a
 const DEV = process.env.AERA_DEV_AUTH === '1';
 const DATA_DIR = process.env.AERA_DATA_DIR || '';
 const TOKEN_DAYS = 60;
+const beta = require('./beta');   // beta role check + private releases (in-game gate and auto-update)
+const GATE = process.env.AERA_BETA_GATE !== '0';   // AERA_BETA_GATE=0 → the game starts for everybody (no beta role needed)
+// AERA_UPDATE_HOLD=<Discord user IDs, comma separated> → new releases are offered only to these people (test an update yourself first, then remove it)
+const HOLD = (process.env.AERA_UPDATE_HOLD || '').split(',').map(x => x.trim()).filter(Boolean);
+const MOCK_UPD = DEV ? (process.env.AERA_UPDATE_MOCK || '') : '';   // local tests only: folder with releases.json + files
 
 // ---------------- tokens ----------------
 const b64 = b => Buffer.from(b).toString('base64url');
@@ -83,6 +88,41 @@ function check(run, s, now) {
   return why;
 }
 
+// ---------------- beta gate + auto-update ----------------
+// token from /aera/auth/callback carries beta (1/0), br (why not) and bt (when the role was checked)
+function gateCheck(req) {
+  const me = bearer(req);
+  if (!me) return { ok: false, code: 401, error: 'Not signed in', reason: 'login' };
+  if (!GATE) return { ok: true, me };
+  if (!('beta' in me) || Date.now() - (me.bt || 0) > beta.DAYS * 864e5) return { ok: false, code: 403, error: 'Please sign in again', reason: 'relogin' };
+  if (!me.beta) return { ok: false, code: 403, error: me.br === 'notmember' ? 'Not on the AERA Discord' : me.br === 'off' ? 'Beta check is not set up on the server' : me.br === 'discord' ? 'Discord did not answer' : 'No beta tester role', reason: me.br || 'norole' };
+  return { ok: true, me };
+}
+const verOf = t => { const m = String(t || '').match(/(\d+)\.(\d+)\.(\d+)/); return m ? [+m[1], +m[2], +m[3]] : null; };
+const verCmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+const SETUP = /^AERA-Setup-\d+\.\d+\.\d+.*\.exe$/i;
+// release text: the first ``` block if there is one (the Discord part below it is left out), else the whole text
+const notesOf = b => { const m = String(b || '').match(/```[a-z]*\r?\n([\s\S]*?)```/); return (m ? m[1] : String(b || '')).trim().slice(0, 4000); };
+async function updateInfo(v) {
+  const cur = verOf(v);
+  if (!cur) { const e = new Error('version missing'); e.status = 400; throw e; }
+  const rel = MOCK_UPD ? JSON.parse(fs.readFileSync(path.join(MOCK_UPD, 'releases.json'), 'utf8')) : await beta.releases();
+  const newer = rel.map(r => ({ r, v: verOf(r.tag) || verOf(r.name), a: (r.assets || []).find(a => SETUP.test(a.name)) }))
+    .filter(x => x.v && x.a && verCmp(x.v, cur) > 0).sort((a, b) => verCmp(b.v, a.v));
+  if (!newer.length) return { update: false, current: v };
+  const top = newer[0];
+  return { update: true, current: v, version: top.v.join('.'), name: top.r.name, date: top.r.date || '',
+    notes: newer.slice(0, 5).map(x => ({ version: x.v.join('.'), date: x.r.date || '', text: notesOf(x.r.notes) })),
+    asset: { id: top.a.id, name: top.a.name, size: top.a.size, sha256: top.a.sha256 || '' } };
+}
+function mockPipe(res, id) {
+  const rel = JSON.parse(fs.readFileSync(path.join(MOCK_UPD, 'releases.json'), 'utf8')), a = rel.flatMap(r => r.assets).find(x => String(x.id) === String(id));
+  if (!a) return false;
+  const f = path.join(MOCK_UPD, path.basename(a.name)), st = fs.statSync(f);
+  res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': st.size, 'Cache-Control': 'no-store' });
+  fs.createReadStream(f).pipe(res); return true;
+}
+
 // ---------------- http routes ----------------
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Dsue', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const configured = () => !!(CID && CSECRET);
@@ -95,7 +135,7 @@ async function handle(req, res, u, p, send, readJson) {
   if (p === '/aera/auth/login') {
     if (!configured()) { send(res, 503, page('AERA', '<p>Discord sign-in is not set up yet.</p>'), 'text/html; charset=utf-8'); return true; }
     const state = crypto.randomBytes(16).toString('hex');
-    const q = new URLSearchParams({ client_id: CID, redirect_uri: REDIRECT, response_type: 'code', scope: 'identify', state, prompt: 'none' });
+    const q = new URLSearchParams({ client_id: CID, redirect_uri: REDIRECT, response_type: 'code', scope: 'identify guilds.members.read', state, prompt: 'none' });
     res.writeHead(302, { Location: 'https://discord.com/oauth2/authorize?' + q, 'Set-Cookie': `aera_ostate=${state}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/aera/auth${secure(req)}`, 'Cache-Control': 'no-store' });
     res.end(); return true;
   }
@@ -109,16 +149,38 @@ async function handle(req, res, u, p, send, readJson) {
       if (!tok.access_token) return fail('discord');
       const du = await fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: 'Bearer ' + tok.access_token } }).then(r => r.json());
       if (!du.id) return fail('discord');
-      const t = makeToken({ id: du.id, name: du.global_name || du.username, avatar: du.avatar ? `https://cdn.discordapp.com/avatars/${du.id}/${du.avatar}.png?size=64` : '', exp: Date.now() + TOKEN_DAYS * 864e5 });
+      // beta role (AERA desktop only starts for beta testers): checked at sign-in, valid for SESSION_DAYS, then the game signs in again
+      let mc = { beta: false, reason: 'off' };
+      try { mc = await beta.memberCheck(tok.access_token); } catch (e) { mc = { beta: false, reason: 'discord' }; }
+      const t = makeToken({ id: du.id, name: du.global_name || du.username, avatar: du.avatar ? `https://cdn.discordapp.com/avatars/${du.id}/${du.avatar}.png?size=64` : '', exp: Date.now() + TOKEN_DAYS * 864e5,
+        beta: mc.beta ? 1 : 0, br: mc.beta ? '' : (mc.reason || 'norole'), bt: Date.now() });
       res.writeHead(302, { Location: '/aera/auth/done#t=' + t, 'Set-Cookie': `aera_ostate=; Max-Age=0; Path=/aera/auth`, 'Cache-Control': 'no-store' }); res.end();
       console.log('aera sign-in', du.username); return true;
     } catch (e) { console.warn('aera callback', e.message); return fail('discord'); }
   }
   if (p === '/aera/auth/done') { send(res, 200, page('AERA', '<p id="m">Signed in – you can close this window and go back to AERA.</p>'), 'text/html; charset=utf-8'); return true; }
   if (p === '/aera/auth/dev' && DEV) { const n = (u.searchParams.get('name') || 'Tester').slice(0, 32); const id = 'dev-' + crypto.createHash('sha1').update(n).digest('hex').slice(0, 10);
-    J(200, { token: makeToken({ id, name: n, avatar: '', exp: Date.now() + 864e5 }) }); return true; }
+    const b = u.searchParams.get('beta'), bt = Date.now() - (u.searchParams.get('stale') ? (beta.DAYS + 1) * 864e5 : 0);
+    J(200, { token: makeToken(Object.assign({ id, name: n, avatar: '', exp: Date.now() + 864e5 }, b === 'none' ? {} : { beta: b === '0' ? 0 : 1, br: b === '0' ? (u.searchParams.get('why') || 'norole') : '', bt })) }); return true; }
 
   if (!p.startsWith('/api/aera/')) return false;
+  // ---- beta gate + auto-update (desktop app asks this before the main menu) ----
+  if (p === '/api/aera/access' || p === '/api/aera/update' || p.startsWith('/api/aera/update/file/')) {
+    const g = gateCheck(req);
+    if (!g.ok) { J(g.code, { error: g.error, reason: g.reason }); return true; }
+    if (p === '/api/aera/access') { J(200, { ok: true, name: g.me.name, gate: GATE }); return true; }
+    if (p === '/api/aera/update') {
+      try { J(200, HOLD.length && !HOLD.includes(String(g.me.id)) ? { update: false, held: true } : await updateInfo(String(u.searchParams.get('v') || ''))); } catch (e) { J(e.status || 500, { error: e.message }); }
+      return true;
+    }
+    const id = p.slice('/api/aera/update/file/'.length);
+    try {
+      if (!/^\d+$/.test(id)) { J(404, { error: 'File not found' }); return true; }
+      const ok = MOCK_UPD ? mockPipe(res, id) : await beta.pipeAsset(res, id, g.me.name);
+      if (!ok) J(404, { error: 'File not found' });
+    } catch (e) { if (!res.headersSent) J(e.status || 500, { error: e.message }); else res.destroy(); }
+    return true;
+  }
   if (p === '/api/aera/top') {
     const q = QUEUES[u.searchParams.get('q')] ? u.searchParams.get('q') : 'app';
     const list = Object.entries(DB.users).map(([id, e]) => ({ id, name: e.name, avatar: e.avatar, ...qPub(e.q[q]) })).filter(x => x.rating != null).sort((a, b) => b.rating - a.rating).slice(0, 100)
