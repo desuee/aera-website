@@ -57,18 +57,20 @@ async function discover(force) {
   const home = abs(decodeXml(hh.trim()), p2.url);
   const p3 = await dav('PROPFIND', home, `<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:a="http://apple.com/ns/ical/" xmlns:cs="http://calendarserver.org/ns/">
 <d:prop><d:displayname/><d:resourcetype/><a:calendar-color/><a:calendar-order/><c:supported-calendar-component-set/><d:current-user-privilege-set/><cs:getctag/></d:prop></d:propfind>`, { Depth: '1' });
-  const cals = [];
+  const cals = [], seen = [], names = x => (String(x || '').match(/<([\w-]+:)?[\w-]+/g) || []).map(t => t.replace(/^<([\w-]+:)?/, '')).filter(n => !/^(privilege|prop)$/.test(n));
   for (const r of responses(p3.text)) {
-    const rt = tag(r.props, 'resourcetype') || '';
-    if (!new RegExp(`<${NS}calendar(?=[\\s/>])`, 'i').test(rt)) continue;
-    const comps = tag(r.props, 'supported-calendar-component-set');
-    if (comps && !/name="VEVENT"/i.test(comps)) continue;   // reminders lists etc.
-    const priv = tag(r.props, 'current-user-privilege-set');
+    const rt = tag(r.props, 'resourcetype') || '', comps = tag(r.props, 'supported-calendar-component-set'), priv = tag(r.props, 'current-user-privilege-set');
+    const info = { href: r.href.replace(/\d{4,}/g, '…'), name: decodeXml(tag(r.props, 'displayname') || '').trim(), type: names(rt), comps: comps == null ? null : (comps.match(/V[A-Z]+/g) || []), priv: priv == null ? null : names(priv) };
+    const isCal = info.type.includes('calendar'), events = !comps || /VEVENT/i.test(comps);
+    // write access: anything beyond plain reading (write, write-content, bind, all …). No privilege info = assume writable.
+    const readOnly = priv != null && info.priv.length > 0 && !info.priv.some(n => /^(write|write-content|bind|all)$/i.test(n));
+    seen.push({ ...info, used: isCal && events, readOnly });
+    if (!isCal || !events) continue;   // skip reminders lists, inbox/outbox, notifications
     const color = ((tag(r.props, 'calendar-color') || '').trim().match(/#[0-9a-f]{6}/i) || ['#3b82f6'])[0];
-    cals.push({ id: abs(r.href, p3.url), name: decodeXml(tag(r.props, 'displayname') || '').trim() || 'Kalender', color, readOnly: priv != null && !new RegExp(`<${NS}(write|write-content|all)(?=[\\s/>])`, 'i').test(priv), order: +(tag(r.props, 'calendar-order') || 99) });
+    cals.push({ id: abs(r.href, p3.url), name: info.name || 'Kalender', color, readOnly, order: +(tag(r.props, 'calendar-order') || 99) });
   }
   cals.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
-  return (disc = { at: Date.now(), home, cals });
+  return (disc = { at: Date.now(), home, cals, debug: { home: home.replace(/\d{4,}/g, '…'), status: [p1.status, p2.status, p3.status], bytes: p3.text.length, responses: seen, sample: seen.length ? '' : p3.text.slice(0, 1500).replace(/\d{4,}/g, '…') } });
 }
 
 // ---------------------------------------------------------------- time zones
@@ -372,6 +374,11 @@ async function handle(req, res, u, p, send, readJson) {
   if (p === '/api/cal/status') {
     if (!configured) return send(res, 200, { configured: false });
     try { const c = await calendars(); return send(res, 200, { configured: true, mock: MOCK, user: MOCK ? 'demo@icloud.com' : USER.replace(/^(.).*(@.*)$/, '$1…$2'), calendars: c }); }
+    catch (e) { return send(res, 200, { configured: true, error: e.message }); }
+  }
+  if (p === '/api/cal/debug') {   // what iCloud answered while looking for calendars (no passwords, long numbers masked)
+    if (!configured) return send(res, 200, { configured: false });
+    try { const d = await discover(true); cache.clear(); return send(res, 200, { configured: true, user: USER.replace(/^(.).*(@.*)$/, '$1…$2'), calendars: d.cals.map(c => ({ name: c.name, readOnly: c.readOnly })), ...(d.debug || {}) }); }
     catch (e) { return send(res, 200, { configured: true, error: e.message }); }
   }
   if (p === '/api/cal/events') {
