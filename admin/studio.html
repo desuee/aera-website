@@ -7,8 +7,8 @@
 <title>Studio – dev-dsue</title>
 <link rel="icon" type="image/png" href="/img/favicon.png">
 <link rel="stylesheet" href="/admin/style.css?v=3">
-<link rel="stylesheet" href="/admin/studio.css?v=1">
-<script src="/admin/studio.js?v=2" defer></script>
+<link rel="stylesheet" href="/admin/studio.css?v=2">
+<script src="/admin/studio.js?v=3" defer></script>
 </head>
 <body>
 <section class="app st hidden" id="app">
@@ -16,6 +16,7 @@
     <a href="/" class="brand"><img src="/img/logo.png" alt=""><span>Studio</span></a>
     <nav class="st-tabs" id="tabs">
       <button data-tab="changelog" class="on"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Changelog</button>
+      <button data-tab="team"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.2A5 5 0 0 1 22 19"/></svg>Team</button>
       <button data-tab="downloads"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Downloads</button>
     </nav>
     <a class="btn st-mail" href="/admin/downloads"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistik</span></a>
@@ -38,6 +39,23 @@
       <div class="st-versions" id="versions"></div>
     </aside>
     <section class="st-editor" id="editor"></section>
+  </main>
+
+  <!-- TEAM -->
+  <main class="st-main st-team hidden" id="tab-team">
+    <div class="st-team-in">
+      <div class="st-ed-head">
+        <div><span class="st-eyebrow">AERA · /aera/crew</span><h1>Team</h1></div>
+        <div class="st-team-actions"><a class="btn small" href="/aera/crew" target="_blank" rel="noopener">Seite ansehen ↗</a><button class="btn primary" id="teamSave">Veröffentlichen</button></div>
+      </div>
+      <p class="muted st-team-hint">Leads stehen oben groß, alle anderen darunter. Reihenfolge mit den Pfeilen ändern. Nach „Veröffentlichen“ ist die Seite in etwa einer Minute aktuell.</p>
+      <section class="st-sec">
+        <div class="st-sec-head"><b>Lead-Plätze vergeben</b><span class="muted small">– im Bewerbungsformular ausgegraut und gesperrt</span></div>
+        <div class="st-spots" id="teamSpots"></div>
+      </section>
+      <div id="teamList"></div>
+      <button class="btn st-team-add" id="teamAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Mitglied hinzufügen</button>
+    </div>
   </main>
 
   <!-- DOWNLOADS -->
