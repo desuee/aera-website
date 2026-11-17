@@ -333,7 +333,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -391,12 +391,14 @@ const SERVER = http.createServer(async (req, res) => {
       // data for the public pages, kept in memory so changes from the studio show at once
       if (p === '/api/aera-changelog/status') return send(res, 200, aeraSync.state);
       if (p === '/aera-changelog-data.js') return send(res, 200, studio.js.aera(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
+      if (p === '/aera-team-data.js') return send(res, 200, studio.js.team(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
       if (p === '/site-data.js') return send(res, 200, studio.js.site(), TYPES.js, { 'Cache-Control': 'no-cache', 'Content-Security-Policy': SITE_CSP, 'X-Robots-Tag': 'all' });
       if (p === '/') return serveFile(res, path.join(ROOT, 'index.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/') { res.writeHead(301, { Location: '/aera' }); return res.end(); }
       if (p === '/aera') return serveFile(res, path.join(ROOT, 'aera.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/lizenz' || p === '/aera/license' || p === '/aera/licence') return serveFile(res, path.join(ROOT, 'aera-lizenz.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/about' || p === '/aera/ueber' || p === '/aera/über' || p === '/aera/%C3%BCber') return serveFile(res, path.join(ROOT, 'aera-about.html'), 'no-cache', SITE_CSP);
+      if (p === '/aera/crew' || p === '/aera/crew/' || p === '/aera/das-team') return serveFile(res, path.join(ROOT, 'aera-crew.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https:"));
       if (p === '/aera/team' || p === '/aera/mitmachen' || p === '/aera/join') return serveFile(res, path.join(ROOT, 'aera-team.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/ranked' || p === '/aera/leaderboard' || p === '/aera/bestenliste') return serveFile(res, path.join(ROOT, 'aera-ranked.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com"));
       if (p === '/aera/changelog' || p === '/aera/changelog/') return serveFile(res, path.join(ROOT, 'aera-changelog.html'), 'no-cache', SITE_CSP);
@@ -415,6 +417,7 @@ const SERVER = http.createServer(async (req, res) => {
       if (h.length >= 3) return send(res, 429, { error: 'Zu viele Bewerbungen von dieser Adresse – bitte später nochmal. · Too many applications, please try later.' });
       const b = await readJson(req); const de = b.lang !== 'en';
       if (b.website) return send(res, 200, { ok: true });   // honeypot: bots fill in the hidden field
+      if ((studio.team().filled || []).includes(b.role)) return send(res, 400, { error: de ? 'Dieser Lead-Platz ist schon vergeben – bewirb dich gern für eine der anderen Rollen.' : 'This lead spot is already taken – feel free to apply for one of the other roles.' });
       const c = (v, n) => String(v || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
       const d = { role: { 'community-lead': 'Leading Community & Moderation Manager', community: 'Community & Moderation Manager', 'social-lead': 'Leading Social Media Manager', social: 'Social Media Manager' }[b.role] || 'Community & Moderation Manager',
         name: c(b.name, 80), email: c(b.email, 120), discord: c(b.discord, 60), langs: c(b.langs, 80), exp: String(b.exp || '').trim().slice(0, 1500),
