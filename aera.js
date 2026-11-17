@@ -133,6 +133,11 @@
     var p = d.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(L === 'de' ? 'de-DE' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
   function vid(v) { return 'v' + v.replace(/\./g, '-'); }
+  // the changelog is English only – older versions: English text, German only as a fallback
+  function tx(it) { return it ? (it.en || it.de || '') : ''; }
+  function sx(x) { return x ? (x[1] || x[0] || '') : ''; }
+  function tt(v) { return v && v.title ? (v.title.en || v.title.de || '') : ''; }
+  function kl(s, k) { return s.label ? esc(s.label) : k[L]; }
   function kindMatch(k) { return clKind === 'all' || k === clKind || (k === 'impfix' && (clKind === 'imp' || clKind === 'fix')) || (k === 'first' && clKind === 'new'); }
   function mark(t) {
     var e = esc(t); if (!clQ) return e;
@@ -156,23 +161,23 @@
         if (!kindMatch(s.kind)) return;
         var items = s.items.filter(function (it) {
           if (!q) return true;
-          var txt = (it[L] || it.de) + ' ' + (it.sub || []).map(function (x) { return x[L === 'de' ? 0 : 1]; }).join(' ');
+          var txt = tx(it) + ' ' + (it.sub || []).map(sx).join(' ');
           return txt.toLowerCase().indexOf(q) >= 0;
         });
         if (!items.length) return;
         var k = KIND[s.kind] || KIND.new;
-        secs += '<div class="cl-sec"><span class="tg ' + k.cls + '">' + k[L] + '</span><ul>' + items.map(function (it) {
-          var sub = it.sub ? '<ul class="cl-sub">' + it.sub.map(function (x) { return '<li>' + mark(x[L === 'de' ? 0 : 1]) + '</li>'; }).join('') + '</ul>' : '';
-          return '<li>' + mark(it[L] || it.de) + sub + '</li>';
+        secs += '<div class="cl-sec"><span class="tg ' + k.cls + '">' + kl(s, k) + '</span><ul>' + items.map(function (it) {
+          var sub = it.sub && it.sub.length ? '<ul class="cl-sub">' + it.sub.map(function (x) { return '<li>' + mark(sx(x)) + '</li>'; }).join('') + '</ul>' : '';
+          return '<li>' + mark(tx(it)) + sub + '</li>';
         }).join('') + '</ul></div>';
       });
       if (!secs) return;
       shown++;
       var latest = vi === 0;
       html += '<article class="cl-ver' + (latest ? ' latest' : '') + '" id="' + vid(v.version) + '">' +
-        '<header><span class="cl-v">v' + esc(v.version) + '</span><div class="cl-h"><h2>' + esc(v.title ? v.title[L] : '') + '</h2>' +
+        '<header><span class="cl-v">v' + esc(v.version) + '</span><div class="cl-h"><h2>' + esc(tt(v)) + '</h2>' +
         (v.date ? '<time>' + fmtDate(v.date) + '</time>' : '') + '</div>' + (latest ? '<span class="cl-latest">' + (L === 'de' ? 'Aktuell' : 'Latest') + '</span>' : '') + '</header>' + secs + '</article>';
-      toc += '<a href="#' + vid(v.version) + '"><b>v' + esc(v.version) + '</b><span>' + esc(v.title ? v.title[L] : '') + '</span></a>';
+      toc += '<a href="#' + vid(v.version) + '"><b>v' + esc(v.version) + '</b><span>' + esc(tt(v)) + '</span></a>';
     });
     list.innerHTML = html || '<p class="cl-empty">' + (L === 'de' ? 'Nichts gefunden.' : 'Nothing found.') + '</p>';
     document.getElementById('cl-toc').innerHTML = '<p>' + (L === 'de' ? 'Versionen' : 'Versions') + '</p>' + toc;
@@ -190,13 +195,13 @@
     var all = [];
     v.sections.forEach(function (s) { s.items.forEach(function (it) { all.push([s.kind, it]); }); });
     // items that are complete sentences first, headings (ending with ':') after
-    items = all.filter(function (x) { return !/:$/.test(x[1].de); }).concat(all.filter(function (x) { return /:$/.test(x[1].de); })).slice(0, 4);
+    items = all.filter(function (x) { return !/:$/.test(tx(x[1])); }).concat(all.filter(function (x) { return /:$/.test(tx(x[1])); })).slice(0, 4);
     var h = document.getElementById('whatsnew-title');
     if (h) h.textContent = (L === 'de' ? 'Neu in v' : 'New in v') + v.version;
-    box.innerHTML = '<div class="wn-head"><span class="cl-v">v' + esc(v.version) + '</span><div><b>' + esc(v.title ? v.title[L] : '') + '</b>' +
+    box.innerHTML = '<div class="wn-head"><span class="cl-v">v' + esc(v.version) + '</span><div><b>' + esc(tt(v)) + '</b>' +
       (v.date ? '<time>' + fmtDate(v.date) + '</time>' : '') + '</div></div><ul>' + items.map(function (x) {
         var k = KIND[x[0]] || KIND.new;
-        return '<li><span class="tg ' + k.cls + '">' + k[L] + '</span><span>' + esc((x[1][L] || x[1].de).replace(/:$/, '')) + '</span></li>';
+        return '<li><span class="tg ' + k.cls + '">' + k[L] + '</span><span>' + esc(tx(x[1]).replace(/:$/, '')) + '</span></li>';
       }).join('') + '</ul><a class="btn ghost" href="/aera/changelog">' + (L === 'de' ? 'Kompletter Changelog' : 'Full changelog') + ' <span>→</span></a>';
   }
 

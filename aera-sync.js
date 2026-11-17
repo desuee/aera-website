@@ -10,6 +10,15 @@
 //   Verbessert / Improved
 //   - …
 // If the text contains a ``` code block, only the first code block is used (so a Discord part below it is ignored).
+// Since 0.12.4 the changelog is ENGLISH ONLY: write the points in English, the website and the Discord bot show them as they are.
+//   AERA 0.12.4 – Main menu
+//   New
+//   - point
+//     - sub point
+//   Fixed
+//   - …
+// Other short headings (e.g. "Multiplayer") become their own section. Older releases with a German point and the English
+// line indented below it are still read correctly (the English line is used).
 // A version that was entered by hand in the Studio always wins over the release text.
 //
 // Environment:
@@ -45,10 +54,14 @@ function headOf(plain) {
   if (parts.length === 4) { const a = kindOf(parts[0] + ' / ' + parts[1]); if (a) return { kind: a, bi: true }; }
   return null;
 }
+const BUL = /^\s*([-–•*◦▪·]|\d+[.)])\s+/;
 function parseText(txt) {
   const blocks = []; let cur = null, lang = null, sec = null, item = null, last = null;
   const start = (version, title) => { cur = { version, title, lang, bi: false, sections: [] }; blocks.push(cur); sec = null; item = null; last = null; };
-  for (const raw of txt.replace(/\r/g, '').split('\n')) {
+  const LINES = txt.replace(/\r/g, '').split('\n');
+  const nextBullet = k => { for (let j = k + 1; j < LINES.length; j++) if (LINES[j].trim()) return BUL.test(LINES[j]); return false; };
+  for (let li = 0; li < LINES.length; li++) {
+    const raw = LINES[li];
     if (!raw.trim()) continue;
     const indent = raw.match(/^[ \t]*/)[0].replace(/\t/g, '    ').length;
     const line = raw.trim();
@@ -62,6 +75,10 @@ function parseText(txt) {
     if (ver && !/changelog/i.test(line)) { start(ver[1], ver[2] ? ver[2].trim() : ''); continue; }
     if (/changelog/i.test(line) && !bullet) continue;   // document title
     if (!cur) start('', '');
+    // a short heading of its own (e.g. "Multiplayer") followed by points → its own section
+    if (!head && !bullet && indent === 0 && line.length <= 40 && !/[.!?,;]$/.test(line) && nextBullet(li) && (cur.sections.length || !item)) {
+      sec = { kind: 'imp', label: plain, items: [] }; cur.sections.push(sec); item = null; last = null; continue;
+    }
     if (head) {
       if (head.bi) cur.bi = true;
       else if (!cur.lang) cur.lang = EN_HEAD.test(plain) ? 'en' : 'de';
@@ -72,6 +89,8 @@ function parseText(txt) {
     const isSub = item && (line.startsWith('◦') || (bullet && indent >= 2));
     if (isSub) { item.sub.push(text); item.subEn.push(''); last = 'sub'; }
     else if (bullet || !item) { item = { text, en: '', sub: [], subEn: [] }; sec.items.push(item); last = 'item'; }
+    else if (!cur.bi && !bullet && indent >= 2 && item && last === 'item' && !item.en) item.en = text;   // German point + indented English line
+    else if (!cur.bi && !bullet && indent >= 2 && item && last === 'sub' && !item.subEn[item.subEn.length - 1]) item.subEn[item.subEn.length - 1] = text;
     else if (cur.bi) {
       // bilingual: the line under a point is its English version
       if (last === 'sub') { const i = item.sub.length - 1; item.subEn[i] = item.subEn[i] ? item.subEn[i] + ' ' + text : text; }
@@ -81,6 +100,7 @@ function parseText(txt) {
     else item.text += ' ' + text;
   }
   const conv = it => ({ de: it.text, en: it.en, sub: it.sub.map((x, k) => [x, it.subEn[k] || '']) });
+  const lab = s => s.label ? { label: s.label } : {};
   // pair the German and English block of each version (a bilingual block is complete on its own)
   const out = [], byVer = new Map();
   blocks.forEach((b, i) => {
@@ -91,7 +111,7 @@ function parseText(txt) {
     byVer.get(key)[b.lang] = b;
   });
   return out.map(o => {
-    if (o.bi) return { version: o.version, date: today(), title: { de: o.bi.title || '', en: '' }, sections: o.bi.sections.map(s => ({ kind: s.kind, items: s.items.map(conv) })) };
+    if (o.bi) return { version: o.version, date: today(), title: { de: o.bi.title || '', en: '' }, sections: o.bi.sections.map(s => ({ kind: s.kind, ...lab(s), items: s.items.map(conv) })) };
     const de = o.de || { sections: [], title: '' }, en = o.en || { sections: [], title: '' };
     const base = de.sections.length >= en.sections.length ? de.sections : en.sections;
     return {
@@ -99,10 +119,10 @@ function parseText(txt) {
       sections: base.map((s, si) => {
         const d = de.sections[si], e = en.sections[si];
         const n = Math.max(d ? d.items.length : 0, e ? e.items.length : 0);
-        return { kind: s.kind, items: Array.from({ length: n }, (_, ii) => {
+        return { kind: s.kind, ...lab(s), items: Array.from({ length: n }, (_, ii) => {
           const di = d && d.items[ii], ei = e && e.items[ii];
           const ns = Math.max(di ? di.sub.length : 0, ei ? ei.sub.length : 0);
-          return { de: di ? di.text : '', en: ei ? ei.text : '', sub: Array.from({ length: ns }, (_, k) => [di && di.sub[k] || '', ei && ei.sub[k] || '']) };
+          return { de: di ? di.text : '', en: ei ? ei.text : (di && di.en) || '', sub: Array.from({ length: ns }, (_, k) => [di && di.sub[k] || '', ei && ei.sub[k] || (di && di.subEn[k]) || '']) };
         }) };
       }),
     };
@@ -157,6 +177,16 @@ function fromRelease(r) {
   if (!e.title.de && r.name) { const m = String(r.name).match(/[–—:-]\s*(.+)$/); if (m) e.title.de = m[1].trim(); }
   if (!e.title.en) e.title.en = e.title.de;
   e.date = DATE || null;
+  return english(e);
+}
+// English only: every text gets its English version (German only where no English exists), in both fields,
+// so every reader (website in DE or EN, Discord bot) shows the same English changelog
+function english(e) {
+  const t = e.title || {}; const tt = t.en || t.de || ''; e.title = { de: tt, en: tt };
+  e.sections = (e.sections || []).map(s => ({ ...s, items: (s.items || []).map(it => {
+    const x = it.en || it.de || '';
+    return { de: x, en: x, sub: (it.sub || []).map(p => { const y = (p && (p[1] || p[0])) || ''; return [y, y]; }).filter(p => p[0]) };
+  }).filter(it => it.en) })).filter(s => s.items.length);
   return e;
 }
 
@@ -189,4 +219,4 @@ function start(studio) {
   }
   return { sync, hook, state };
 }
-module.exports = { start, fromRelease, clean };
+module.exports = { start, fromRelease, clean, english };
