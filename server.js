@@ -426,13 +426,13 @@ const SERVER = http.createServer(async (req, res) => {
       const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
                       : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
       if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
-      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an kontakt@dev-dsue.de schreiben.' : 'Applications are not available right now – please write to kontakt@dev-dsue.de.' });
-      const to = process.env.TEAM_MAIL_TO || 'kontakt@dev-dsue.de', from = process.env.TEAM_MAIL_FROM || 'kontakt@dev-dsue.de';
+      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply-aera@dev-dsue.de schreiben.' : 'Applications are not available right now – please write to apply-aera@dev-dsue.de.' });
+      const to = process.env.TEAM_MAIL_TO || 'apply-aera@dev-dsue.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
       const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
       try {
         await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
         await mail({ from: `Simon (AERA) <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
-      } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@dev-dsue.de schreiben.' : 'Sending failed – please write to kontakt@dev-dsue.de.' }); }
+      } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an apply-aera@dev-dsue.de schreiben.' : 'Sending failed – please write to apply-aera@dev-dsue.de.' }); }
       return send(res, 200, { ok: true });
     }
     if (p === '/api/login' && req.method === 'POST') {
