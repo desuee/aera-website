@@ -17,6 +17,7 @@ const ICON = {
   star: '<svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>',
   unread: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+  cal: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
   file: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
 };
@@ -214,6 +215,7 @@ function drawReader(images) {
       <button class="icon-btn" data-act="forward" title="Weiterleiten">${ICON.forward}</button>
       <select id="tplReply" title="Mit Vorlage antworten"><option value="">↩︎ Mit Vorlage …</option>${tpls}</select>
       <span class="sp"></span>
+      <button class="icon-btn" data-act="cal" title="Termin aus dieser E-Mail">${ICON.cal}</button>
       ${own ? '' : `<button class="icon-btn${m.answered ? ' on-ok' : ''}" data-act="done" title="${m.answered ? 'Beantwortet' : 'Als erledigt markieren (E)'}"${m.answered ? ' disabled' : ''}>${ICON.check}</button>`}
       <button class="icon-btn" data-act="star" title="Markieren" style="${m.flagged ? 'color:#f5a623' : ''}">${ICON.star}</button>
       <button class="icon-btn" data-act="unread" title="Als ungelesen markieren">${ICON.unread}</button>
@@ -248,6 +250,7 @@ $('reader').addEventListener('click', async e => {
     if (a === 'reply' || a === 'replyAll' || a === 'forward') return openCompose(a, m);
     if (a === 'beta') return show('beta', { folder, uid: m.uid });
     if (a === 'star') { await call('flag', { folder, uid: m.uid, flag: 'flagged', on: !m.flagged }); m.flagged = !m.flagged; const it = items.find(x => x.uid === m.uid); if (it) it.flagged = m.flagged; drawList(); drawReader(false); }
+    if (a === 'cal') { if (window.CAL) window.CAL.fromMail(m); return; }
     if (a === 'done') { await call('flag', { folder, uid: m.uid, flag: 'answered', on: true }); m.answered = true; const it = items.find(x => x.uid === m.uid); if (it) it.answered = true; if (counts && counts.open) counts.open--; toast('Als erledigt markiert ✓'); if (filter === 'open') { order = items.map(x => x.uid); items = items.filter(x => x.uid !== m.uid); const nx = nextAfter(m.uid); order = []; drawChips(); drawList(); nx ? openMsg(nx) : (cur = null, clearReader()); } else { drawChips(); drawList(); drawReader(false); } return; }
     if (a === 'unread') { await call('flag', { folder, uid: m.uid, flag: 'seen', on: false }); const it = items.find(x => x.uid === m.uid); if (it) it.seen = false; cur = null; drawList(); clearReader(); loadFolders(); }
     if (a === 'delete') { await call('delete', { folder, uid: m.uid }); toast('Gelöscht'); afterRemove(); }
@@ -657,6 +660,12 @@ function applyTemplate(i) {
   if (!replyCtx) $('cSubject').value = t.subject;
   dirty = true; ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0;
 }
+function composeFill(body, add) {   // used by the calendar ("Termin aus Mail")
+  const ta = $('cText'), v = ta.value, sigAt = MS.sig ? v.indexOf(SIG_SEP) : -1;
+  ta.value = body + (sigAt >= 0 ? v.slice(sigAt) : v.trim() ? '\n\n' + v : '');
+  for (const a of add || []) atts.push(a);
+  drawAtts(); dirty = true; ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0;
+}
 $('cTpl').addEventListener('change', e => { const i = e.target.value; e.target.value = ''; if (i !== '') applyTemplate(+i); });
 // settings modal
 let msCur = 0, msDraft = null;
@@ -800,7 +809,7 @@ function startApp() {
   pollUnread();
   clearInterval(timer); timer = setInterval(() => { if (document.visibilityState === 'visible') pollUnread(); }, 60000);
 }
-window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
+window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, composeFill, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
 (async () => {
   $('lUser').value = 'kontakt@dev-dsue.de';
   try { const r = await call('me'); if (r.user) { ME = r.user; startApp(); } else showLogin(); } catch { showLogin(); }

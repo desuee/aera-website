@@ -33,6 +33,7 @@
       <a class="tile" href="https://discord.gg/aera" target="_blank" rel="noopener" style="text-decoration:none"><div class="k">${SVG.dc}Discord</div><div class="v">${dc.members ? fmt(dc.members) : '–'}</div><div class="d">${dc.online ? fmt(dc.online) + ' gerade online' : 'Mitglieder'}</div></a>`;
     $('dRecent').innerHTML = (d.recent || []).length ? d.recent.map(m => `<div class="dmail${m.seen ? '' : ' unread'}" data-open="${m.uid}"><div class="avatar sm">${A.initial(m.from)}</div><div class="t"><b>${esc(A.who(m.from))}</b><span>${esc(m.subject || '(kein Betreff)')}</span></div>${m.answered ? `<span class="dans" title="Beantwortet">✓</span>` : ''}<time>${esc(A.when(m.date))}</time></div>`).join('') : '<div class="empty">Keine E-Mails.</div>';
     $('dRecent').onclick = e => { const r = e.target.closest('[data-open]'); if (r) A.openMail(d.inbox, +r.dataset.open); };
+    $('dCal').innerHTML = window.CAL ? window.CAL.dashPanel(d.cal) : '';
     const b = d.beta, max = Math.max(1, b.open, b.accepted, b.waitlist, b.declined);
     $('dBeta').innerHTML = b.error ? `<div class="empty">${esc(b.error)}</div>` : `<div class="bars">${[['Offen', b.open], ['Angenommen', b.accepted], ['Warteliste', b.waitlist], ['Abgelehnt', b.declined]].map(([k, n]) => `<div class="bar-row"><span>${k}</span><div class="b"><span style="width:${Math.round(n / max * 100)}%"></span></div><span class="n">${n}</span></div>`).join('')}</div>`;
     const a = d.aera, sy = d.sync || {};
@@ -45,6 +46,7 @@
       row(S.resend ? true : false, 'E-Mails senden', S.resend ? 'über Resend' : 'RESEND_API_KEY fehlt'),
       row(S.github ? true : false, 'GitHub (Studio)', S.github ? 'Token gesetzt' : 'GITHUB_TOKEN fehlt'),
       row(dl.error ? null : true, 'Beta-Downloads', dl.error ? 'nicht erreichbar' : 'OK'),
+      row(!S.cal ? null : d.cal && d.cal.error ? false : true, 'Kalender (iCloud)', !S.cal ? 'nicht verbunden' : d.cal && d.cal.error ? 'Fehler' : S.mock ? 'Demo-Modus' : 'verbunden'),
       row(dc.members ? true : null, 'Discord-Einladung', dc.members ? 'discord.gg/aera' : 'nicht erreichbar'),
       row(sy.ok ? true : sy.error ? false : null, 'Changelog-Sync', sy.ok ? ago(sy.at) : sy.error ? 'Fehler' : 'wartet'),
     ].join('');
