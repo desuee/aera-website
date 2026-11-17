@@ -330,7 +330,7 @@ const readJson = req => new Promise((resolve, reject) => {
 const cookie = (req, n) => { const m = (req.headers.cookie || '').match(new RegExp('(?:^|; )' + n + '=([^;]+)')); return m ? m[1] : ''; };
 const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',').pop().trim();
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
-const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8' };
+const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8' };
 // public website: only these files / the img folder (never server code or package files)
 const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
@@ -384,7 +384,7 @@ const SERVER = http.createServer(async (req, res) => {
     // dev-dsue.de is the main address (www.dev-dsue.de is forwarded there by the DNS provider)
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (p === '/admin') { res.writeHead(301, { Location: '/admin/' }); return res.end(); }
-      if (p === '/admin/' || /^\/admin\/(app\.js|views\.js|style\.css|studio\.js|studio\.css|downloads\.js|cal\.js)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
+      if (p === '/admin/' || /^\/admin\/(app\.js|views\.js|style\.css|studio\.js|studio\.css|downloads\.js|cal\.js|sw\.js|manifest\.webmanifest)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
       if (p === '/admin/studio' || p === '/admin/studio/') return serveFile(res, path.join(ADMIN, 'studio.html'), 'no-cache', CSP);
       if (p === '/admin/downloads' || p === '/admin/downloads/') return serveFile(res, path.join(ADMIN, 'downloads.html'), 'no-cache', CSP);
       // data for the public pages, kept in memory so changes from the studio show at once
