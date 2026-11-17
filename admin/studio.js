@@ -414,10 +414,73 @@ $('apps').addEventListener('click', async e => {
   finally { window.onbeforeunload = null; b.disabled = false; }
 });
 
+// ---------------- team (/aera/crew) ----------------
+const SPOTS = [['community-lead', 'Leading Community & Moderation Manager'], ['social-lead', 'Leading Social Media Manager']];
+let TEAM = null, teamDirty = false;
+function teamModel() { if (!TEAM) TEAM = clone(ST.team || { members: [], filled: [] }); return TEAM; }
+function linksText(m) { return (m.links || []).map(l => (l.label ? l.label + ' | ' : '') + l.url).join('\n'); }
+function memberHtml(m, i, n) {
+  return `<section class="st-sec st-mem" data-i="${i}">
+    <div class="st-sec-head"><span class="st-av">${m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc((m.name || '?').slice(0, 1).toUpperCase())}</span><b>${esc(m.name || 'Neues Mitglied')}</b>${m.lead ? '<i class="st-badge">Lead</i>' : ''}<span class="sp"></span>
+      <button class="icon-btn" data-t="up" title="Nach oben"${i ? '' : ' disabled'}><svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg></button>
+      <button class="icon-btn" data-t="down" title="Nach unten"${i < n - 1 ? '' : ' disabled'}><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="icon-btn danger" data-t="del" title="Entfernen"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+    <div class="st-mem-grid">
+      <label>Name / Nickname<input data-f="name" value="${esc(m.name)}" maxlength="60" placeholder="z. B. Desue"></label>
+      <label>Vorname (optional)<input data-f="real" value="${esc(m.real || '')}" maxlength="60"></label>
+      <label>Rolle (Deutsch)<input data-f="role.de" value="${esc(m.role && m.role.de || '')}" maxlength="80" placeholder="z. B. Leading Community & Moderation Manager"></label>
+      <label>Rolle (Englisch)<input data-f="role.en" value="${esc(m.role && m.role.en || '')}" maxlength="80" placeholder="leer = wie Deutsch"></label>
+      <label class="wide">Kurzbeschreibung (Deutsch)<textarea data-f="bio.de" maxlength="400" rows="2">${esc(m.bio && m.bio.de || '')}</textarea></label>
+      <label class="wide">Kurzbeschreibung (Englisch)<textarea data-f="bio.en" maxlength="400" rows="2">${esc(m.bio && m.bio.en || '')}</textarea></label>
+      <label>Bild-Adresse (optional)<input data-f="avatar" value="${esc(m.avatar || '')}" placeholder="https://… oder /img/…"></label>
+      <label class="st-chk"><input type="checkbox" data-f="lead"${m.lead ? ' checked' : ''}> Lead (oben groß anzeigen)</label>
+      <label class="wide"><span>Links (optional, eine Zeile pro Link: <code>Name | https://…</code>)</span><textarea data-f="links" rows="2" placeholder="TikTok | https://www.tiktok.com/@…">${esc(linksText(m))}</textarea></label>
+    </div></section>`;
+}
+function drawTeam() {
+  const T = teamModel();
+  $('teamSpots').innerHTML = SPOTS.map(([k, l]) => `<label class="st-chk"><input type="checkbox" data-spot="${k}"${T.filled.includes(k) ? ' checked' : ''}> ${esc(l)}</label>`).join('');
+  $('teamList').innerHTML = T.members.length ? T.members.map((m, i) => memberHtml(m, i, T.members.length)).join('') : '<p class="st-empty">Noch niemand eingetragen.</p>';
+  $('teamSave').disabled = !ST.github;
+  $('teamSave').title = ST.github ? '' : 'GitHub-Token fehlt (siehe oben)';
+}
+function teamMark() { teamDirty = true; $('teamSave').textContent = 'Veröffentlichen •'; }
+$('teamList').addEventListener('input', e => {
+  const f = e.target.dataset.f, box = e.target.closest('[data-i]'); if (!f || !box) return;
+  const m = TEAM.members[+box.dataset.i];
+  if (f === 'lead') m.lead = e.target.checked;
+  else if (f === 'links') m.links = e.target.value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const k = l.lastIndexOf('|'); return k > 0 ? { label: l.slice(0, k).trim(), url: l.slice(k + 1).trim() } : { label: '', url: l }; });
+  else if (f.includes('.')) { const [a, b] = f.split('.'); m[a] = m[a] || {}; m[a][b] = e.target.value; }
+  else m[f] = e.target.value;
+  teamMark();
+  // update the card header in place (a full redraw would steal the focus from the field being typed in)
+  const head = box.querySelector('.st-sec-head');
+  if (f === 'name') head.querySelector('b').textContent = m.name || 'Neues Mitglied';
+  if (f === 'name' || f === 'avatar') head.querySelector('.st-av').innerHTML = m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc((m.name || '?').slice(0, 1).toUpperCase());
+  if (f === 'lead') { const old = head.querySelector('.st-badge'); if (m.lead && !old) head.querySelector('b').insertAdjacentHTML('afterend', '<i class="st-badge">Lead</i>'); if (!m.lead && old) old.remove(); }
+});
+$('teamList').addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'), box = e.target.closest('[data-i]'); if (!b || !box) return;
+  const i = +box.dataset.i, L = TEAM.members;
+  if (b.dataset.t === 'up' && i > 0) [L[i - 1], L[i]] = [L[i], L[i - 1]];
+  else if (b.dataset.t === 'down' && i < L.length - 1) [L[i + 1], L[i]] = [L[i], L[i + 1]];
+  else if (b.dataset.t === 'del') { if (!b.dataset.arm) { b.dataset.arm = 1; b.classList.add('arm'); b.title = 'Nochmal klicken zum Entfernen'; setTimeout(() => { delete b.dataset.arm; b.classList.remove('arm'); }, 3000); return; } L.splice(i, 1); }
+  teamMark(); drawTeam();
+});
+$('teamSpots').addEventListener('change', e => { const k = e.target.dataset.spot; if (!k) return; const F = TEAM.filled; e.target.checked ? F.includes(k) || F.push(k) : F.splice(F.indexOf(k), 1); teamMark(); });
+$('teamAdd').addEventListener('click', () => { TEAM.members.push({ name: '', real: '', role: { de: '', en: '' }, lead: false, bio: { de: '', en: '' }, avatar: '', links: [] }); teamMark(); drawTeam(); const l = document.querySelectorAll('.st-mem'); const last = l[l.length - 1]; if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'center' }); last.querySelector('input').focus(); } });
+$('teamSave').addEventListener('click', async () => {
+  const b = $('teamSave'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Veröffentliche …';
+  try { const r = await call('studio/team', { data: TEAM }); ST.team = r.team; TEAM = clone(r.team); teamDirty = false; drawTeam(); toast('Team veröffentlicht ✓ – die Seite ist in etwa einer Minute aktuell'); }
+  catch (e) { toast(e.message, true); }
+  b.disabled = !ST.github; b.textContent = teamDirty ? 'Veröffentlichen •' : 'Veröffentlichen';
+});
+
 // ---------------- tabs, theme, start ----------------
 function switchTab(t) {
   document.querySelectorAll('#tabs [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  $('tab-changelog').classList.toggle('hidden', t !== 'changelog'); $('tab-downloads').classList.toggle('hidden', t !== 'downloads');
+  $('tab-changelog').classList.toggle('hidden', t !== 'changelog'); $('tab-downloads').classList.toggle('hidden', t !== 'downloads'); $('tab-team').classList.toggle('hidden', t !== 'team');
+  if (t === 'team') drawTeam();
   if (t === 'downloads' && !REL) loadRelease();
   history.replaceState(null, '', '#' + t);
 }
@@ -428,7 +491,7 @@ $('theme').addEventListener('click', () => {
   try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
 });
 $('logoutBtn').addEventListener('click', async () => { try { await call('logout', {}); } catch {} location.href = '/admin/'; });
-window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (dirty || teamDirty) { e.preventDefault(); e.returnValue = ''; } });
 
 (async () => {
   try { if (localStorage.getItem('theme') === 'light') delete document.documentElement.dataset.theme; } catch {}
@@ -439,5 +502,5 @@ window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); 
   $('app').classList.remove('hidden');
   $('tokenBanner').classList.toggle('hidden', ST.github); $('repoName').textContent = ST.repo;
   drawSide(); drawEditor();
-  switchTab(location.hash === '#downloads' ? 'downloads' : 'changelog');
+  switchTab(location.hash === '#downloads' ? 'downloads' : location.hash === '#team' ? 'team' : 'changelog');
 })();
