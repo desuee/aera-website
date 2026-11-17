@@ -14,8 +14,8 @@
   // ======================= DASHBOARD =======================
   let dash = null;
   function greet() {
-    const h = new Date().getHours(), name = 'Simon';
-    $('dGreet').textContent = (h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + ', ' + name;
+    const h = new Date().getHours(), name = (A.myName() || '').split(/\s+/)[0];
+    $('dGreet').textContent = (h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 18 ? 'Hallo' : 'Guten Abend') + (name ? ', ' + name : '');
     $('dGreetDate').textContent = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
   }
   async function loadDash() {
@@ -52,7 +52,7 @@
     ].join('');
   }
   $('dRefresh').onclick = () => loadDash();
-  VIEWS.dash = { enter: loadDash };
+  VIEWS.dash = { enter: loadDash, greet };
 
   // ======================= BETA =======================
   let bItems = [], bTab = 'open', bSel = null, bMsg = null, bLang = 'de', bWant = null;
@@ -141,7 +141,7 @@
     const f = (bMsg.from || [])[0] || {}, t = tplFor(bChoice, bLang), name = A.firstName(f.name);
     const base = (bMsg.subject || '').replace(/^((re|aw|fwd?|wg):\s*)+/i, '');
     $('bdSubj').value = 'Re: ' + base;
-    const sig = A.MS.sig && A.MS.sig.trim() ? A.SIG_SEP + A.MS.sig.trim() : '';
+    const sig = A.sigText() ? A.SIG_SEP + A.sigText() : '';
     $('bdText').value = (t ? A.fillName(t.body, name) : (bLang === 'en' ? `Hi ${name},\n\n` : `Hallo ${name},\n\n`)) + sig;
     document.querySelectorAll('#bdLang button').forEach(b => b.classList.toggle('on', b.dataset.l === bLang));
     if (!t) A.toast('Keine passende Vorlage gefunden – Text bitte selbst schreiben', true);
