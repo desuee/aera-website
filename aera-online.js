@@ -158,7 +158,8 @@ async function handle(req, res, u, p, send, readJson) {
 
 // ---------------- multiplayer rooms (WebSocket relay) ----------------
 // The host's game runs the simulation; the server only passes messages within a room. Max. 4 controllers per room.
-const ROOMS = new Map();   // code -> { code, host, cfg, state, members: Map(id -> { ws, user, pos }) }
+const ROOMS = new Map();
+const BOOT = crypto.randomBytes(4).toString('hex');   // changes with every server start – clients can tell a restart from a network drop   // code -> { code, host, cfg, state, members: Map(id -> { ws, user, pos }) }
 const code6 = () => { let c; do { c = Array.from(crypto.randomBytes(5), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); } while (ROOMS.has(c)); return c; };
 function roomInfo(r) { return { t: 'room', code: r.code, host: r.host, state: r.state, cfg: r.cfg, members: [...r.members.values()].map(m => ({ id: m.user.id, name: m.user.name, avatar: m.user.avatar, pos: m.pos || [] })) }; }
 function bcast(r, msg, except) { const s = JSON.stringify(msg); for (const m of r.members.values()) if (m.ws !== except && m.ws.readyState === 1) m.ws.send(s); }
@@ -181,13 +182,15 @@ function attach(server) {
   });
   wss.on('connection', ws => {
     ws.on('pong', () => { ws.alive = true; });
-    ws.send(JSON.stringify({ t: 'hello', me: { id: ws.user.id, name: ws.user.name, avatar: ws.user.avatar } }));
+    ws.send(JSON.stringify({ t: 'hello', boot: BOOT, me: { id: ws.user.id, name: ws.user.name, avatar: ws.user.avatar } }));
     ws.on('message', buf => {
       let m; try { m = JSON.parse(buf); } catch { return; }
       const r = ws.room && ROOMS.get(ws.room);
       if (m.t === 'create') {
-        leave(ws); const c = code6();
-        const room = { code: c, host: ws.user.id, cfg: m.cfg || {}, state: 'lobby', members: new Map() };
+        leave(ws); let c = code6();
+        // after a server restart the host brings its room back with the same code, guests then resume into it
+        const want = String(m.restore || '').toUpperCase().trim(); if (/^[A-Z0-9]{5}$/.test(want) && !ROOMS.has(want)) c = want;
+        const room = { code: c, host: ws.user.id, cfg: m.cfg || {}, state: m.restore && m.state === 'run' ? 'run' : 'lobby', members: new Map() };
         room.members.set(ws.user.id, { ws, user: ws.user, pos: Array.isArray(m.pos) ? m.pos.slice(0, 3) : ['TWR'] });
         ROOMS.set(c, room); ws.room = c; ws.send(JSON.stringify(roomInfo(room))); return;
       }
@@ -199,7 +202,11 @@ function attach(server) {
         leave(ws); room.members.set(ws.user.id, { ws, user: ws.user, pos: [] }); ws.room = room.code; bcast(room, roomInfo(room)); return;
       }
       if (m.t === 'resume') {   // reconnect after a dropped connection (Railway closes WebSockets after ~15 min): take the seat back
-        const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); const me = room && room.members.get(ws.user.id);
+        const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); let me = room && room.members.get(ws.user.id);
+        if (room && !me && room.members.size < 4) {   // room was brought back by the host after a restart: take your seat again
+          const taken = new Set([...room.members.values()].flatMap(x => x.pos || []));
+          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
+        }
         if (!me) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
         const old = me.ws; me.ws = ws; me.away = 0; ws.room = room.code; if (old && old !== ws) { old.room = null; try { old.close(); } catch {} }
         bcast(room, roomInfo(room)); return;
@@ -228,6 +235,13 @@ function attach(server) {
     ws.on('error', () => {});
   });
   setInterval(() => { for (const ws of wss.clients) { if (!ws.alive) { ws.terminate(); continue; } ws.alive = false; try { ws.ping(); } catch {} } }, 25000).unref();
+  // deploy / restart (Railway sends SIGTERM): tell everyone why the room ends, save ranked data, then exit
+  process.once('SIGTERM', () => {
+    const msg = JSON.stringify({ t: 'closed', why: 'restart' });
+    for (const ws of wss.clients) { try { ws.send(msg); } catch {} }
+    try { if (dirty && FILE) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(FILE + '.tmp', JSON.stringify(DB)); fs.renameSync(FILE + '.tmp', FILE); } } catch {}
+    setTimeout(() => process.exit(0), 600);
+  });
   console.log('AERA multiplayer ready on /aera/ws');
 }
 
