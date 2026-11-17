@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head><script src="/consent.js?v=1"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Das Team hinter AERA · The AERA team</title>
+<meta name="description" content="Die Leute hinter AERA – Entwicklung, Community und Social Media.">
+<meta name="theme-color" content="#07111f">
+<meta property="og:title" content="AERA – Control the Skies">
+<meta property="og:description" content="Fluglotsen-Spiel über Deutschland: EDDK, EDDF, Langen Radar, Rhein Radar. Early Access.">
+<meta property="og:image" content="https://www.dev-dsue.de/img/proj-aera.webp">
+<link rel="icon" type="image/png" href="/img/aera-favicon.png">
+<link rel="apple-touch-icon" href="/img/aera-touch-icon.png">
+<link rel="stylesheet" href="/aera.css?v=4">
+<style>
+.crew{max-width:1080px;margin:0 auto;padding:150px 28px 60px}
+.crew h1{margin:0 0 16px;font:700 clamp(36px,5vw,56px)/1.06 var(--head);letter-spacing:-.025em}
+.crew .lead-txt{font-size:20px;color:var(--grey);margin:0 0 44px;max-width:720px}
+.crew h2{margin:54px 0 18px;font:700 24px/1.2 var(--head);letter-spacing:-.01em}
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.crew-grid.leads{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.mem{position:relative;border:1px solid rgba(120,170,255,.22);border-radius:20px;padding:22px;background:linear-gradient(180deg,rgba(30,136,229,.09),rgba(30,136,229,.03));display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.mem.lead{padding:26px;border-color:rgba(120,170,255,.38);background:radial-gradient(120% 90% at 0% 0%,rgba(30,136,229,.22),rgba(30,136,229,.04) 60%)}
+.mem .top{display:flex;align-items:center;gap:14px}
+.mem .av{width:58px;height:58px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 22px var(--head);color:#fff;background:linear-gradient(135deg,#1e88e5,#7a5cff);overflow:hidden;box-shadow:0 0 0 3px rgba(120,170,255,.18)}
+.mem.lead .av{width:72px;height:72px;font-size:27px}
+.mem .av img{width:100%;height:100%;object-fit:cover}
+.mem .nm{font:700 20px/1.2 var(--head)}
+.mem.lead .nm{font-size:24px}
+.mem .real{font-size:14px;color:var(--grey)}
+.mem .role{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font:700 13px var(--head);letter-spacing:.02em;color:#9cc7ff;background:rgba(30,136,229,.16);border:1px solid rgba(120,170,255,.3)}
+.mem.lead .role{color:#fff;background:#1e88e5;border-color:#1e88e5}
+.mem .bio{margin:0;font-size:15.5px;line-height:1.6;color:var(--grey)}
+.mem .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.mem .links a{font-size:13.5px;font-weight:600;padding:6px 11px;border-radius:10px;border:1px solid rgba(120,170,255,.3);text-decoration:none}
+.mem .links a:hover{background:rgba(30,136,229,.15)}
+.open{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.spot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:14px;border:1px dashed rgba(120,170,255,.35);font-weight:600}
+.spot b{font:700 12px var(--head);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:rgba(61,220,151,.14);color:#3ddc97;white-space:nowrap}
+.spot.taken{opacity:.55;border-style:solid}
+.spot.taken b{background:rgba(255,255,255,.08);color:var(--grey)}
+.crew .cta{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 0}
+.crew .cta a{padding:12px 20px;border-radius:12px;border:1px solid rgba(120,170,255,.35);text-decoration:none;font-weight:600}
+.crew .cta a.pri{background:#1e88e5;border-color:#1e88e5;color:#fff}
+.crew .empty{color:var(--grey)}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="in">
+    <a class="brand" href="/aera"><img src="/img/aera-icon.png" alt=""><span><b>AERA</b><small>Airspace &amp; Enroute Radar Authority</small></span></a>
+    <nav>
+      <a href="/aera#sectors" data-de="Sektoren" data-en="Sectors">Sektoren</a>
+      <a href="/aera#features" data-de="Features" data-en="Features">Features</a>
+      <a href="/aera#radio" data-de="Funk" data-en="Radio">Funk</a>
+      <a href="/aera#screens" data-de="Screenshots" data-en="Screenshots">Screenshots</a>
+      <a href="/aera#roadmap">Roadmap</a>
+      <a href="/aera/changelog">Changelog</a>
+      <a href="/beta">Beta</a>
+      <a href="/aera#faq">FAQ</a>
+      <a href="/aera/about" data-de="Über AERA" data-en="About">Über AERA</a>
+      <a class="on" href="/aera/crew">Team</a>
+      <a href="/aera/team" data-de="Mitmachen" data-en="Join us">Mitmachen</a>
+    </nav>
+    <a class="nav-dc" href="https://discord.gg/aera" target="_blank" rel="noopener" title="Discord"><svg class="dc-ic" viewBox="0 0 127.14 96.36" aria-hidden="true"><path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg><span>Discord</span></a>
+    <div class="lang"><button data-lang="de">DE</button><button data-lang="en">EN</button></div>
+    <a class="back" href="/" title="dev-dsue.de"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span>Desue</span></a>
+  </div>
+</header>
+
+<main id="top" class="crew">
+<p class="eyebrow">Team</p>
+<h1 data-de="Die Crew hinter AERA" data-en="The crew behind AERA">Die Crew hinter AERA</h1>
+<p class="lead-txt" data-de="AERA ist ein Hobbyprojekt – gebaut von Leuten, die Luftfahrt lieben. Das sind wir." data-en="AERA is a hobby project – built by people who love aviation. This is us.">AERA ist ein Hobbyprojekt – gebaut von Leuten, die Luftfahrt lieben. Das sind wir.</p>
+<div class="crew-grid leads" id="leads"></div>
+<h2 id="teamHead" data-de="Das Team" data-en="The team">Das Team</h2>
+<div class="crew-grid" id="members"></div>
+<h2 data-de="Mitmachen" data-en="Join us">Mitmachen</h2>
+<div class="open" id="spots"></div>
+<div class="cta"><a class="pri" href="/aera/team#form" data-de="Jetzt bewerben" data-en="Apply now">Jetzt bewerben</a><a href="https://discord.gg/aera" target="_blank" rel="noopener" data-de="Zum Discord" data-en="Join the Discord">Zum Discord</a></div>
+</main>
+
+<footer class="foot">
+  <div class="in">
+    <span class="fl"><img src="/img/aera-icon.png" alt=""><span>© 2026 Desue · AERA · <span data-de="ein Spiel von" data-en="a game by">ein Spiel von</span> <a href="/">Desue</a></span></span>
+    <span class="sp"></span>
+    <a href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a>
+    <a href="/">dev-dsue.de</a>
+    <a href="/aera/lizenz" data-de="Lizenz" data-en="Licence">Lizenz</a>
+    <a href="/impressum.html">Impressum</a>
+    <a href="/datenschutz.html" data-de="Datenschutz" data-en="Privacy">Datenschutz</a>
+  </div>
+</footer>
+
+<script src="/aera-team-data.js"></script>
+<script>
+(function(){
+ var T=window.AERA_TEAM||{members:[],filled:[]};
+ // aera.js puts data-de/data-en into innerHTML, so text is escaped twice to stay plain text
+ var e1=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+ var e2=function(s){return e1(e1(s));};
+ var t=function(de,en){de=de||en||'';en=en||de;return '<span data-de="'+e2(de)+'" data-en="'+e2(en)+'">'+e1(de)+'</span>';};
+ var ini=function(n){return e1((String(n).replace(/[^\p{L}\p{N} ]/gu,'').trim().split(/\s+/).map(function(w){return w[0];}).join('').slice(0,2)||'?').toUpperCase());};
+ var card=function(m){
+  var av=m.avatar?'<img src="'+e1(m.avatar)+'" alt="">':ini(m.name);
+  var links=(m.links||[]).map(function(l){return '<a href="'+e1(l.url)+'" target="_blank" rel="noopener">'+e1(l.label)+'</a>';}).join('');
+  var bio=m.bio&&(m.bio.de||m.bio.en)?'<p class="bio">'+t(m.bio.de,m.bio.en)+'</p>':'';
+  return '<article class="mem'+(m.lead?' lead':'')+'"><div class="top"><div class="av">'+av+'</div><div><div class="nm">'+e1(m.name)+'</div>'+(m.real?'<div class="real">'+e1(m.real)+'</div>':'')+'</div></div><span class="role">'+t(m.role&&m.role.de,m.role&&m.role.en)+'</span>'+bio+(links?'<div class="links">'+links+'</div>':'')+'</article>';
+ };
+ var L=T.members.filter(function(m){return m.lead;}),M=T.members.filter(function(m){return !m.lead;});
+ document.getElementById('leads').innerHTML=L.map(card).join('');
+ document.getElementById('members').innerHTML=M.length?M.map(card).join(''):'<p class="empty">'+t('Hier ist noch Platz – vielleicht für dich?','There is still room here – maybe for you?')+'</p>';
+ var SP=[['community-lead','Leading Community & Moderation Manager',1],['community','Community & Moderation Manager',0],['social-lead','Leading Social Media Manager',1],['social','Social Media Manager',0]];
+ document.getElementById('spots').innerHTML=SP.map(function(s){var taken=s[2]&&(T.filled||[]).indexOf(s[0])>=0;
+  return '<div class="spot'+(taken?' taken':'')+'"><span>'+e1(s[1])+'</span><b>'+(taken?t('vergeben','taken'):t(s[2]?'1 Platz frei':'offen',s[2]?'1 spot open':'open'))+'</b></div>';}).join('');
+})();
+</script>
+<script src="/aera-changelog-data.js"></script>
+<script src="/aera.js?v=4"></script>
+</body>
+</html>
