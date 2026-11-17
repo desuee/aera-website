@@ -77,7 +77,7 @@ document.addEventListener('click', e => {
   const n = e.target.closest('[data-view]'); if (n) { show(n.dataset.view); return; }
   const g = e.target.closest('[data-go]'); if (g) { if (g.dataset.go === 'compose') openCompose('new'); else show(g.dataset.go); }
 });
-window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (v && v !== view) show(v); });
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (v === 'compose') { show('mail'); openCompose('new'); } else if (v && v !== view) show(v); });
 function setBadge(id, n) { const el = $(id); el.textContent = n; el.classList.toggle('hidden', !n); }
 // open one message from another view (dashboard, beta)
 async function openMail(f, uid) { folder = f; page = 1; q = ''; $('q').value = ''; show('mail', { keep: true }); await loadFolders(); await loadList(); if (uid) openMsg(uid); }
@@ -100,6 +100,7 @@ function drawFolders() {
   const unread = (folders.find(x => x.special === '\\Inbox' || x.path === 'INBOX') || {}).unseen || 0;
   setBadge('navUnread', unread);
   document.title = (unread ? `(${unread}) ` : '') + 'Admin – dev-dsue';
+  try { if (navigator.setAppBadge) unread ? navigator.setAppBadge(unread) : navigator.clearAppBadge(); } catch {}
   $('bulkMove').innerHTML = '<option value="">Verschieben …</option>' + folders.filter(x => x.path !== folder).map(x => `<option value="${esc(x.path)}">${esc(isBetaF(x) ? x.name : fname(x))}</option>`).join('');
 }
 $('folders').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; folder = b.dataset.f; page = 1; cur = null; picked.clear(); drawFolders(); loadList(); clearReader(); $('panes').classList.remove('menu-open'); });
@@ -806,7 +807,8 @@ function startApp() {
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
   $('meMail').textContent = ME; $('meAv').textContent = (ME || 'D').charAt(0).toUpperCase();
   loadMailSettings();
-  show(location.hash.slice(1) || 'dash');
+  const h = location.hash.slice(1);
+  if (h === 'compose') { show('mail'); setTimeout(() => openCompose('new'), 300); } else show(h || 'dash');
   pollUnread();
   clearInterval(timer); timer = setInterval(() => { if (document.visibilityState === 'visible') pollUnread(); }, 60000);
 }
@@ -815,3 +817,21 @@ window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openC
   $('lUser').value = 'kontakt@dev-dsue.de';
   try { const r = await call('me'); if (r.user) { ME = r.user; startApp(); } else showLogin(); } catch { showLogin(); }
 })();
+
+// ---- installable app (PWA): service worker + "App installieren" button ----
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).catch(() => {}));
+(() => {
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || navigator.standalone;
+  let deferred = null;
+  const btn = $('installBtn');
+  if (standalone()) document.documentElement.classList.add('is-app');
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; if (!standalone()) btn.classList.remove('hidden'); });
+  window.addEventListener('appinstalled', () => { deferred = null; btn.classList.add('hidden'); toast('Admin als App installiert ✓'); });
+  // Safari on the Mac has no install prompt: point to the menu instead
+  if (!standalone() && /Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg/.test(navigator.userAgent)) { btn.classList.remove('hidden'); btn.title = 'Als App: Ablage → Zum Dock hinzufügen'; }
+  btn.addEventListener('click', async () => {
+    if (deferred) { deferred.prompt(); const r = await deferred.userChoice.catch(() => ({})); if (r.outcome === 'accepted') btn.classList.add('hidden'); deferred = null; return; }
+    toast('In Safari: Menü „Ablage“ → „Zum Dock hinzufügen …“');
+  });
+})();
+
