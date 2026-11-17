@@ -98,7 +98,8 @@ const mock = MOCK ? require('./mock') : null;
 const studio = require('./studio');
 const aeraSync = require('./aera-sync').start(studio);   // AERA changelog from the GitHub releases of the beta repo
 const mailx = require('./mailx');   // HTML mails + beta inbox helpers
-const calendar = require('./calendar');   // /api/cal/*: iCloud calendar via CalDAV (see calendar.js)
+const calendar = require('./calendar');   // /api/cal/*: iCloud calendar via CalDAV, one per admin login (see calendar.js)
+calendar.init({ key: RKEY ? RKEY.toString('hex') : '' });
 const aeraOnline = require('./aera-online');   // AERA game: Discord sign-in, ranked, multiplayer rooms (see aera-online.js)
 const beta = require('./beta');      // /beta: Discord sign-in + private beta downloads (see beta.js)   // /admin/studio: changelogs + program downloads (writes to GitHub)
 
@@ -457,7 +458,7 @@ const SERVER = http.createServer(async (req, res) => {
     s.last = Date.now();
 
     if (p === '/api/dashboard') {
-      const [fl, bl, dl, dc, cl] = await Promise.allSettled([api.folders(s), api.betaList(s), beta.stats(), discordStats(), calendar.upcoming(5)]);
+      const [fl, bl, dl, dc, cl] = await Promise.allSettled([api.folders(s), api.betaList(s), beta.stats(), discordStats(), calendar.upcoming(s.user, 5)]);
       const val = r => r.status === 'fulfilled' ? r.value : null;
       const folders = val(fl) || [], inbox = folders.find(f => f.special === '\\Inbox' || f.path === 'INBOX') || {};
       let recent = [], open = null;
@@ -471,7 +472,7 @@ const SERVER = http.createServer(async (req, res) => {
         beta: { open: b.filter(x => x.status === 'open').length, accepted: b.filter(x => x.status === 'accepted').length, waitlist: b.filter(x => x.status === 'waitlist').length, declined: b.filter(x => x.status === 'declined').length, error: bl.status === 'rejected' ? errText(bl.reason) : null },
         downloads: st ? { latest: rel ? { tag: rel.tag, date: rel.date, n: sum(rel) } : null, total: st.releases.reduce((n, r) => n + sum(r), 0), recent: (st.log || []).slice(0, 5) } : { error: dl.reason ? String(dl.reason.message || dl.reason).slice(0, 160) : 'nicht verfügbar' },
         discord: val(dc), cal: cl.status === 'fulfilled' ? cl.value : { configured: true, error: errText(cl.reason) }, aera: peek.aera, sync: aeraSync.state,
-        services: { resend: !!RESEND_KEY, github: peek.github, mock: MOCK, cal: calendar.configured },
+        services: { resend: !!RESEND_KEY, github: peek.github, mock: MOCK, cal: calendar.isConfigured(s.user) },
       });
     }
     if (p === '/api/beta/list') return send(res, 200, { items: await api.betaList(s), folders: mailx.BETA });
@@ -481,7 +482,7 @@ const SERVER = http.createServer(async (req, res) => {
     }
     if (p === '/api/downloads') { try { return send(res, 200, await beta.stats()); } catch (e) { return send(res, e.status || 500, { error: e.message }); } }
     if (p.startsWith('/api/cal/')) {
-      try { return await calendar.handle(req, res, u, p, send, readJson); }
+      try { return await calendar.handle(req, res, u, p, send, readJson, s.user); }
       catch (e) { return send(res, e.status || 502, { error: String(e.message || e).slice(0, 300) }); }
     }
     if (p.startsWith('/api/studio/')) {
