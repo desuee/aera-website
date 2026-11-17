@@ -263,13 +263,10 @@ function nextAfter(uid) { const ids = order.length ? order : items.map(x => x.ui
 function afterRemove() { order = items.map(x => x.uid); const id = cur.uid; items = items.filter(x => x.uid !== id); const nx = window.innerWidth > 900 ? nextAfter(id) : 0; order = []; cur = null; drawList(); if (nx) openMsg(nx); else clearReader(); loadFolders(); loadList(true); }
 
 // ---------------- signature + templates ----------------
-const SIG_DEF = `Simon Risse
-AERA – Airspace & Enroute Radar Authority
-
-dev-dsue · Simon Bruno Julius Risse
-c/o Online-Impressum 12619
-Europaring 90, 53757 Sankt Augustin, Deutschland
-kontakt@dev-dsue.de · www.dev-dsue.de/aera
+// default signature for every login – [Mein Name], [Meine Rolle] and [Meine E-Mail] are filled in from the settings
+const SIG_DEF = `[Mein Name]
+[Meine Rolle] · AERA – Airspace & Enroute Radar Authority
+[Meine E-Mail] · www.dev-dsue.de/aera
 Discord: discord.gg/aera`;
 const TPL_DEF = [
   { name: '🇩🇪 Beta angenommen', subject: 'Dein Zugang zur AERA Beta ✈️', body: `Hallo [Name],
@@ -285,7 +282,7 @@ So bekommst du deinen Zugang:
 Wir freuen uns auf dein Feedback!
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Beta accepted', subject: 'Your access to the AERA Beta ✈️', body: `Hi [Name],
 
 thanks a lot for signing up for the AERA Beta – you're in! 🎉
@@ -299,7 +296,7 @@ Here's how to get your access:
 We're looking forward to your feedback!
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Beta voll / Warteliste', subject: 'AERA Beta – aktuell ausgebucht', body: `Hallo [Name],
 
 vielen Dank für dein Interesse an der AERA Beta! 🙏
@@ -309,7 +306,7 @@ Leider sind aktuell alle Beta-Plätze vergeben. Wir haben dich aber auf die Wart
 Bis dahin kannst du gerne schon unserem Discord beitreten, um nichts zu verpassen: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Beta full / waitlist', subject: 'AERA Beta – currently full', body: `Hi [Name],
 
 thank you for your interest in the AERA Beta! 🙏
@@ -319,7 +316,7 @@ Unfortunately, all beta spots are taken at the moment. We've added you to the wa
 In the meantime, feel free to join our Discord so you don't miss anything: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Beta abgelehnt', subject: 'Deine Anmeldung zur AERA Beta', body: `Hallo [Name],
 
 vielen Dank für deine Anmeldung zur AERA Beta.
@@ -329,7 +326,7 @@ Leider können wir dir in dieser Testphase keinen Zugang geben. Das hat nichts m
 Sobald AERA öffentlich erscheint, erfährst du es als Erstes in unserem Discord: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Beta declined', subject: 'Your AERA Beta application', body: `Hi [Name],
 
 thank you for applying for the AERA Beta.
@@ -339,7 +336,7 @@ Unfortunately, we can't give you access during this test phase. This isn't perso
 As soon as AERA is released publicly, you'll be the first to know in our Discord: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Feedback / Bug erhalten', subject: 'Danke für dein Feedback zu AERA', body: `Hallo [Name],
 
 danke für deine Nachricht! Wir haben dein Feedback erhalten und schauen es uns genau an. Falls wir Rückfragen haben, melden wir uns bei dir.
@@ -347,7 +344,7 @@ danke für deine Nachricht! Wir haben dein Feedback erhalten und schauen es uns 
 Bugs kannst du übrigens auch direkt in unserem Discord melden: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Feedback / bug received', subject: 'Thanks for your AERA feedback', body: `Hi [Name],
 
 thanks for your message! We've received your feedback and will take a close look at it. If we have any questions, we'll get back to you.
@@ -355,7 +352,7 @@ thanks for your message! We've received your feedback and will take a close look
 You can also report bugs directly in our Discord: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Rückfrage: mehr Infos', subject: 'Kurze Rückfrage zu deiner AERA-Beta-Anmeldung', body: `Hallo [Name],
 
 danke für deine Anmeldung zur AERA Beta! 🙌
@@ -369,7 +366,7 @@ Damit ich deine Anfrage einordnen kann, bräuchte ich noch ein paar Infos:
 Antworte einfach direkt auf diese Mail.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Follow-up: more info', subject: 'Quick question about your AERA Beta application', body: `Hi [Name],
 
 thanks for signing up for the AERA Beta! 🙌
@@ -383,7 +380,7 @@ To process your application, I'd need a few more details:
 Just reply directly to this email.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Bereits dabei / doppelt', subject: 'Du bist schon in der AERA Beta', body: `Hallo [Name],
 
 gute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊
@@ -391,7 +388,7 @@ gute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweit
 Den aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Already in / duplicate', subject: "You're already in the AERA Beta", body: `Hi [Name],
 
 good news: you already have access to the AERA Beta – no need to sign up again. 😊
@@ -399,7 +396,7 @@ good news: you already have access to the AERA Beta – no need to sign up again
 You can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Erinnerung: Discord fehlt', subject: 'AERA Beta – nur noch ein Schritt', body: `Hallo [Name],
 
 du bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂
@@ -411,7 +408,7 @@ du bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Be
 Ohne die Discord-Rolle klappt der Download leider nicht.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Reminder: Discord missing', subject: 'AERA Beta – just one more step', body: `Hi [Name],
 
 you've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂
@@ -423,7 +420,7 @@ you've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂
 Unfortunately the download doesn't work without the Discord role.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Hilfe: Download / Login', subject: 'Hilfe zum AERA-Beta-Download', body: `Hallo [Name],
 
 danke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:
@@ -435,7 +432,7 @@ danke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meiste
 Klappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Help: download / sign-in', subject: 'Help with the AERA Beta download', body: `Hi [Name],
 
 thanks for your message! If the beta download doesn't work, it's usually one of these:
@@ -447,7 +444,7 @@ thanks for your message! If the beta download doesn't work, it's usually one of 
 If it still doesn't work, feel free to send me a screenshot of the error.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Nur Windows (Mac/Linux)', subject: 'AERA Beta – aktuell nur für Windows', body: `Hallo [Name],
 
 danke für dein Interesse an der AERA Beta! 🙏
@@ -457,7 +454,7 @@ AERA läuft im Moment leider nur unter Windows 10 und 11. Eine Version für macO
 Wenn du einen Windows-PC hast, melde dich gern nochmal. Neuigkeiten gibt es immer zuerst im Discord: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Windows only (Mac/Linux)', subject: 'AERA Beta – currently Windows only', body: `Hi [Name],
 
 thanks for your interest in the AERA Beta! 🙏
@@ -467,7 +464,7 @@ Right now AERA only runs on Windows 10 and 11 – there's no macOS or Linux vers
 If you have a Windows PC, feel free to get back to me. News always comes first on our Discord: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Bitte um Feedback', subject: 'Wie läuft AERA bei dir?', body: `Hallo [Name],
 
 du bist jetzt seit ein paar Tagen in der AERA Beta – danke, dass du mittestest! ✈️
@@ -480,7 +477,7 @@ Mich würde interessieren:
 Ein paar Stichpunkte reichen völlig – einfach auf diese Mail antworten oder im Discord posten: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Feedback request', subject: "How's AERA working for you?", body: `Hi [Name],
 
 you've been in the AERA Beta for a few days now – thanks for testing! ✈️
@@ -493,7 +490,7 @@ I'd love to know:
 A few bullet points are plenty – just reply to this email or post on Discord: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Eingang bestätigt', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
 
 vielen Dank für deine Bewerbung als [Rolle] im AERA-Team! 🙌
@@ -501,7 +498,7 @@ vielen Dank für deine Bewerbung als [Rolle] im AERA-Team! 🙌
 Ich habe sie gut erhalten und schaue sie mir in den nächsten Tagen in Ruhe an. Danach melde ich mich bei dir – per E-Mail oder auf Discord.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: application received', subject: 'Your application for the AERA team', body: `Hi [Name],
 
 thanks a lot for applying as [Rolle] on the AERA team! 🙌
@@ -509,7 +506,7 @@ thanks a lot for applying as [Rolle] on the AERA team! 🙌
 I've received your application and will take a proper look at it over the next few days. After that I'll get back to you – by email or on Discord.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Einladung Kennenlernen', subject: 'AERA-Team: Lass uns kurz kennenlernen', body: `Hallo [Name],
 
 deine Bewerbung als [Rolle] hat mir richtig gut gefallen – ich würde dich gerne kurz kennenlernen! 😊
@@ -519,7 +516,7 @@ Das Gespräch findet ganz locker im Discord statt (Sprach-Chat, ca. 15–20 Minu
 Falls du noch nicht auf dem AERA-Discord bist: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: invitation to meet', subject: "AERA team: let's get to know each other", body: `Hi [Name],
 
 I really liked your application as [Rolle] – I'd love to get to know you a bit! 😊
@@ -529,7 +526,7 @@ We'll have a relaxed chat on Discord (voice, about 15–20 minutes). Just send m
 If you're not on the AERA Discord yet: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Zusage + Vereinbarung', subject: 'Willkommen im AERA-Team! ✈️', body: `Hallo [Name],
 
 danke für das nette Gespräch – ich freue mich sehr, dich als [Rolle] im AERA-Team zu begrüßen! 🎉
@@ -539,7 +536,7 @@ Bevor es losgeht, noch ein kleiner Schritt: Im Anhang findest du die Mitwirkungs
 Sobald sie da ist, bekommst du deine Team-Rolle im Discord und Zugang zu allen internen Kanälen und Versionen.
 
 Willkommen an Bord!
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: welcome + agreement', subject: 'Welcome to the AERA team! ✈️', body: `Hi [Name],
 
 thanks for the great chat – I'm really happy to welcome you to the AERA team as [Rolle]! 🎉
@@ -549,7 +546,7 @@ One small step before we start: attached you'll find the contributor agreement w
 As soon as I have it, you'll get your team role on Discord and access to all internal channels and builds.
 
 Welcome aboard!
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Rückfrage', subject: 'Kurze Rückfrage zu deiner AERA-Bewerbung', body: `Hallo [Name],
 
 danke für deine Bewerbung als [Rolle]! Bevor ich mich entscheide, hätte ich noch ein paar kurze Fragen:
@@ -561,7 +558,7 @@ danke für deine Bewerbung als [Rolle]! Bevor ich mich entscheide, hätte ich no
 Antworte einfach direkt auf diese Mail.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: follow-up questions', subject: 'Quick questions about your AERA application', body: `Hi [Name],
 
 thanks for applying as [Rolle]! Before I decide, I have a few quick questions:
@@ -573,7 +570,7 @@ thanks for applying as [Rolle]! Before I decide, I have a few quick questions:
 Just reply directly to this email.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Lead-Platz vergeben', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
 
 danke für deine Bewerbung als [Rolle]! 🙏
@@ -581,7 +578,7 @@ danke für deine Bewerbung als [Rolle]! 🙏
 Den Lead-Platz habe ich inzwischen leider schon vergeben. Deine Bewerbung hat mir aber gut gefallen – hättest du Lust, stattdessen im Team mitzumachen (ohne Lead-Rolle)? Dann melde ich mich für ein kurzes Kennenlernen im Discord.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: lead spot taken', subject: 'Your application for the AERA team', body: `Hi [Name],
 
 thanks for applying as [Rolle]! 🙏
@@ -589,7 +586,7 @@ thanks for applying as [Rolle]! 🙏
 Unfortunately the lead spot has already been filled. I did like your application though – would you be up for joining the team without the lead role instead? Then I'll get in touch for a quick chat on Discord.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: Absage', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
 
 vielen Dank für deine Bewerbung als [Rolle] und dein Interesse an AERA! 🙏
@@ -599,7 +596,7 @@ Ich habe mich diesmal für andere Bewerbungen entschieden. Das ist keine Entsche
 Ich würde mich freuen, wenn du AERA trotzdem verfolgst und im Discord dabei bleibst: discord.gg/aera. Wenn wieder Plätze frei werden, sage ich dort Bescheid.
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: not this time', subject: 'Your application for the AERA team', body: `Hi [Name],
 
 thank you very much for applying as [Rolle] and for your interest in AERA! 🙏
@@ -609,7 +606,7 @@ This time I've decided to go with other applications. It's not a decision agains
 I'd be glad if you keep following AERA and stay on our Discord: discord.gg/aera. Whenever new spots open up, I'll announce it there.
 
 Best regards
-Simon` },
+[Mein Name]` },
   { name: '🇩🇪 Team: unter 18', subject: 'Deine Bewerbung fürs AERA-Team', body: `Hallo [Name],
 
 vielen Dank für deine Bewerbung und dein Interesse an AERA! 🙏
@@ -619,7 +616,7 @@ Für das Team brauche ich leider Mitglieder ab 18 Jahren – auch wegen der Vere
 Als Spieler bist du aber jederzeit herzlich willkommen, zum Beispiel im Discord: discord.gg/aera
 
 Viele Grüße
-Simon` },
+[Mein Name]` },
   { name: '🇬🇧 Team: under 18', subject: 'Your application for the AERA team', body: `Hi [Name],
 
 thank you very much for applying and for your interest in AERA! 🙏
@@ -629,32 +626,41 @@ Unfortunately, team members need to be at least 18 – partly because of the agr
 You're always welcome as a player though, for example on our Discord: discord.gg/aera
 
 Best regards
-Simon` },
+[Mein Name]` },
 ];
 const SIG_SEP = '\n\n-- \n';
-let MS = { sig: SIG_DEF, templates: TPL_DEF, known: TPL_DEF.map(t => t.name) };
+const msDefaults = () => ({ sender: '', role: '', sig: SIG_DEF, templates: JSON.parse(JSON.stringify(TPL_DEF)), known: TPL_DEF.map(t => t.name) });
+let MS = msDefaults();
+const msKey = () => 'dsue.mail.' + (ME || '').toLowerCase();
+// fill the sender's own placeholders (signature + templates)
+const myName = () => (MS.sender || '').trim();
+const fillMe = txt => String(txt || '').replace(/\[(Mein Name|Absender)\]/g, myName()).replace(/\[Mein Vorname\]/g, myName().split(/\s+/)[0] || '').replace(/\[Meine Rolle\]/g, (MS.role || '').trim()).replace(/\[Meine E-Mail\]/g, ME || '').replace(/^[ \t]*·[ \t]*/gm, '').replace(/[ \t]*·[ \t]*$/gm, '');
+const sigText = () => fillMe(MS.sig || '').trim();
 // default templates that came later are added once to saved settings; deleted ones stay deleted (MS.known remembers them)
 function withNewDefaults(v) {
   // settings saved before this list existed already knew the first 8 defaults
   const known = new Set(v.known || v.templates.map(t => t.name).concat(TPL_DEF.slice(0, 8).map(t => t.name))), add = TPL_DEF.filter(t => !known.has(t.name) && !v.templates.some(x => x.name === t.name));
   return { ...v, templates: [...v.templates, ...add.map(t => ({ ...t }))], known: TPL_DEF.map(t => t.name).concat([...known]).filter((n, i, a) => a.indexOf(n) === i), added: add.length };
 }
-try { const l = JSON.parse(localStorage.getItem('dsue.mail') || 'null'); if (l && l.templates) MS = withNewDefaults(l); } catch {}
 async function loadMailSettings() {
+  MS = msDefaults();
+  try { const l = JSON.parse(localStorage.getItem(msKey()) || 'null'); if (l && l.templates) MS = withNewDefaults({ ...msDefaults(), ...l }); } catch {}
   try {
     const r = await call('mail-settings');
     if (r && r.settings && r.settings.templates) {
-      MS = withNewDefaults(r.settings);
-      try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {}
+      MS = withNewDefaults({ ...msDefaults(), ...r.settings });
+      try { localStorage.setItem(msKey(), JSON.stringify(MS)); } catch {}
       if (MS.added) { const n = MS.added; delete MS.added; try { await call('mail-settings', MS); } catch {} toast(n + ' neue Vorlagen hinzugefügt'); }
     }
   } catch {}
   delete MS.added; fillTpl();
+  if (!myName() && /\[(Mein Name|Absender)\]/.test(MS.sig + MS.templates.map(t => t.body).join(''))) setTimeout(() => toast('Tipp: Trag unter „Signatur & Vorlagen“ deinen Namen ein – er steht dann in deiner Signatur und unter den Vorlagen.'), 1500);
+  if (window.VIEWS && VIEWS.dash && view === 'dash' && VIEWS.dash.greet) VIEWS.dash.greet();
 }
 function fillTpl() { $('cTpl').innerHTML = '<option value="">📄 Vorlage …</option>' + MS.templates.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join(''); }
 let toName = '', toRole = '';
 const firstName = n => String(n || '').replace(/["']/g, '').trim().split(/[\s,]+/)[0] || '';
-const fillName = (txt, name) => txt.replace(/\[Name\]/g, name || '').replace(/^(Hallo|Hi|Hey) ,/m, '$1,');
+const fillName = (txt, name) => fillMe(txt).replace(/\[Name\]/g, name || '').replace(/^(Hallo|Hi|Hey) ,/m, '$1,');
 function applyTemplate(i) {
   const t = MS.templates[i]; if (!t) return;
   const ta = $('cText'), v = ta.value, sigAt = MS.sig ? v.indexOf(SIG_SEP) : -1;
@@ -674,16 +680,19 @@ let msCur = 0, msDraft = null;
 function msLoad() { const t = msDraft.templates[msCur]; $('msName').value = t ? t.name : ''; $('msSubj').value = t ? t.subject : ''; $('msBody').value = t ? t.body : ''; ['msName', 'msSubj', 'msBody'].forEach(id => $(id).disabled = !t); }
 function msStore() { const t = msDraft.templates[msCur]; if (t) { t.name = $('msName').value || 'Ohne Namen'; t.subject = $('msSubj').value; t.body = $('msBody').value; } }
 function msList() { $('msList').innerHTML = msDraft.templates.map((t, i) => `<option value="${i}"${i === msCur ? ' selected' : ''}>${esc(t.name)}</option>`).join(''); msLoad(); }
-$('mailSetBtn').addEventListener('click', () => { msDraft = JSON.parse(JSON.stringify(MS)); msCur = 0; $('msSig').value = msDraft.sig; msList(); $('mailSet').classList.remove('hidden'); });
+$('mailSetBtn').addEventListener('click', () => { msDraft = JSON.parse(JSON.stringify(MS)); msCur = 0; $('msSig').value = msDraft.sig; $('msMe').value = msDraft.sender || ''; $('msRole').value = msDraft.role || ''; $('msWho').textContent = ME; msList(); msPreview(); $('mailSet').classList.remove('hidden'); });
+function msPreview() { const keep = MS; MS = { ...msDraft, sender: $('msMe').value, role: $('msRole').value, sig: $('msSig').value }; $('msSigPrev').textContent = sigText() || '(keine Signatur)'; MS = keep; }
+['msMe', 'msRole', 'msSig'].forEach(id => $(id).addEventListener('input', msPreview));
 $('msClose').addEventListener('click', () => $('mailSet').classList.add('hidden'));
 $('msList').addEventListener('change', e => { msStore(); msCur = +e.target.value; msList(); });
 $('msName').addEventListener('input', () => { msStore(); const o = $('msList').options[msCur]; if (o) o.textContent = $('msName').value; });
-$('msAdd').addEventListener('click', () => { msStore(); msDraft.templates.push({ name: 'Neue Vorlage', subject: '', body: 'Hallo [Name],\n\n\n\nViele Grüße\nSimon' }); msCur = msDraft.templates.length - 1; msList(); $('msName').select(); });
+$('msAdd').addEventListener('click', () => { msStore(); msDraft.templates.push({ name: 'Neue Vorlage', subject: '', body: 'Hallo [Name],\n\n\n\nViele Grüße\n[Mein Name]' }); msCur = msDraft.templates.length - 1; msList(); $('msName').select(); });
 $('msDel').addEventListener('click', () => { if (!msDraft.templates[msCur] || !confirm('Vorlage „' + msDraft.templates[msCur].name + '“ löschen?')) return; msDraft.templates.splice(msCur, 1); msCur = 0; msList(); });
-$('msReset').addEventListener('click', () => { if (!confirm('Signatur und Vorlagen auf Standard zurücksetzen?')) return; msDraft = { sig: SIG_DEF, templates: JSON.parse(JSON.stringify(TPL_DEF)), known: TPL_DEF.map(t => t.name) }; msCur = 0; $('msSig').value = msDraft.sig; msList(); });
+$('msReset').addEventListener('click', () => { if (!confirm('Signatur und Vorlagen auf Standard zurücksetzen?')) return; msDraft = { ...msDefaults(), sender: $('msMe').value, role: $('msRole').value }; msCur = 0; $('msSig').value = msDraft.sig; msList(); msPreview(); });
 $('msSave').addEventListener('click', async () => {
-  msStore(); msDraft.sig = $('msSig').value; MS = msDraft;
-  try { localStorage.setItem('dsue.mail', JSON.stringify(MS)); } catch {}
+  msStore(); msDraft.sig = $('msSig').value; msDraft.sender = $('msMe').value.trim(); msDraft.role = $('msRole').value.trim(); MS = msDraft;
+  try { localStorage.setItem(msKey(), JSON.stringify(MS)); } catch {}
+  if (VIEWS.dash && VIEWS.dash.greet) VIEWS.dash.greet();
   fillTpl(); $('mailSet').classList.add('hidden');
   try { const r = await call('mail-settings', MS); toast(r.saved === 'github' ? 'Gespeichert ✓ (dauerhaft)' : 'Gespeichert ✓ (in diesem Browser)'); } catch (er) { toast('Lokal gespeichert – Server: ' + er.message, true); }
 });
@@ -723,7 +732,7 @@ function openCompose(kind, m) {
     if (nm && (!toName || /aera|bewerbung|dsue/i.test(toName))) toName = firstName(nm[1]);
     if (rl) toRole = rl[1].trim();
   }
-  if (addSig && MS.sig && MS.sig.trim()) { const sig = SIG_SEP + MS.sig.trim(); const v = $('cText').value; $('cText').value = v ? '\n' + sig + v : '\n' + sig; }
+  if (addSig && sigText()) { const sig = SIG_SEP + sigText(); const v = $('cText').value; $('cText').value = v ? '\n' + sig + v : '\n' + sig; }
   $('cFrom').textContent = ME;
   $('compose').classList.remove('hidden');
   setTimeout(() => { const t = $('cText'); if ($('cTo').value) { t.focus(); t.setSelectionRange(0, 0); t.scrollTop = 0; } else $('cTo').focus(); }, 30);
@@ -743,7 +752,7 @@ async function saveDraft(quiet) {
   } catch (er) { if (!quiet) toast(er.message, true); else $('draftState').textContent = 'Entwurf nicht gespeichert'; return false; }
 }
 $('cDraft').addEventListener('click', () => { dirty = true; saveDraft(false); });
-const hasOwnText = () => $('cText').value.replace(SIG_SEP + (MS.sig || '').trim(), '').replace(/^\s*>.*$/gm, '').replace(/-{6,}[\s\S]*$/, '').trim() || $('cSubject').value.trim() && !replyCtx;
+const hasOwnText = () => $('cText').value.replace(SIG_SEP + sigText(), '').replace(/^\s*>.*$/gm, '').replace(/-{6,}[\s\S]*$/, '').trim() || $('cSubject').value.trim() && !replyCtx;
 $('composeClose').addEventListener('click', async () => {
   if (dirty && hasOwnText()) { if (await saveDraft(true)) toast('Als Entwurf gespeichert'); }
   clearTimeout(autoT); $('compose').classList.add('hidden');
@@ -812,7 +821,7 @@ function startApp() {
   pollUnread();
   clearInterval(timer); timer = setInterval(() => { if (document.visibilityState === 'visible') pollUnread(); }, 60000);
 }
-window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, composeFill, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
+window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, composeFill, fillMe, sigText, myName, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
 (async () => {
   $('lUser').value = 'kontakt@dev-dsue.de';
   try { const r = await call('me'); if (r.user) { ME = r.user; startApp(); } else showLogin(); } catch { showLogin(); }
