@@ -1,0 +1,14 @@
+{
+ "members": [
+  {
+   "name": "Desue",
+   "real": "Simon",
+   "role": { "de": "Leading Developer", "en": "Leading Developer" },
+   "lead": true,
+   "bio": { "de": "Hat AERA erfunden und entwickelt alles – vom Radar über den Funk bis zu den Stimmen.", "en": "Created AERA and builds everything – from the radar to the radio and the voices." },
+   "avatar": "/img/logo.png",
+   "links": [ { "label": "dev-dsue.de", "url": "https://www.dev-dsue.de" } ]
+  }
+ ],
+ "filled": [ "community-lead" ]
+}
