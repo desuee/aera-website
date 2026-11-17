@@ -198,6 +198,12 @@ function attach(server) {
         if (m.ver && room.cfg.ver && m.ver !== room.cfg.ver) { ws.send(JSON.stringify({ t: 'err', e: 'version', need: room.cfg.ver })); return; }
         leave(ws); room.members.set(ws.user.id, { ws, user: ws.user, pos: [] }); ws.room = room.code; bcast(room, roomInfo(room)); return;
       }
+      if (m.t === 'resume') {   // reconnect after a dropped connection (Railway closes WebSockets after ~15 min): take the seat back
+        const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); const me = room && room.members.get(ws.user.id);
+        if (!me) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
+        const old = me.ws; me.ws = ws; me.away = 0; ws.room = room.code; if (old && old !== ws) { old.room = null; try { old.close(); } catch {} }
+        bcast(room, roomInfo(room)); return;
+      }
       if (!r) return;
       if (m.t === 'leave') { leave(ws); ws.send(JSON.stringify({ t: 'left' })); return; }
       if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR'].includes(x));
@@ -213,7 +219,12 @@ function attach(server) {
         else { const x = r.members.get(m.to === 'host' ? r.host : String(m.to)); if (x && x.ws.readyState === 1) x.ws.send(out); }
       }
     });
-    ws.on('close', () => leave(ws));
+    ws.on('close', () => {   // keep the seat for 60 s – the client reconnects and resumes
+      const r = ws.room && ROOMS.get(ws.room); const me = r && r.members.get(ws.user.id);
+      if (!me || me.ws !== ws) return;
+      me.away = Date.now();
+      setTimeout(() => { const r2 = ROOMS.get(r.code); const m2 = r2 && r2.members.get(ws.user.id); if (m2 && m2.ws === ws) leave(ws); }, 60000).unref();
+    });
     ws.on('error', () => {});
   });
   setInterval(() => { for (const ws of wss.clients) { if (!ws.alive) { ws.terminate(); continue; } ws.alive = false; try { ws.ping(); } catch {} } }, 25000).unref();
