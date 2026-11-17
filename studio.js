@@ -221,9 +221,22 @@ function mergeAuto(list, cmp) {
 }
 
 // webmail: signature + templates (kept in data/mail.json so they survive every deploy)
+// every admin login has its own signature + templates: { users: { "login@…": { sender, role, sig, templates, known } } }
+// the older single set (before per-login settings) belongs to MAIL_OWNER (default: CAL_OWNER / first of ALLOWED_USERS)
+const MAIL_OWNER = (process.env.MAIL_OWNER || process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || '').trim().toLowerCase();
+function mailAll() {
+  const m = mem.mail;
+  if (!m) return { users: {} };
+  if (m.users) return { users: { ...m.users } };
+  return { users: MAIL_OWNER ? { [MAIL_OWNER]: m } : {}, legacy: MAIL_OWNER ? null : m };
+}
 const mail = {
-  get: () => mem.mail,
-  async save(v) { mem.mail = v; if (!TOKEN) return { saved: 'memory' }; await commitJson('mail', v, 'Mail: Signatur und Vorlagen'); return { saved: 'github' }; },
+  get: user => { const a = mailAll(); return a.users[String(user || '').toLowerCase()] || a.legacy || null; },
+  async save(user, v) {
+    const a = mailAll(); a.users[String(user || '').toLowerCase()] = v; mem.mail = { users: a.users };
+    if (!TOKEN) return { saved: 'memory' };
+    await commitJson('mail', mem.mail, 'Mail: Signatur und Vorlagen (' + String(user || '').replace(/@.*/, '') + ')'); return { saved: 'github' };
+  },
 };
 const peek = () => ({ github: !!TOKEN, aera: mem.aera && mem.aera[0] ? { version: mem.aera[0].version, date: mem.aera[0].date, title: mem.aera[0].title, count: mem.aera.length } : null });
 const team = () => mem.team;
