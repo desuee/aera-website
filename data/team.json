@@ -3,12 +3,241 @@
   {
    "name": "Desue",
    "real": "Simon",
-   "role": { "de": "Leading Developer", "en": "Leading Developer" },
+   "role": {
+    "de": "Founder · Leading Developer & Executive Director",
+    "en": "Founder · Leading Developer & Executive Director"
+   },
    "lead": true,
-   "bio": { "de": "Hat AERA erfunden und entwickelt alles – vom Radar über den Funk bis zu den Stimmen.", "en": "Created AERA and builds everything – from the radar to the radio and the voices." },
+   "bio": {
+    "de": "Hat AERA erfunden und entwickelt alles – vom Radar über den Funk bis zu den Stimmen.",
+    "en": "Created AERA and builds everything – from the radar to the radio and the voices."
+   },
    "avatar": "/img/logo.png",
-   "links": [ { "label": "dev-dsue.de", "url": "https://www.dev-dsue.de" } ]
+   "links": [
+    {
+     "label": "dev-dsue.de",
+     "url": "https://www.dev-dsue.de"
+    }
+   ]
   }
  ],
- "filled": [ "community-lead" ]
+ "filled": [
+  "community-lead"
+ ],
+ "roles": [
+  {
+   "id": "community-lead",
+   "area": {
+    "de": "Community & Moderation",
+    "en": "Community & moderation"
+   },
+   "name": "Leading Community & Moderation Manager",
+   "seats": 1,
+   "taken": true,
+   "about": {
+    "de": "Du bist das freundliche Gesicht im Discord.",
+    "en": "You are the friendly face on Discord."
+   },
+   "tasks": {
+    "de": [
+     "Koordiniert das Community-Team und ist mein direkter Ansprechpartner",
+     "Pflegt die Discord-Regeln und Moderationsrichtlinien",
+     "Hilft neuen Teammitgliedern beim Einstieg"
+    ],
+    "en": [
+     "Coordinates the community team and is my direct contact",
+     "Maintains the Discord rules and moderation guidelines",
+     "Helps new team members get started"
+    ]
+   }
+  },
+  {
+   "id": "community",
+   "area": {
+    "de": "Community & Moderation",
+    "en": "Community & moderation"
+   },
+   "name": "Community & Moderation Manager",
+   "seats": 2,
+   "taken": false,
+   "about": {
+    "de": "Du bist das freundliche Gesicht im Discord.",
+    "en": "You are the friendly face on Discord."
+   },
+   "tasks": {
+    "de": [
+     "Fragen von Spielern beantworten und neue Mitglieder willkommen heißen",
+     "Moderieren und auf einen respektvollen Umgangston achten",
+     "Bugs und Wünsche sammeln und weitergeben"
+    ],
+    "en": [
+     "Answer player questions and welcome new members",
+     "Moderate and help keep the tone respectful",
+     "Collect bugs and wishes and pass them on"
+    ]
+   }
+  },
+  {
+   "id": "social-lead",
+   "area": {
+    "de": "Social Media & Videos",
+    "en": "Social media & videos"
+   },
+   "name": "Leading Social Media Manager",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du zeigst der Welt, was AERA kann.",
+    "en": "You show the world what AERA can do."
+   },
+   "tasks": {
+    "de": [
+     "Koordiniert das Social-Media-Team und ist mein direkter Ansprechpartner",
+     "Plant, was wann auf welchem Kanal erscheint",
+     "Achtet auf einen einheitlichen Look der Videos und Posts"
+    ],
+    "en": [
+     "Coordinates the social media team and is my direct contact",
+     "Plans what goes out on which channel and when",
+     "Keeps the look of videos and posts consistent"
+    ]
+   }
+  },
+  {
+   "id": "social",
+   "area": {
+    "de": "Social Media & Videos",
+    "en": "Social media & videos"
+   },
+   "name": "Social Media Manager",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du zeigst der Welt, was AERA kann.",
+    "en": "You show the world what AERA can do."
+   },
+   "tasks": {
+    "de": [
+     "Kurze Videos für TikTok, YouTube Shorts und Instagram schneiden",
+     "Gameplay aufnehmen, Updates und neue Features zeigen",
+     "Kommentare im Blick behalten und freundlich antworten"
+    ],
+    "en": [
+     "Edit short videos for TikTok, YouTube Shorts and Instagram",
+     "Record gameplay, show updates and new features",
+     "Keep an eye on comments and reply in a friendly way"
+    ]
+   }
+  },
+  {
+   "id": "atc-procedures",
+   "area": {
+    "de": "Flugsicherung & Realismus",
+    "en": "Air traffic control & realism"
+   },
+   "name": "ATC Procedures Specialist",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du sorgst dafür, dass AERA sich anfühlt wie echte Flugsicherung.",
+    "en": "You make sure AERA feels like real air traffic control."
+   },
+   "tasks": {
+    "de": [
+     "Phraseologie, Funksprüche und Verfahren auf Realismus prüfen",
+     "Abläufe wie Freigaben, Übergaben und Staffelung mit mir abstimmen",
+     "Fehler in Karten, Frequenzen und Verfahren melden",
+     "Ideal: Erfahrung als Lotse auf VATSIM oder IVAO – oder echte Flugsicherungs-Erfahrung"
+    ],
+    "en": [
+     "Check phraseology, radio calls and procedures for realism",
+     "Work out clearances, handoffs and separation with me",
+     "Report errors in charts, frequencies and procedures",
+     "Ideal: experience as a controller on VATSIM or IVAO – or real-world ATC experience"
+    ]
+   }
+  },
+  {
+   "id": "qa",
+   "area": {
+    "de": "Qualität & Tests",
+    "en": "Quality & testing"
+   },
+   "name": "Quality Assurance Manager",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du findest die Bugs, bevor die Spieler es tun.",
+    "en": "You find the bugs before the players do."
+   },
+   "tasks": {
+    "de": [
+     "Neue Versionen vor dem Release gründlich testen",
+     "Die Beta-Tester koordinieren und ihr Feedback sammeln",
+     "Bugs sauber dokumentieren: was passiert, wie man es nachstellt, Screenshots",
+     "Prüfen, ob gemeldete Fehler wirklich behoben sind"
+    ],
+    "en": [
+     "Test new versions thoroughly before release",
+     "Coordinate the beta testers and collect their feedback",
+     "Document bugs clearly: what happens, how to reproduce it, screenshots",
+     "Check that reported bugs are really fixed"
+    ]
+   }
+  },
+  {
+   "id": "airspace",
+   "area": {
+    "de": "Luftraum & Flughäfen",
+    "en": "Airspace & airports"
+   },
+   "name": "Airspace Designer",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du baust die Lufträume, in denen gelotst wird.",
+    "en": "You build the airspace that gets controlled."
+   },
+   "tasks": {
+    "de": [
+     "Neue Flughäfen und Sektoren vorbereiten: Rollwege, Pisten, Parkpositionen",
+     "SIDs, STARs, Wegpunkte und Frequenzen aus Karten übertragen",
+     "Bestehende Lufträume auf Fehler prüfen und verbessern",
+     "Ideal: Erfahrung mit Luftfahrtkarten (AIP, Charts) oder Sektordateien"
+    ],
+    "en": [
+     "Prepare new airports and sectors: taxiways, runways, parking positions",
+     "Transfer SIDs, STARs, waypoints and frequencies from charts",
+     "Check existing airspace for errors and improve it",
+     "Ideal: experience with aviation charts (AIP) or sector files"
+    ]
+   }
+  },
+  {
+   "id": "events",
+   "area": {
+    "de": "Events & Aktionen",
+    "en": "Events & activities"
+   },
+   "name": "Event Manager",
+   "seats": 1,
+   "taken": false,
+   "about": {
+    "de": "Du bringst Leben in die Community.",
+    "en": "You bring the community to life."
+   },
+   "tasks": {
+    "de": [
+     "Community-Events, Ranked-Turniere und Challenges planen und durchführen",
+     "Gewinnspiele und Aktionen mit dem Community-Team organisieren",
+     "Events im Discord ankündigen und Ergebnisse teilen"
+    ],
+    "en": [
+     "Plan and run community events, ranked tournaments and challenges",
+     "Organise giveaways and activities with the community team",
+     "Announce events on Discord and share the results"
+    ]
+   }
+  }
+ ]
 }
