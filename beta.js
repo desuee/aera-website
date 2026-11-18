@@ -10,6 +10,7 @@
 //   DISCORD_CLIENT_SECRET  Discord application → OAuth2 → Client Secret
 //   DISCORD_GUILD_ID       ID of the AERA Discord server
 //   BETA_ROLE_IDS          comma separated role IDs that may download (Beta Tester, Developer, …)
+//   TEAM_ROLE_IDS          comma separated role IDs of the AERA team – only they get the online speech recognition (and always get in)
 //   PUBLIC_URL             default https://www.dev-dsue.de   (redirect: PUBLIC_URL/beta/callback)
 //   BETA_REPO              default desuee/aera-beta          (private repository with the releases)
 //   BETA_GITHUB_TOKEN      fine-grained token with Contents: Read for BETA_REPO (falls back to GITHUB_TOKEN)
@@ -22,6 +23,8 @@ const CID = process.env.DISCORD_CLIENT_ID || '';
 const CSECRET = process.env.DISCORD_CLIENT_SECRET || '';
 const GUILD = process.env.DISCORD_GUILD_ID || '';
 const ROLES = (process.env.BETA_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+// TEAM_ROLE_IDS: comma separated role IDs of the AERA team (online speech recognition is only for them)
+const TEAM = (process.env.TEAM_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://www.dev-dsue.de').replace(/\/$/, '');
 const REPO = process.env.BETA_REPO || 'desuee/aera-beta';
 const TOKEN = process.env.BETA_GITHUB_TOKEN || process.env.GITHUB_TOKEN || '';
@@ -147,8 +150,9 @@ async function memberCheck(accessToken) {
   if (mr.status === 404) return { ok: true, beta: false, reason: 'notmember' };
   if (!mr.ok) return { ok: false, beta: false, reason: 'discord' };
   const m = await mr.json();
-  const beta = (m.roles || []).some(r => ROLES.includes(r));
-  return { ok: true, beta, reason: beta ? '' : 'norole', nick: m.nick || '' };
+  const team = (m.roles || []).some(r => TEAM.includes(r));
+  const beta = team || (m.roles || []).some(r => ROLES.includes(r));   // the team always gets in
+  return { ok: true, beta, team, reason: beta ? '' : 'norole', nick: m.nick || '' };
 }
 // stream one release asset (by id) to the response; returns false when the asset is unknown
 async function pipeAsset(res, id, who) {
@@ -164,4 +168,4 @@ async function pipeAsset(res, id, who) {
   return true;
 }
 const gateReady = () => !!(GUILD && ROLES.length);
-module.exports = { handle, stats, releases, memberCheck, pipeAsset, gateReady, DAYS };
+module.exports = { handle, stats, releases, memberCheck, pipeAsset, gateReady, DAYS, teamReady: () => TEAM.length > 0 };

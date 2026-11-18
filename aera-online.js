@@ -90,6 +90,9 @@ function check(run, s, now) {
 
 // ---------------- beta gate + auto-update ----------------
 // token from /aera/auth/callback carries beta (1/0), br (why not) and bt (when the role was checked)
+// online speech recognition: only for the Discord team role (TEAM_ROLE_IDS), stored in the token at sign-in.
+// AERA_STT_ALL=1 opens it for every beta tester.
+const sttTeam = me => process.env.AERA_STT_ALL === '1' || (me && me.team === 1);
 function gateCheck(req) {
   const me = bearer(req);
   if (!me) return { ok: false, code: 401, error: 'Not signed in', reason: 'login' };
@@ -123,6 +126,131 @@ function mockPipe(res, id) {
   fs.createReadStream(f).pipe(res); return true;
 }
 
+// ---------------- online speech recognition (opt-in in the game, beta testers only) ----------------
+// The game sends the recorded transmission (16 kHz WAV) here; the server forwards it to the speech API with its own key.
+// The key never leaves the server.  Environment (Railway):
+//   OPENAI_API_KEY      (or AERA_STT_KEY)  key for the speech API – without it the online recognition is off
+//   AERA_STT_MODEL      default gpt-4o-mini-transcribe
+//   AERA_STT_URL        default https://api.openai.com/v1/audio/transcriptions  (any OpenAI-compatible endpoint, e.g. Groq)
+//   AERA_STT_PER_MIN / AERA_STT_PER_DAY   limits per player, default 30 / 1500
+const STT_KEY = process.env.AERA_STT_KEY || process.env.OPENAI_API_KEY || '';
+const STT_URL = process.env.AERA_STT_URL || 'https://api.openai.com/v1/audio/transcriptions';
+const STT_MODEL = process.env.AERA_STT_MODEL || 'gpt-4o-mini-transcribe';
+const STT_MOCK = DEV && process.env.AERA_STT_MOCK === '1';   // local tests only
+const STT_PER_MIN = +process.env.AERA_STT_PER_MIN || 30, STT_PER_DAY = +process.env.AERA_STT_PER_DAY || 1500;
+const STT_USE = new Map();
+const STT_STATS = { n: 0, sec: 0, fail: 0, since: Date.now() };
+const sttOn = () => !!(STT_KEY || STT_MOCK);
+function sttLimit(id) {
+  const now = Date.now(), day = new Date().toISOString().slice(0, 10);
+  const u = STT_USE.get(id) || { m: [], day, n: 0 };
+  if (u.day !== day) { u.day = day; u.n = 0; }
+  u.m = u.m.filter(t => now - t < 60000);
+  if (u.m.length >= STT_PER_MIN || u.n >= STT_PER_DAY) { STT_USE.set(id, u); return false; }
+  u.m.push(now); u.n++; STT_USE.set(id, u); return true;
+}
+function readRaw(req, max) {
+  return new Promise((res, rej) => { const ch = []; let n = 0;
+    let over = false;
+    req.on('data', c => { if (over) return; n += c.length; if (n > max) { over = true; ch.length = 0; const e = new Error('transmission too long'); e.status = 413; rej(e); return; } ch.push(c); });
+    req.on('end', () => { if (!over) res(Buffer.concat(ch)); }); req.on('error', rej); });
+}
+async function sttRun(buf, prompt) {
+  if (STT_MOCK) return { text: process.env.AERA_STT_MOCK_TEXT || 'mock transcription' };
+  const fd = new FormData();
+  fd.append('file', new Blob([buf], { type: 'audio/wav' }), 'ptt.wav');
+  fd.append('model', STT_MODEL); fd.append('language', 'en'); fd.append('response_format', 'json');
+  if (prompt) fd.append('prompt', prompt);
+  const r = await fetch(STT_URL, { method: 'POST', headers: { Authorization: 'Bearer ' + STT_KEY }, body: fd, signal: AbortSignal.timeout(15000) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error((j.error && j.error.message) || ('speech API ' + r.status)); e.status = 502; throw e; }
+  return { text: String(j.text || '') };
+}
+
+// ---------------- AI understanding (team only for now) ----------------
+// When the game's own phrase parser is unsure (no callsign, nothing understood, or an instruction that does not fit the
+// aircraft – e.g. a route clearance for an aircraft at the holding point), it sends the transcribed text plus a short list of
+// the aircraft and their state here. A language model rewrites it into the standard phrase the game understands; the game
+// then runs that phrase through its normal parser (all checks and readbacks stay in the game). Environment (Railway):
+//   OPENAI_API_KEY (or AERA_NLU_KEY)   without it the AI understanding is off
+//   AERA_NLU_MODEL    default gpt-4.1-mini        (cheaper: gpt-4o-mini)
+//   AERA_NLU_URL      default https://api.openai.com/v1/chat/completions   (any OpenAI-compatible endpoint)
+//   AERA_NLU_PER_MIN / AERA_NLU_PER_DAY   limits per player, default 30 / 1500
+const NLU_KEY = process.env.AERA_NLU_KEY || process.env.OPENAI_API_KEY || '';
+const NLU_URL = process.env.AERA_NLU_URL || 'https://api.openai.com/v1/chat/completions';
+const NLU_MODEL = process.env.AERA_NLU_MODEL || 'gpt-4.1-mini';
+const NLU_PER_MIN = +process.env.AERA_NLU_PER_MIN || 30, NLU_PER_DAY = +process.env.AERA_NLU_PER_DAY || 1500;
+const NLU_USE = new Map();
+const NLU_STATS = { n: 0, ok: 0, fail: 0, tin: 0, tout: 0, since: Date.now() };
+const nluOn = () => !!NLU_KEY;
+function nluLimit(id) {
+  const now = Date.now(), day = new Date().toISOString().slice(0, 10);
+  const u = NLU_USE.get(id) || { m: [], day, n: 0 };
+  if (u.day !== day) { u.day = day; u.n = 0; }
+  u.m = u.m.filter(t => now - t < 60000);
+  if (u.m.length >= NLU_PER_MIN || u.n >= NLU_PER_DAY) { NLU_USE.set(id, u); return false; }
+  u.m.push(now); u.n++; NLU_USE.set(id, u); return true;
+}
+const NLU_VOCAB = {
+  APP: [
+    '<callsign>, turn left heading 270 | turn right heading 090 | fly heading 180 | continue present heading | turn left by 20 degrees',
+    '<callsign>, descend altitude 5000 | climb altitude 6000 | descend flight level 120 | climb flight level 240',
+    '<callsign>, speed 220 knots | reduce speed 180 knots | maintain 250 knots or greater | speed 160 knots until 5 DME | resume normal speed',
+    '<callsign>, descend flight level 100 rate 1500 feet per minute or greater | resume normal rate',
+    '<callsign>, proceed direct ROLIS | resume own navigation | hold over DITAM',
+    '<callsign>, cleared ILS approach runway 25L | cleared visual approach runway 25C | go around',
+    '<callsign>, squawk 4512 | squawk ident | confirm squawk',
+    '<callsign>, contact Tower | contact Langen Radar | frequency change approved',
+    '<callsign>, radar contact   (= first contact acknowledged, no instruction)',
+    '<callsign>, deviation approved',
+    'Several instructions in one transmission are joined with commas, e.g. "<callsign>, turn left heading 250, descend altitude 4000, speed 200 knots".',
+  ],
+  TWR: [
+    'Delivery: <callsign>, cleared to <destination> via <SID> departure, climb flight level 70, squawk 4512 | <callsign>, read back correct | <callsign>, read back correct, report ready for push and start',
+    'Ground: <callsign>, startup approved | push back approved | push and start approved, facing south | push back approved, blue line | push back approved, orange line',
+    'Ground: <callsign>, taxi to holding point runway 13L via A, hold short runway 06 | taxi via A B | taxi to stand B24 via E A4 | continue taxi | hold position | hold short A | give way to <callsign> | follow <callsign> | expedite',
+    'Tower: <callsign>, hold short runway 06 | cross runway 06 | cross runway 06, hold short D, contact ground',
+    'Tower: <callsign>, line up and wait runway 13L | behind the landing A320, line up and wait runway 13L | cleared for takeoff runway 13L | cleared for immediate takeoff | cancel takeoff clearance',
+    'Tower: <callsign>, cleared to land runway 14L | continue approach | go around | vacate via A4 | expedite vacating',
+    'Handoffs: <callsign>, contact ground | contact tower | contact departure | contact delivery',
+    '<callsign>, squawk 4512 | confirm squawk',
+    'Several instructions in one transmission are joined with commas.',
+  ],
+};
+NLU_VOCAB.CTR = NLU_VOCAB.APP;
+function nluPrompt(mode) {
+  return [
+    'You turn an air traffic controller\'s radio transmission into the exact standard phrase an ATC simulator understands.',
+    'The transmission was transcribed by speech recognition, so words, callsigns and waypoint names can be misheard. The controller may also use non-standard but clear wording.',
+    'You get the list of aircraft with their current state. Use it to decide which aircraft is meant and what the controller wants.',
+    'Rules:',
+    '- Write ONLY instructions the controller actually gave. Never add, guess or complete an instruction he did not give. Information for the pilot (wind, QNH, traffic info) is dropped.',
+    '- Start with the callsign exactly as written in the "say" field of the aircraft list.',
+    '- Use only phrases from this list (numbers in digits, runways like 25L, waypoints exactly as in the lists):',
+    ...(NLU_VOCAB[mode] || NLU_VOCAB.APP).map(l => '  ' + l),
+    '- Use the state: "cleared for departure" to an aircraft at the holding point or on the runway that already has its clearance means "cleared for takeoff"; a route clearance is only for aircraft at the stand.',
+    '- If the callsign is unclear, pick the aircraft whose state fits the instruction; if two fit equally, set conf below 0.5.',
+    '- If nothing sensible can be understood, return an empty phrase.',
+    'Answer with JSON only: {"cs": "<callsign code from the list or null>", "phrase": "<standard phrase or empty>", "conf": <0..1>}',
+  ].join('\n');
+}
+async function nluRun(body) {
+  const mode = ['APP', 'CTR', 'TWR'].includes(body.mode) ? body.mode : 'APP';
+  const ctx = { airport: String(body.apt || '').slice(0, 8), runways: body.rwy || null, position: body.pos || null, aircraft: (Array.isArray(body.ac) ? body.ac : []).slice(0, 30), fixes: (Array.isArray(body.fixes) ? body.fixes : []).slice(0, 120), parser_note: String(body.why || '').slice(0, 200) };
+  const user = 'Situation:\n' + JSON.stringify(ctx) + '\n\nTranscribed transmission:\n"' + String(body.text || '').slice(0, 400) + '"';
+  const r = await fetch(NLU_URL, { method: 'POST', headers: { Authorization: 'Bearer ' + NLU_KEY, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(6000),
+    body: JSON.stringify({ model: NLU_MODEL, temperature: 0, max_tokens: 150, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: nluPrompt(mode) }, { role: 'user', content: user }] }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error((j.error && j.error.message) || ('AI API ' + r.status)); e.status = 502; throw e; }
+  if (j.usage) { NLU_STATS.tin += j.usage.prompt_tokens || 0; NLU_STATS.tout += j.usage.completion_tokens || 0; }
+  let o = {}; try { o = JSON.parse((((j.choices || [])[0] || {}).message || {}).content || '{}'); } catch (_) { o = {}; }
+  const known = new Set(ctx.aircraft.map(a => a && a.cs).filter(Boolean));
+  const cs = known.has(o.cs) ? o.cs : null;
+  const phrase = cs ? String(o.phrase || '').replace(/[\r\n]+/g, ' ').slice(0, 300).trim() : '';   // never a callsign that is not on the scope
+  const conf = Math.max(0, Math.min(1, +o.conf || 0));
+  return { cs, phrase, conf };
+}
+
 // ---------------- http routes ----------------
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Dsue', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const configured = () => !!(CID && CSECRET);
@@ -153,7 +281,7 @@ async function handle(req, res, u, p, send, readJson) {
       let mc = { beta: false, reason: 'off' };
       try { mc = await beta.memberCheck(tok.access_token); } catch (e) { mc = { beta: false, reason: 'discord' }; }
       const t = makeToken({ id: du.id, name: du.global_name || du.username, avatar: du.avatar ? `https://cdn.discordapp.com/avatars/${du.id}/${du.avatar}.png?size=64` : '', exp: Date.now() + TOKEN_DAYS * 864e5,
-        beta: mc.beta ? 1 : 0, br: mc.beta ? '' : (mc.reason || 'norole'), bt: Date.now() });
+        beta: mc.beta ? 1 : 0, br: mc.beta ? '' : (mc.reason || 'norole'), bt: Date.now(), team: mc.team ? 1 : 0 });
       res.writeHead(302, { Location: '/aera/auth/done#t=' + t, 'Set-Cookie': `aera_ostate=; Max-Age=0; Path=/aera/auth`, 'Cache-Control': 'no-store' }); res.end();
       console.log('aera sign-in', du.username); return true;
     } catch (e) { console.warn('aera callback', e.message); return fail('discord'); }
@@ -161,14 +289,47 @@ async function handle(req, res, u, p, send, readJson) {
   if (p === '/aera/auth/done') { send(res, 200, page('AERA', '<p id="m">Signed in – you can close this window and go back to AERA.</p>'), 'text/html; charset=utf-8'); return true; }
   if (p === '/aera/auth/dev' && DEV) { const n = (u.searchParams.get('name') || 'Tester').slice(0, 32); const id = 'dev-' + crypto.createHash('sha1').update(n).digest('hex').slice(0, 10);
     const b = u.searchParams.get('beta'), bt = Date.now() - (u.searchParams.get('stale') ? (beta.DAYS + 1) * 864e5 : 0);
-    J(200, { token: makeToken(Object.assign({ id, name: n, avatar: '', exp: Date.now() + 864e5 }, b === 'none' ? {} : { beta: b === '0' ? 0 : 1, br: b === '0' ? (u.searchParams.get('why') || 'norole') : '', bt })) }); return true; }
+    J(200, { token: makeToken(Object.assign({ id, name: n, avatar: '', exp: Date.now() + 864e5 }, b === 'none' ? {} : { beta: b === '0' ? 0 : 1, br: b === '0' ? (u.searchParams.get('why') || 'norole') : '', bt }, u.searchParams.get('team') === '1' ? { team: 1 } : {})) }); return true; }
 
   if (!p.startsWith('/api/aera/')) return false;
   // ---- beta gate + auto-update (desktop app asks this before the main menu) ----
+  if (p === '/api/aera/stt' && req.method === 'POST') {
+    const g = gateCheck(req);
+    if (!g.ok) { J(g.code, { error: g.error, reason: g.reason }); return true; }
+    if (!sttTeam(g.me)) { J(403, { error: 'online recognition is only for the AERA team (just got the role? sign out and in again)', reason: 'team' }); return true; }
+    if (!sttOn()) { J(503, { error: 'online speech recognition is not set up' }); return true; }
+    if (!sttLimit(String(g.me.id))) { J(429, { error: 'too many transmissions – try again in a moment' }); return true; }
+    const t0 = Date.now();
+    try {
+      const buf = await readRaw(req, 1300000);
+      if (buf.length < 1000 || buf.slice(0, 4).toString() !== 'RIFF') { J(400, { error: 'no audio' }); return true; }
+      const sec = (buf.length - 44) / 32000; if (sec > 30) { J(413, { error: 'transmission too long' }); return true; }
+      const out = await sttRun(buf, String(u.searchParams.get('p') || '').slice(0, 900));
+      STT_STATS.n++; STT_STATS.sec += sec;
+      J(200, { text: out.text, ms: Date.now() - t0 });
+    } catch (e) { STT_STATS.fail++; if (!res.headersSent) J(e.status || 500, { error: e.message }); }
+    return true;
+  }
+  if (p === '/api/aera/nlu' && req.method === 'POST') {
+    const g = gateCheck(req);
+    if (!g.ok) { J(g.code, { error: g.error, reason: g.reason }); return true; }
+    if (!sttTeam(g.me)) { J(403, { error: 'AI understanding is only for the AERA team', reason: 'team' }); return true; }
+    if (!nluOn()) { J(503, { error: 'AI understanding is not set up' }); return true; }
+    if (!nluLimit(String(g.me.id))) { J(429, { error: 'too many requests – try again in a moment' }); return true; }
+    const t0 = Date.now(); NLU_STATS.n++;
+    try {
+      const raw = await readRaw(req, 24000); let body = {};
+      try { body = JSON.parse(raw.toString('utf8')); } catch (_) { J(400, { error: 'bad request' }); return true; }
+      if (!body.text) { J(400, { error: 'no text' }); return true; }
+      const out = await nluRun(body); NLU_STATS.ok++;
+      J(200, Object.assign(out, { ms: Date.now() - t0 }));
+    } catch (e) { NLU_STATS.fail++; if (!res.headersSent) J(e.status || 500, { error: e.message }); }
+    return true;
+  }
   if (p === '/api/aera/access' || p === '/api/aera/update' || p.startsWith('/api/aera/update/file/')) {
     const g = gateCheck(req);
     if (!g.ok) { J(g.code, { error: g.error, reason: g.reason }); return true; }
-    if (p === '/api/aera/access') { J(200, { ok: true, name: g.me.name, gate: GATE }); return true; }
+    if (p === '/api/aera/access') { J(200, { ok: true, name: g.me.name, gate: GATE, stt: sttOn(), sttTeam: sttTeam(g.me), nlu: nluOn() }); return true; }
     if (p === '/api/aera/update') {
       try { J(200, HOLD.length && !HOLD.includes(String(g.me.id)) ? { update: false, held: true } : await updateInfo(String(u.searchParams.get('v') || ''))); } catch (e) { J(e.status || 500, { error: e.message }); }
       return true;
@@ -187,7 +348,7 @@ async function handle(req, res, u, p, send, readJson) {
       .map((x, i) => ({ place: i + 1, name: x.name, avatar: x.avatar, rating: x.rating, rank: x.rank, code: x.code, lvl: x.lvl, shifts: x.shifts, best: x.best }));
     J(200, { q, name: QUEUES[q], week: week(), list }); return true;
   }
-  if (p === '/api/aera/status') { J(200, { login: configured() || DEV, ranked: true, storage: !!FILE, week: week(), queues: QUEUES, ranks: RANKS, rooms: ROOMS.size }); return true; }
+  if (p === '/api/aera/status') { J(200, { login: configured() || DEV, stt: sttOn(), nlu: nluOn(), ranked: true, storage: !!FILE, week: week(), queues: QUEUES, ranks: RANKS, rooms: ROOMS.size }); return true; }
   const me = bearer(req);
   if (!me) { J(401, { error: 'Not signed in' }); return true; }
   if (p === '/api/aera/me') { const e = DB.users[me.id]; J(200, { user: { id: me.id, name: me.name, avatar: me.avatar }, ranked: Object.fromEntries(Object.keys(QUEUES).map(q => [q, qPub(e && e.q[q])])) }); return true; }
@@ -307,4 +468,4 @@ function attach(server) {
   console.log('AERA multiplayer ready on /aera/ws');
 }
 
-module.exports = { handle, attach, perf, rankOf, check, makeToken, readToken };
+module.exports = { handle, attach, perf, rankOf, check, makeToken, readToken, sttStats: () => STT_STATS, nluStats: () => NLU_STATS };
