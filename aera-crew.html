@@ -35,7 +35,8 @@
 .mem .links a{font-size:13.5px;font-weight:600;padding:6px 11px;border-radius:10px;border:1px solid rgba(120,170,255,.3);text-decoration:none}
 .mem .links a:hover{background:rgba(30,136,229,.15)}
 .open{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-.spot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:14px;border:1px dashed rgba(120,170,255,.35);font-weight:600}
+.spot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:14px;border:1px dashed rgba(120,170,255,.35);font-weight:600;color:inherit;text-decoration:none}
+a.spot:not(.taken):hover{background:rgba(30,136,229,.12);border-style:solid}
 .spot b{font:700 12px var(--head);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:rgba(61,220,151,.14);color:#3ddc97;white-space:nowrap}
 .spot.taken{opacity:.55;border-style:solid}
 .spot.taken b{background:rgba(255,255,255,.08);color:var(--grey)}
@@ -111,9 +112,10 @@
  var L=T.members.filter(function(m){return m.lead;}),M=T.members.filter(function(m){return !m.lead;});
  document.getElementById('leads').innerHTML=L.map(card).join('');
  document.getElementById('members').innerHTML=M.length?M.map(card).join(''):'<p class="empty">'+t('Hier ist noch Platz – vielleicht für dich?','There is still room here – maybe for you?')+'</p>';
- var SP=[['community-lead','Leading Community & Moderation Manager',1],['community','Community & Moderation Manager',0],['social-lead','Leading Social Media Manager',1],['social','Social Media Manager',0]];
- document.getElementById('spots').innerHTML=SP.map(function(s){var taken=s[2]&&(T.filled||[]).indexOf(s[0])>=0;
-  return '<div class="spot'+(taken?' taken':'')+'"><span>'+e1(s[1])+'</span><b>'+(taken?t('vergeben','taken'):t(s[2]?'1 Platz frei':'offen',s[2]?'1 spot open':'open'))+'</b></div>';}).join('');
+ var SP=(T.roles||[]);
+ document.getElementById('spots').innerHTML=SP.map(function(r){
+  var free=r.seats===1?t('1 Platz frei','1 spot open'):r.seats>1?t(r.seats+' Plätze frei',r.seats+' spots open'):t('offen','open');
+  return '<a class="spot'+(r.taken?' taken':'')+'" href="/aera/team'+(r.taken?'':'#role='+e1(r.id))+'"><span>'+e1(r.name)+'</span><b>'+(r.taken?t('vergeben','taken'):free)+'</b></a>';}).join('');
 })();
 </script>
 <script src="/aera-changelog-data.js"></script>
