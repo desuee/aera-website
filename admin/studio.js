@@ -415,9 +415,8 @@ $('apps').addEventListener('click', async e => {
 });
 
 // ---------------- team (/aera/crew) ----------------
-const SPOTS = [['community-lead', 'Leading Community & Moderation Manager'], ['social-lead', 'Leading Social Media Manager']];
 let TEAM = null, teamDirty = false;
-function teamModel() { if (!TEAM) TEAM = clone(ST.team || { members: [], filled: [] }); return TEAM; }
+function teamModel() { if (!TEAM) { TEAM = clone(ST.team || { members: [], filled: [] }); TEAM.roles = TEAM.roles || []; } return TEAM; }
 function linksText(m) { return (m.links || []).map(l => (l.label ? l.label + ' | ' : '') + l.url).join('\n'); }
 function memberHtml(m, i, n) {
   return `<section class="st-sec st-mem" data-i="${i}">
@@ -439,7 +438,7 @@ function memberHtml(m, i, n) {
 }
 function drawTeam() {
   const T = teamModel();
-  $('teamSpots').innerHTML = SPOTS.map(([k, l]) => `<label class="st-chk"><input type="checkbox" data-spot="${k}"${T.filled.includes(k) ? ' checked' : ''}> ${esc(l)}</label>`).join('');
+  $('teamRoles').innerHTML = T.roles.length ? T.roles.map((r, i) => roleHtml(r, i, T.roles.length)).join('') : '<p class="st-empty">Keine offenen Stellen – auf der Bewerbungsseite wird dann nichts angezeigt.</p>';
   $('teamList').innerHTML = T.members.length ? T.members.map((m, i) => memberHtml(m, i, T.members.length)).join('') : '<p class="st-empty">Noch niemand eingetragen.</p>';
   $('teamSave').disabled = !ST.github;
   $('teamSave').title = ST.github ? '' : 'GitHub-Token fehlt (siehe oben)';
@@ -467,7 +466,53 @@ $('teamList').addEventListener('click', e => {
   else if (b.dataset.t === 'del') { if (!b.dataset.arm) { b.dataset.arm = 1; b.classList.add('arm'); b.title = 'Nochmal klicken zum Entfernen'; setTimeout(() => { delete b.dataset.arm; b.classList.remove('arm'); }, 3000); return; } L.splice(i, 1); }
   teamMark(); drawTeam();
 });
-$('teamSpots').addEventListener('change', e => { const k = e.target.dataset.spot; if (!k) return; const F = TEAM.filled; e.target.checked ? F.includes(k) || F.push(k) : F.splice(F.indexOf(k), 1); teamMark(); });
+// open positions
+function roleHtml(r, i, n) {
+  const seats = r.seats === 1 ? '1 Platz' : r.seats > 1 ? r.seats + ' Plätze' : 'mehrere Plätze';
+  return `<section class="st-sec st-mem st-role${r.taken ? ' taken' : ''}" data-r="${i}">
+    <div class="st-sec-head"><b>${esc(r.name || 'Neue Stelle')}</b><span class="st-badge ${r.taken ? 'off' : 'on'}">${r.taken ? 'vergeben' : seats}</span><span class="sp"></span>
+      <button class="icon-btn" data-rt="up" title="Nach oben"${i ? '' : ' disabled'}><svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg></button>
+      <button class="icon-btn" data-rt="down" title="Nach unten"${i < n - 1 ? '' : ' disabled'}><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="icon-btn danger" data-rt="del" title="Stelle entfernen"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+    <div class="st-mem-grid">
+      <label class="wide">Name der Stelle<input data-g="name" value="${esc(r.name || '')}" maxlength="80" placeholder="z. B. Event Manager"></label>
+      <label>Bereich (Deutsch)<input data-g="area.de" value="${esc(r.area && r.area.de || '')}" maxlength="60" placeholder="z. B. Events & Aktionen"></label>
+      <label>Bereich (Englisch)<input data-g="area.en" value="${esc(r.area && r.area.en || '')}" maxlength="60" placeholder="z. B. Events & activities"></label>
+      <label>Plätze <small class="muted">(0 = mehrere)</small><input data-g="seats" type="number" min="0" max="20" value="${r.seats || 0}"></label>
+      <label class="st-chk"><input type="checkbox" data-g="taken"${r.taken ? ' checked' : ''}> Vergeben</label>
+      <label>Kurzbeschreibung (Deutsch)<input data-g="about.de" value="${esc(r.about && r.about.de || '')}" maxlength="200" placeholder="ein Satz – erscheint oben in der Karte"></label>
+      <label>Kurzbeschreibung (Englisch)<input data-g="about.en" value="${esc(r.about && r.about.en || '')}" maxlength="200"></label>
+      <label>Aufgaben (Deutsch, eine pro Zeile)<textarea data-g="tasks.de" rows="4">${esc((r.tasks && r.tasks.de || []).join('\n'))}</textarea></label>
+      <label>Aufgaben (Englisch, eine pro Zeile)<textarea data-g="tasks.en" rows="4">${esc((r.tasks && r.tasks.en || []).join('\n'))}</textarea></label>
+    </div></section>`;
+}
+$('teamRoles').addEventListener('input', e => {
+  const g = e.target.dataset.g, box = e.target.closest('[data-r]'); if (!g || !box) return;
+  const r = TEAM.roles[+box.dataset.r];
+  if (g === 'taken') r.taken = e.target.checked;
+  else if (g === 'seats') r.seats = Math.max(0, parseInt(e.target.value, 10) || 0);
+  else if (g.startsWith('tasks.')) { r.tasks = r.tasks || {}; r.tasks[g.slice(6)] = e.target.value.split('\n'); }
+  else if (g.includes('.')) { const [a, b] = g.split('.'); r[a] = r[a] || {}; r[a][b] = e.target.value; }
+  else r[g] = e.target.value;
+  teamMark();
+  const head = box.querySelector('.st-sec-head');
+  if (g === 'name') head.querySelector('b').textContent = r.name || 'Neue Stelle';
+  if (g === 'taken' || g === 'seats') { const bd = head.querySelector('.st-badge'); bd.className = 'st-badge ' + (r.taken ? 'off' : 'on'); bd.textContent = r.taken ? 'vergeben' : r.seats === 1 ? '1 Platz' : r.seats > 1 ? r.seats + ' Plätze' : 'mehrere Plätze'; box.classList.toggle('taken', r.taken); }
+});
+$('teamRoles').addEventListener('click', e => {
+  const b = e.target.closest('[data-rt]'), box = e.target.closest('[data-r]'); if (!b || !box) return;
+  const i = +box.dataset.r, L = TEAM.roles;
+  if (b.dataset.rt === 'up' && i > 0) [L[i - 1], L[i]] = [L[i], L[i - 1]];
+  else if (b.dataset.rt === 'down' && i < L.length - 1) [L[i + 1], L[i]] = [L[i], L[i + 1]];
+  else if (b.dataset.rt === 'del') { if (!b.dataset.arm) { b.dataset.arm = 1; b.classList.add('arm'); b.title = 'Nochmal klicken zum Entfernen'; setTimeout(() => { delete b.dataset.arm; b.classList.remove('arm'); }, 3000); return; } L.splice(i, 1); }
+  teamMark(); drawTeam();
+});
+$('roleAdd').addEventListener('click', () => { TEAM.roles.push({ id: '', name: '', area: { de: '', en: '' }, seats: 1, taken: false, about: { de: '', en: '' }, tasks: { de: [], en: [] } }); teamMark(); drawTeam(); const l = document.querySelectorAll('.st-role'); const last = l[l.length - 1]; if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'center' }); last.querySelector('input').focus(); } });
+document.querySelector('.st-team-tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tt]'); if (!b) return;
+  document.querySelectorAll('.st-team-tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('teamMembersBox').classList.toggle('hidden', b.dataset.tt !== 'members'); $('teamRolesBox').classList.toggle('hidden', b.dataset.tt !== 'roles');
+});
 $('teamAdd').addEventListener('click', () => { TEAM.members.push({ name: '', real: '', role: { de: '', en: '' }, lead: false, bio: { de: '', en: '' }, avatar: '', links: [] }); teamMark(); drawTeam(); const l = document.querySelectorAll('.st-mem'); const last = l[l.length - 1]; if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'center' }); last.querySelector('input').focus(); } });
 $('teamSave').addEventListener('click', async () => {
   const b = $('teamSave'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Veröffentliche …';
