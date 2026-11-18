@@ -417,9 +417,11 @@ const SERVER = http.createServer(async (req, res) => {
       if (h.length >= 3) return send(res, 429, { error: 'Zu viele Bewerbungen von dieser Adresse – bitte später nochmal. · Too many applications, please try later.' });
       const b = await readJson(req); const de = b.lang !== 'en';
       if (b.website) return send(res, 200, { ok: true });   // honeypot: bots fill in the hidden field
-      if ((studio.team().filled || []).includes(b.role)) return send(res, 400, { error: de ? 'Dieser Lead-Platz ist schon vergeben – bewirb dich gern für eine der anderen Rollen.' : 'This lead spot is already taken – feel free to apply for one of the other roles.' });
+      const T = studio.team(), R = (T.roles || []).find(r => r.id === b.role);
+      if ((R && R.taken) || (T.filled || []).includes(b.role)) return send(res, 400, { error: de ? 'Diese Stelle ist schon vergeben – bewirb dich gern für eine der anderen.' : 'This position is already taken – feel free to apply for one of the others.' });
+      if ((T.roles || []).length && !R) return send(res, 400, { error: de ? 'Bitte wähle eine Stelle aus.' : 'Please choose a position.' });
       const c = (v, n) => String(v || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
-      const d = { role: { 'community-lead': 'Leading Community & Moderation Manager', community: 'Community & Moderation Manager', 'social-lead': 'Leading Social Media Manager', social: 'Social Media Manager' }[b.role] || 'Community & Moderation Manager',
+      const d = { role: R ? R.name : { 'community-lead': 'Leading Community & Moderation Manager', community: 'Community & Moderation Manager', 'social-lead': 'Leading Social Media Manager', social: 'Social Media Manager' }[b.role] || 'Community & Moderation Manager',
         name: c(b.name, 80), email: c(b.email, 120), discord: c(b.discord, 60), langs: c(b.langs, 80), exp: String(b.exp || '').trim().slice(0, 1500),
         links: c(b.links, 300), why: String(b.why || '').trim().slice(0, 1500), time: c(b.time, 80) };
       if (!d.name || !d.discord || !d.why || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail, Discord und „Warum“ ausfüllen.' : 'Please fill in name, a valid email, Discord and "why".' });
