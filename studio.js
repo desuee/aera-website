@@ -123,7 +123,22 @@ function cleanTeam(d) {
     for (const l of links) { if (!l.url || !okUrl(l.url)) bad(`${name}: Link „${l.label || l.url}“ muss mit https:// beginnen`); if (!l.label) l.label = l.url.replace(/^https:\/\/(www\.)?/, '').split('/')[0]; }
     return { name, real: str(m.real, 60), role, lead: !!m.lead, bio, avatar, links };
   });
-  return { members, filled: (Array.isArray(d.filled) ? d.filled : []).filter(x => LEAD_SPOTS.includes(x)) };
+  // open positions (application page, team page): name, area, seats (0 = several), taken, short intro + tasks in DE/EN
+  if (d.roles && !Array.isArray(d.roles)) bad('Stellen fehlen');
+  if ((d.roles || []).length > 30) bad('Zu viele Stellen');
+  const ids = new Set();
+  const roles = (d.roles || []).map((r, i) => {
+    const name = str(r && r.name, 80); if (!name) bad(`Stelle ${i + 1}: Name fehlt`);
+    let id = str(r.id, 40).toLowerCase().replace(/[^a-z0-9-]/g, '') || name.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'stelle';
+    while (ids.has(id)) id += '-2'; ids.add(id);
+    const lines = v => (Array.isArray(v) ? v : String(v || '').split('\n')).map(x => str(x, 200)).filter(Boolean).slice(0, 12);
+    const area = { de: str(r.area && r.area.de, 60), en: str(r.area && r.area.en, 60) }; if (!area.de) area.de = area.en || name; if (!area.en) area.en = area.de;
+    const about = { de: str(r.about && r.about.de, 200), en: str(r.about && r.about.en, 200) };
+    const tasks = { de: lines(r.tasks && r.tasks.de), en: lines(r.tasks && r.tasks.en) };
+    return { id, area, name, seats: Math.max(0, Math.min(20, parseInt(r.seats, 10) || 0)), taken: !!r.taken, about, tasks };
+  });
+  const filled = roles.length ? roles.filter(r => r.taken).map(r => r.id) : (Array.isArray(d.filled) ? d.filled : []).filter(x => LEAD_SPOTS.includes(x));
+  return { members, roles, filled };
 }
 
 async function commitJson(key, value, message) {
