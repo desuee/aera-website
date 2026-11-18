@@ -147,3 +147,10 @@ a.btn{text-decoration:none;color:inherit}
 .icon-btn.arm{background:#e5484d22;color:#e5484d}
 .st-team-add{margin-top:14px;width:100%;justify-content:center}
 @media (max-width:720px){.st-mem-grid{grid-template-columns:1fr}.st-team-in{padding:18px 14px 40px}}
+.st-team-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--soft);border:1px solid var(--line);margin:4px 0 14px}
+.st-team-tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;font:inherit;font-size:14px;font-weight:650;color:var(--muted);cursor:pointer}
+.st-team-tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px #0002}
+.st-badge.on{background:#3ddc9722;color:#1fa971}
+.st-badge.off{background:var(--soft);color:var(--muted)}
+.st-role.taken{opacity:.7}
+.st-mem-grid textarea[data-g]{min-height:96px}
