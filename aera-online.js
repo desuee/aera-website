@@ -428,7 +428,7 @@ function attach(server) {
         const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); let me = room && room.members.get(ws.user.id);
         if (room && !me && room.members.size < 4) {   // room was brought back by the host after a restart: take your seat again
           const taken = new Set([...room.members.values()].flatMap(x => x.pos || []));
-          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
+          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
         }
         if (!me) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
         const old = me.ws; me.ws = ws; me.away = 0; ws.room = room.code; if (old && old !== ws) { old.room = null; try { old.close(); } catch {} }
@@ -436,7 +436,7 @@ function attach(server) {
       }
       if (!r) return;
       if (m.t === 'leave') { leave(ws); ws.send(JSON.stringify({ t: 'left' })); return; }
-      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR'].includes(x));
+      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP'].includes(x));   // CTR/APP: "Center × Approach" rooms
         // a position belongs to one controller only
         const taken = new Set([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
         me.pos = want.filter(x => !taken.has(x)); bcast(r, roomInfo(r)); return; }
