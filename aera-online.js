@@ -254,6 +254,7 @@ async function nluRun(body) {
 // ---------------- http routes ----------------
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Dsue', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const configured = () => !!(CID && CSECRET);
+const RET_OK = r => /^http:\/\/127\.0\.0\.1:\d{2,5}\/aera-signin$/.test(String(r || ''));
 const page = (title, body) => `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${title}</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0d14;color:#e8eef7;font:16px/1.5 Inter,system-ui,sans-serif;text-align:center}b{color:#ffd23f}p{color:#9aa4b2}</style><main><h2>${title}</h2>${body}</main>`;
 
 async function handle(req, res, u, p, send, readJson) {
@@ -264,7 +265,12 @@ async function handle(req, res, u, p, send, readJson) {
     if (!configured()) { send(res, 503, page('AERA', '<p>Discord sign-in is not set up yet.</p>'), 'text/html; charset=utf-8'); return true; }
     const state = crypto.randomBytes(16).toString('hex');
     const q = new URLSearchParams({ client_id: CID, redirect_uri: REDIRECT, response_type: 'code', scope: 'identify guilds.members.read', state, prompt: 'none' });
-    res.writeHead(302, { Location: 'https://discord.com/oauth2/authorize?' + q, 'Set-Cookie': `aera_ostate=${state}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/aera/auth${secure(req)}`, 'Cache-Control': 'no-store' });
+    // sign-in through the normal browser (the game's own window stays black on some PCs): the game listens on 127.0.0.1 and
+    // gets the token handed back from the done page. Only a loopback address on this machine is accepted as return address.
+    const ret = String(u.searchParams.get('ret') || '');
+    const cookies = [`aera_ostate=${state}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/aera/auth${secure(req)}`];
+    cookies.push(RET_OK(ret) ? `aera_oret=${encodeURIComponent(ret)}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/aera/auth${secure(req)}` : `aera_oret=; Max-Age=0; Path=/aera/auth`);
+    res.writeHead(302, { Location: 'https://discord.com/oauth2/authorize?' + q, 'Set-Cookie': cookies, 'Cache-Control': 'no-store' });
     res.end(); return true;
   }
   if (p === '/aera/auth/callback') {
@@ -286,7 +292,13 @@ async function handle(req, res, u, p, send, readJson) {
       console.log('aera sign-in', du.username); return true;
     } catch (e) { console.warn('aera callback', e.message); return fail('discord'); }
   }
-  if (p === '/aera/auth/done') { send(res, 200, page('AERA', '<p id="m">Signed in – you can close this window and go back to AERA.</p>'), 'text/html; charset=utf-8'); return true; }
+  if (p === '/aera/auth/done') {
+    let ret = ''; try { ret = decodeURIComponent(cookie(req, 'aera_oret') || ''); } catch (_) { ret = ''; }
+    if (!RET_OK(ret)) ret = '';
+    const nonce = crypto.randomBytes(12).toString('base64');
+    const js = ret ? `<script nonce="${nonce}">(function(){var h=location.hash.slice(1);if(/^(t|e)=/.test(h)){document.getElementById('m').textContent='Signed in – going back to AERA …';location.replace(${JSON.stringify(ret)}+'?'+h);}})();</script>` : '';
+    const extra = ret ? { 'Set-Cookie': 'aera_oret=; Max-Age=0; Path=/aera/auth', 'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; base-uri 'none'; frame-ancestors 'none'` } : {};
+    send(res, 200, page('AERA', '<p id="m">Signed in – you can close this window and go back to AERA.</p>' + js), 'text/html; charset=utf-8', extra); return true; }
   if (p === '/aera/auth/dev' && DEV) { const n = (u.searchParams.get('name') || 'Tester').slice(0, 32); const id = 'dev-' + crypto.createHash('sha1').update(n).digest('hex').slice(0, 10);
     const b = u.searchParams.get('beta'), bt = Date.now() - (u.searchParams.get('stale') ? (beta.DAYS + 1) * 864e5 : 0);
     J(200, { token: makeToken(Object.assign({ id, name: n, avatar: '', exp: Date.now() + 864e5 }, b === 'none' ? {} : { beta: b === '0' ? 0 : 1, br: b === '0' ? (u.searchParams.get('why') || 'norole') : '', bt }, u.searchParams.get('team') === '1' ? { team: 1 } : {})) }); return true; }
