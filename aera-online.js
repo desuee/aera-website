@@ -101,8 +101,8 @@ function gateCheck(req) {
   if (!me.beta) return { ok: false, code: 403, error: me.br === 'notmember' ? 'Not on the AERA Discord' : me.br === 'off' ? 'Beta check is not set up on the server' : me.br === 'discord' ? 'Discord did not answer' : 'No beta tester role', reason: me.br || 'norole' };
   return { ok: true, me };
 }
-const verOf = t => { const m = String(t || '').match(/(\d+)\.(\d+)\.(\d+)/); return m ? [+m[1], +m[2], +m[3]] : null; };
-const verCmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+const verOf = t => { const m = String(t || '').match(/(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/); return m ? (m[4] != null ? [+m[1], +m[2], +m[3], +m[4]] : [+m[1], +m[2], +m[3]]) : null; };   // 0.13.11 or 0.13.0.4
+const verCmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || (a[3] || 0) - (b[3] || 0);
 const SETUP = /^AERA-Setup-\d+\.\d+\.\d+.*\.exe$/i;
 // release text: the first ``` block if there is one (the Discord part below it is left out), else the whole text
 const notesOf = b => { const m = String(b || '').match(/```[a-z]*\r?\n([\s\S]*?)```/); return (m ? m[1] : String(b || '')).trim().slice(0, 4000); };

@@ -71,7 +71,7 @@ function parseText(txt) {
     const bullet = line.match(/^([-–•*◦▪·]|\d+[.)])\s+(.*)$/);
     const plain = line.replace(/:$/, '').trim();
     const head = !bullet && headOf(plain);
-    const ver = !bullet && !head && line.match(/^(?:[A-Za-zÄÖÜäöü][\w .&-]{0,40}?\s+)?v?(\d+\.\d+(?:\.\d+)?)(?:\s*[–—:-]\s*(.+))?$/);
+    const ver = !bullet && !head && line.match(/^(?:[A-Za-zÄÖÜäöü][\w .&-]{0,40}?\s+)?v?(\d+\.\d+(?:\.\d+){0,2})(?:\s+(?:preview|beta|alpha|rc\d*))?(?:\s*[–—:-]\s*(.+))?$/i);   // 0.13.11 and 0.13.0.4
     if (ver && !/changelog/i.test(line)) { start(ver[1], ver[2] ? ver[2].trim() : ''); continue; }
     if (/changelog/i.test(line) && !bullet) continue;   // document title
     if (!cur) start('', '');
@@ -167,7 +167,7 @@ const vnum = v => v.split(/[.-]/).map(x => +x || 0);
 const cmp = (a, b) => { const x = vnum(a.version), y = vnum(b.version); for (let i = 0; i < 4; i++) if ((x[i] || 0) !== (y[i] || 0)) return (y[i] || 0) - (x[i] || 0); return 0; };
 
 function fromRelease(r) {
-  const tagVer = (String(r.tag_name || '').match(/\d+\.\d+(?:\.\d+)?/) || [''])[0];
+  const tagVer = (String(r.tag_name || '').match(/\d+\.\d+(?:\.\d+){0,2}/) || [''])[0];   // keep the 4th part (0.13.0.4): cutting it made several releases "0.13.0" and stopped the whole sync
   DATE = String(r.published_at || r.created_at || '').slice(0, 10);
   let list = [];
   try { list = parseText(clean(r.body)); } catch (e) { return null; }
@@ -198,7 +198,10 @@ function start(studio) {
       const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'dev-dsue-changelog' } });
       if (!r.ok) throw new Error('GitHub ' + r.status);
       const rel = (await r.json()).filter(x => !x.draft);
-      const auto = rel.map(fromRelease).filter(Boolean);
+      // newest release first (GitHub order): if two releases still end up with the same version, the newer one counts –
+      // one bad release must never stop the sync of all the others
+      const seen = new Set();
+      const auto = rel.map(x => { try { return fromRelease(x); } catch (_) { return null; } }).filter(v => v && !seen.has(v.version) && seen.add(v.version));
       state.versions = studio.mergeAuto(auto, cmp);
       state.ok = true; state.error = null;
     } catch (e) { state.ok = false; state.error = String(e.message || e); console.warn('changelog sync:', state.error); }
