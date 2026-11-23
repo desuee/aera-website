@@ -251,6 +251,69 @@ async function nluRun(body) {
   return { cs, phrase, conf };
 }
 
+// ---------------- events (e.g. "AERA Opening Night – Friday Night Rush") ----------------
+// The Discord bot takes the sign-ups and builds the groups; it pushes them here (AERA_EVENT_KEY). Every group gets its own
+// room (Tower + Radar Frankfurt) with a fixed code; only the people of that group get in, each with the position the bot gave
+// him. One button (admin in the game, or the bot) starts every lobby at the same moment with the same random seed – same
+// airport, same runways, same live weather, same traffic plan everywhere.
+const EVENT_KEY = process.env.AERA_EVENT_KEY || '';
+const ADMINS = () => (process.env.AERA_ADMIN_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
+const isAdmin = me => !!me && ADMINS().includes(String(me.id));
+const EV_POS = ['DEL', 'GND', 'TWR', 'APP', 'ARR', 'DEP', 'CTR', 'RHN'];
+const keyOk = req => { const k = String(req.headers['x-event-key'] || ''); if (!EVENT_KEY || k.length !== EVENT_KEY.length) return false; return crypto.timingSafeEqual(Buffer.from(k), Buffer.from(EVENT_KEY)); };
+const evCode = n => { let c; do { c = 'E' + String(n).padStart(2, '0').slice(-2) + Array.from(crypto.randomBytes(2), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); } while ((ROOMS.has(c) && !(ROOMS.get(c).event)) || (DB.event && DB.event.groups.some(g => g.code === c))); return c; };
+const evPub = ev => ev && { id: ev.id, name: ev.name, apt: ev.apt, start: ev.start, meet: ev.meet, end: ev.end, split: ev.split, lvl: ev.lvl, state: ev.state, t0: ev.t0 || null, seed: ev.state === 'live' ? ev.seed : null, len: ev.len, now: Date.now(), groups: ev.groups.length };
+const evMine = (ev, id) => { if (!ev) return null; for (const g of ev.groups) { const m = g.members.find(x => String(x.id) === String(id)); if (m) return { n: g.n, code: g.code, lang: g.lang, pos: m.pos, host: String(g.host) === String(id), mates: g.members.map(x => ({ name: x.name, pos: x.pos })) }; } return null; };
+function evClean(b, old) {
+  const groups = (Array.isArray(b.groups) ? b.groups : []).slice(0, 40).map((g, i) => {
+    const n = Math.max(1, Math.min(99, +g.n || i + 1));
+    const members = (Array.isArray(g.members) ? g.members : []).slice(0, 5).map(m => ({ id: String(m.id || '').replace(/[^\w-]/g, '').slice(0, 32), name: String(m.name || '?').slice(0, 40), pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => EV_POS.includes(x)).slice(0, 3) })).filter(m => m.id);
+    const tw = members.find(m => m.pos.includes('TWR')) || members.find(m => m.pos.some(x => ['DEL', 'GND'].includes(x))) || members[0];
+    const keep = old && old.groups.find(x => x.n === n);
+    return { n, lang: String(g.lang || '').slice(0, 8), code: keep ? keep.code : null, host: tw ? tw.id : null, members };
+  });
+  const ev = { id: String(b.id || 'event').slice(0, 40), name: String(b.name || 'AERA Event').slice(0, 80), apt: 'EDDF', start: +b.start || 0, meet: +b.meet || 0, end: +b.end || 0,
+    split: b.split !== false, lvl: Math.max(0, Math.min(3, b.lvl == null ? 1 : +b.lvl)), len: Math.max(30, Math.min(180, +b.len || 120)),
+    state: old && old.id === String(b.id || 'event') ? old.state : 'scheduled', t0: old && old.id === String(b.id || 'event') ? old.t0 : null, seed: old && old.id === String(b.id || 'event') ? old.seed : null, groups };
+  for (const g of ev.groups) if (!g.code) g.code = evCode(g.n);
+  return ev;
+}
+function evRooms() {   // one room per group; rooms of groups that are gone are closed
+  const ev = DB.event; const codes = new Set(ev ? ev.groups.map(g => g.code) : []);
+  for (const [c, r] of ROOMS) if (r.event && !codes.has(c)) { bcast(r, { t: 'closed', why: 'event' }); for (const m of r.members.values()) m.ws.room = null; ROOMS.delete(c); }
+  if (!ev) return;
+  for (const g of ev.groups) {
+    let r = ROOMS.get(g.code);
+    const cfg = { mode: 'MIX', apt: 'EDDF', lvl: ev.lvl, wxs: 'LIVE', rwy: 'AUTO', event: ev.id, evName: ev.name, evGroup: g.n, len: ev.len };
+    if (!r) { r = { code: g.code, host: g.host, cfg, state: 'lobby', members: new Map(), event: true }; ROOMS.set(g.code, r); }
+    else { r.cfg = Object.assign(r.cfg, cfg); if (!r.members.has(r.host) || r.state !== 'run') r.host = g.host; }
+    r.allow = new Map(g.members.map(m => [m.id, m.pos]));
+    for (const id of [...r.members.keys()]) if (!r.allow.has(id) && !ADMINS().includes(id)) { const m = r.members.get(id); try { m.ws.send(JSON.stringify({ t: 'closed', why: 'event' })); } catch {} m.ws.room = null; r.members.delete(id); }
+    bcast(r, roomInfo(r));
+  }
+}
+function evFixHosts() {   // at the start: whoever is really there runs the tower of his lobby
+  const ev = DB.event; if (!ev) return;
+  for (const g of ev.groups) {
+    const r = ROOMS.get(g.code); if (!r) continue;
+    const here = id => { const m = r.members.get(id); return m && !m.away && m.ws.readyState === 1; };
+    if (here(r.host)) continue;
+    const ids = [...r.members.keys()].filter(here); if (!ids.length) continue;
+    const nh = ids.find(id => (r.members.get(id).pos || []).some(x => ['TWR', 'GND', 'DEL'].includes(x))) || ids[0];
+    r.host = nh; const me = r.members.get(nh); const taken = new Set([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
+    me.pos = ['DEL', 'GND', 'TWR'].filter(x => !taken.has(x)); bcast(r, roomInfo(r));
+  }
+}
+let WSS_ALL = null;
+function evBroadcast() { const ev = DB.event; if (!ev || !WSS_ALL) return; const ids = new Set(ev.groups.flatMap(g => g.members.map(m => m.id))); for (const id of ADMINS()) ids.add(id);
+  const msg = JSON.stringify({ t: 'event', ev: evPub(ev) }); for (const ws of WSS_ALL.clients) if (ws.user && ids.has(String(ws.user.id))) { try { ws.send(msg); } catch {} } }
+function evStart(delay) { const ev = DB.event; if (!ev || !ev.groups.length) return { error: 'no event' };
+  ev.state = 'live'; ev.t0 = Date.now() + Math.max(10, Math.min(600, delay == null ? 60 : +delay)) * 1000; ev.seed = crypto.randomBytes(4).readUInt32BE(0); save();
+  evFixHosts(); evBroadcast(); setTimeout(evFixHosts, Math.max(0, ev.t0 - Date.now() - 3000)).unref(); return { ok: true, t0: ev.t0 }; }
+function evStatus() { const ev = DB.event; if (!ev) return { event: null };
+  return { event: evPub(ev), groups: ev.groups.map(g => { const r = ROOMS.get(g.code); return { n: g.n, code: g.code, lang: g.lang, state: r ? r.state : 'none', host: r ? String(r.host) : null,
+    members: g.members.map(m => { const x = r && r.members.get(m.id); return { id: m.id, name: m.name, pos: m.pos, here: !!(x && !x.away), now: x ? x.pos : [] }; }) }; }) }; }
+
 // ---------------- http routes ----------------
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Dsue', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const configured = () => !!(CID && CSECRET);
@@ -360,9 +423,21 @@ async function handle(req, res, u, p, send, readJson) {
       .map((x, i) => ({ place: i + 1, name: x.name, avatar: x.avatar, rating: x.rating, rank: x.rank, code: x.code, lvl: x.lvl, shifts: x.shifts, best: x.best }));
     J(200, { q, name: QUEUES[q], week: week(), list }); return true;
   }
+  if (p.startsWith('/api/aera/event/bot/')) {   // the Discord bot
+    if (!keyOk(req)) { J(403, { error: 'bad key' }); return true; }
+    if (p === '/api/aera/event/bot/sync' && req.method === 'POST') { const b = await readJson(req); DB.event = b && b.clear ? null : evClean(b || {}, DB.event); save(); evRooms(); J(200, Object.assign({ ok: true }, evStatus())); return true; }
+    if (p === '/api/aera/event/bot/start' && req.method === 'POST') { const b = await readJson(req); const r = evStart(b && b.delay); J(r.error ? 409 : 200, r); return true; }
+    if (p === '/api/aera/event/bot/stop' && req.method === 'POST') { if (DB.event) { DB.event.state = 'scheduled'; DB.event.t0 = null; DB.event.seed = null; save(); for (const r of ROOMS.values()) if (r.event) { r.state = 'lobby'; bcast(r, roomInfo(r)); } evBroadcast(); } J(200, { ok: true }); return true; }
+    if (p === '/api/aera/event/bot/status') { J(200, evStatus()); return true; }
+    J(404, { error: 'Not found' }); return true;
+  }
   if (p === '/api/aera/status') { J(200, { login: configured() || DEV, stt: sttOn(), nlu: nluOn(), ranked: true, storage: !!FILE, week: week(), queues: QUEUES, ranks: RANKS, rooms: ROOMS.size }); return true; }
   const me = bearer(req);
   if (!me) { J(401, { error: 'Not signed in' }); return true; }
+  if (p === '/api/aera/event/me') { const ev = DB.event; J(200, { event: evPub(ev), mine: evMine(ev, me.id), admin: isAdmin(me) }); return true; }
+  if (p === '/api/aera/event/start' && req.method === 'POST') { if (!isAdmin(me)) { J(403, { error: 'no access' }); return true; } const b = await readJson(req); const r = evStart(b && b.delay); J(r.error ? 409 : 200, r); return true; }
+  if (p === '/api/aera/event/stop' && req.method === 'POST') { if (!isAdmin(me)) { J(403, { error: 'no access' }); return true; } if (DB.event) { DB.event.state = 'scheduled'; DB.event.t0 = null; DB.event.seed = null; save(); for (const r of ROOMS.values()) if (r.event) { r.state = 'lobby'; bcast(r, roomInfo(r)); } evBroadcast(); } J(200, { ok: true }); return true; }
+  if (p === '/api/aera/event/status') { if (!isAdmin(me)) { J(403, { error: 'no access' }); return true; } J(200, evStatus()); return true; }
     if (p === '/api/aera/studio') {
     const ids = (process.env.AERA_ADMIN_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
     if (!ids.includes(String(me.id))) { J(403, { error: 'no access' }); return true; }
@@ -397,22 +472,25 @@ async function handle(req, res, u, p, send, readJson) {
 }
 
 // ---------------- multiplayer rooms (WebSocket relay) ----------------
-// The host's game runs the simulation; the server only passes messages within a room. Max. 4 controllers per room.
+// The host's game runs the simulation; the server only passes messages within a room. Max. 5 controllers per room.
 const ROOMS = new Map();
+const ROOM_MAX = 5;   // Tower + Radar: e.g. DEL/GND, TWR, ARR, DEP, CTR
 const BOOT = crypto.randomBytes(4).toString('hex');   // changes with every server start – clients can tell a restart from a network drop   // code -> { code, host, cfg, state, members: Map(id -> { ws, user, pos }) }
 const code6 = () => { let c; do { c = Array.from(crypto.randomBytes(5), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); } while (ROOMS.has(c)); return c; };
-function roomInfo(r) { return { t: 'room', code: r.code, host: r.host, state: r.state, cfg: r.cfg, members: [...r.members.values()].map(m => ({ id: m.user.id, name: m.user.name, avatar: m.user.avatar, pos: m.pos || [] })) }; }
+function roomInfo(r) { return { t: 'room', event: !!r.event, code: r.code, host: r.host, state: r.state, cfg: r.cfg, members: [...r.members.values()].map(m => ({ id: m.user.id, name: m.user.name, avatar: m.user.avatar, pos: m.pos || [] })) }; }
 function bcast(r, msg, except) { const s = JSON.stringify(msg); for (const m of r.members.values()) if (m.ws !== except && m.ws.readyState === 1) m.ws.send(s); }
 function leave(ws) {
   const r = ws.room && ROOMS.get(ws.room); ws.room = null; if (!r) return;
   r.members.delete(ws.user.id);
+  if (r.event) { if (r.host === ws.user.id && r.state === 'run') r.state = 'lobby'; bcast(r, roomInfo(r)); return; }   // event rooms stay open for the whole event
   if (r.host === ws.user.id || !r.members.size) { bcast(r, { t: 'closed', why: 'host left' }); for (const m of r.members.values()) m.ws.room = null; ROOMS.delete(r.code); return; }
   bcast(r, roomInfo(r));
 }
 function attach(server) {
   let WSS;
   try { WSS = require('ws').WebSocketServer; } catch { console.warn('AERA multiplayer: package "ws" missing'); return; }
-  const wss = new WSS({ noServer: true, perMessageDeflate: { threshold: 512 }, maxPayload: 1 << 20 });
+  const wss = new WSS({ noServer: true, perMessageDeflate: { threshold: 512 }, maxPayload: 1 << 20 }); WSS_ALL = wss;
+  try { evRooms(); } catch (e) { console.warn('event rooms', e.message); }
   server.on('upgrade', (req, sock, head) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname !== '/aera/ws') { sock.destroy(); return; }
@@ -423,10 +501,12 @@ function attach(server) {
   wss.on('connection', ws => {
     ws.on('pong', () => { ws.alive = true; });
     ws.send(JSON.stringify({ t: 'hello', boot: BOOT, me: { id: ws.user.id, name: ws.user.name, avatar: ws.user.avatar } }));
+    if (DB.event && (evMine(DB.event, ws.user.id) || ADMINS().includes(String(ws.user.id)))) ws.send(JSON.stringify({ t: 'event', ev: evPub(DB.event) }));
     ws.on('message', buf => {
       let m; try { m = JSON.parse(buf); } catch { return; }
       const r = ws.room && ROOMS.get(ws.room);
       if (m.t === 'create') {
+        { const want0 = String(m.restore || '').toUpperCase().trim(); const er = ROOMS.get(want0); if (er && er.event) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; } }
         leave(ws); let c = code6();
         // after a server restart the host brings its room back with the same code, guests then resume into it
         const want = String(m.restore || '').toUpperCase().trim(); if (/^[A-Z0-9]{5}$/.test(want) && !ROOMS.has(want)) c = want;
@@ -437,15 +517,21 @@ function attach(server) {
       if (m.t === 'join') {
         const room = ROOMS.get(String(m.code || '').toUpperCase().trim());
         if (!room) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
-        if (room.members.size >= 4 && !room.members.has(ws.user.id)) { ws.send(JSON.stringify({ t: 'err', e: 'full' })); return; }
+        if (room.event) {
+          const allowed = room.allow && room.allow.has(String(ws.user.id)); if (!allowed && !ADMINS().includes(String(ws.user.id))) { ws.send(JSON.stringify({ t: 'err', e: 'event' })); return; }
+          leave(ws); room.members.delete(String(ws.user.id)); const taken = new Set([...room.members.values()].flatMap(x => x.pos || []));
+          const want = allowed ? room.allow.get(String(ws.user.id)) : []; room.members.set(ws.user.id, { ws, user: ws.user, pos: want.filter(x => !taken.has(x)) }); ws.room = room.code; bcast(room, roomInfo(room)); return;
+        }
+        if (room.members.size >= ROOM_MAX && !room.members.has(ws.user.id)) { ws.send(JSON.stringify({ t: 'err', e: 'full' })); return; }
         if (m.ver && room.cfg.ver && m.ver !== room.cfg.ver) { ws.send(JSON.stringify({ t: 'err', e: 'version', need: room.cfg.ver })); return; }
         leave(ws); room.members.set(ws.user.id, { ws, user: ws.user, pos: [] }); ws.room = room.code; bcast(room, roomInfo(room)); return;
       }
       if (m.t === 'resume') {   // reconnect after a dropped connection (Railway closes WebSockets after ~15 min): take the seat back
         const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); let me = room && room.members.get(ws.user.id);
-        if (room && !me && room.members.size < 4) {   // room was brought back by the host after a restart: take your seat again
+        if (room && !me && room.event && !(room.allow && room.allow.has(String(ws.user.id))) && !ADMINS().includes(String(ws.user.id))) { ws.send(JSON.stringify({ t: 'err', e: 'event' })); return; }
+        if (room && !me && room.members.size < ROOM_MAX) {   // room was brought back by the host after a restart: take your seat again
           const taken = new Set([...room.members.values()].flatMap(x => x.pos || []));
-          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
+          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP', 'ARR', 'DEP'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
         }
         if (!me) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
         const old = me.ws; me.ws = ws; me.away = 0; ws.room = room.code; if (old && old !== ws) { old.room = null; try { old.close(); } catch {} }
@@ -453,7 +539,7 @@ function attach(server) {
       }
       if (!r) return;
       if (m.t === 'leave') { leave(ws); ws.send(JSON.stringify({ t: 'left' })); return; }
-      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP'].includes(x));   // CTR/APP: "Center × Approach" rooms
+      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP', 'ARR', 'DEP'].includes(x));   // CTR/APP: "Center × Approach" rooms
         // a position belongs to one controller only
         const taken = new Set([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
         me.pos = want.filter(x => !taken.has(x)); bcast(r, roomInfo(r)); return; }
