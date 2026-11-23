@@ -267,7 +267,7 @@ const evMine = (ev, id) => { if (!ev) return null; for (const g of ev.groups) { 
 function evClean(b, old) {
   const groups = (Array.isArray(b.groups) ? b.groups : []).slice(0, 40).map((g, i) => {
     const n = Math.max(1, Math.min(99, +g.n || i + 1));
-    const members = (Array.isArray(g.members) ? g.members : []).slice(0, 5).map(m => ({ id: String(m.id || '').replace(/[^\w-]/g, '').slice(0, 32), name: String(m.name || '?').slice(0, 40), pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => EV_POS.includes(x)).slice(0, 3) })).filter(m => m.id);
+    const members = (Array.isArray(g.members) ? g.members : []).slice(0, 6).map(m => ({ id: String(m.id || '').replace(/[^\w-]/g, '').slice(0, 32), name: String(m.name || '?').slice(0, 40), pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => EV_POS.includes(x)).slice(0, 3) })).filter(m => m.id);
     const tw = members.find(m => m.pos.includes('TWR')) || members.find(m => m.pos.some(x => ['DEL', 'GND'].includes(x))) || members[0];
     const keep = old && old.groups.find(x => x.n === n);
     return { n, lang: String(g.lang || '').slice(0, 8), code: keep ? keep.code : null, host: tw ? tw.id : null, members };
@@ -472,9 +472,9 @@ async function handle(req, res, u, p, send, readJson) {
 }
 
 // ---------------- multiplayer rooms (WebSocket relay) ----------------
-// The host's game runs the simulation; the server only passes messages within a room. Max. 5 controllers per room.
+// The host's game runs the simulation; the server only passes messages within a room. Max. 6 controllers per room.
 const ROOMS = new Map();
-const ROOM_MAX = 5;   // Tower + Radar: e.g. DEL/GND, TWR, ARR, DEP, CTR
+const ROOM_MAX = 6;   // Tower + Radar: e.g. DEL, GND, TWR, ARR, DEP, CTR
 const BOOT = crypto.randomBytes(4).toString('hex');   // changes with every server start – clients can tell a restart from a network drop   // code -> { code, host, cfg, state, members: Map(id -> { ws, user, pos }) }
 const code6 = () => { let c; do { c = Array.from(crypto.randomBytes(5), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); } while (ROOMS.has(c)); return c; };
 function roomInfo(r) { return { t: 'room', event: !!r.event, code: r.code, host: r.host, state: r.state, cfg: r.cfg, members: [...r.members.values()].map(m => ({ id: m.user.id, name: m.user.name, avatar: m.user.avatar, pos: m.pos || [] })) }; }
