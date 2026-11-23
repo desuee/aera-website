@@ -119,6 +119,10 @@ async function handle(req, res, u, p, send, serveFile, pagePath) {
     try {
       const rel = await releases(), a = rel.flatMap(r => r.assets).find(x => String(x.id) === m[1]);
       if (!a) { send(res, 404, { error: 'File not found' }); return true; }
+      // the file itself comes from GitHub (short-lived signed link) – it does not go through this server (Railway bills every byte)
+      const loc = await signedUrl(a.id);
+      if (loc) { res.writeHead(302, { Location: loc, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' }); res.end();
+        console.log('beta download (redirect)', a.name, 'by', s.name); LOG.unshift({ t: Date.now(), file: a.name, user: s.name }); if (LOG.length > 1000) LOG.length = 1000; return true; }
       const r = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${a.id}`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/octet-stream', 'User-Agent': 'dev-dsue-beta' }, redirect: 'follow' });
       if (!r.ok || !r.body) { send(res, 502, { error: 'Download failed (' + r.status + ')' }); return true; }
       res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': r.headers.get('content-length') || a.size,
@@ -132,6 +136,16 @@ async function handle(req, res, u, p, send, serveFile, pagePath) {
   return false;
 }
 
+// GitHub answers an asset request with a redirect to a signed, short-lived storage link (a few minutes): hand that to the
+// player instead of streaming 145 MB through this server. Returns null if GitHub did not redirect (then we stream as before).
+async function signedUrl(id) {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${id}`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/octet-stream', 'User-Agent': 'dev-dsue-beta' }, redirect: 'manual' });
+    const loc = r.headers.get('location');
+    try { if (r.body) await r.body.cancel(); } catch (_) {}
+    return (r.status >= 300 && r.status < 400 && loc && /^https:\/\//.test(loc)) ? loc : null;
+  } catch (e) { console.warn('signedUrl', e.message); return null; }
+}
 // download statistics for /admin/downloads: counts from GitHub (kept forever) + who downloaded since the last restart
 const LOG = [];
 async function stats() {
@@ -158,6 +172,9 @@ async function memberCheck(accessToken) {
 async function pipeAsset(res, id, who) {
   const rel = await releases(), a = rel.flatMap(r => r.assets).find(x => String(x.id) === String(id));
   if (!a) return false;
+  const loc = await signedUrl(a.id);
+  if (loc) { res.writeHead(302, { Location: loc, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' }); res.end();
+    console.log('aera update download (redirect)', a.name, 'by', who); LOG.unshift({ t: Date.now(), file: a.name, user: who + ' (in-game)' }); if (LOG.length > 1000) LOG.length = 1000; return true; }
   const r = await fetch(`https://api.github.com/repos/${REPO}/releases/assets/${a.id}`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/octet-stream', 'User-Agent': 'dev-dsue-beta' }, redirect: 'follow' });
   if (!r.ok || !r.body) { const e = new Error('Download failed (' + r.status + ')'); e.status = 502; throw e; }
   res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': r.headers.get('content-length') || a.size,
