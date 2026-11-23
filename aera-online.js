@@ -544,6 +544,7 @@ function attach(server) {
         const taken = new Set([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
         me.pos = want.filter(x => !taken.has(x)); bcast(r, roomInfo(r)); return; }
       if (m.t === 'cfg' && r.host === ws.user.id) { r.cfg = Object.assign(r.cfg, m.cfg || {}); bcast(r, roomInfo(r)); return; }
+      if (m.t === 'host' && r.host === ws.user.id) { const k = r.members.get(String(m.id)); if (k && r.state !== 'run') { r.host = k.user.id; bcast(r, roomInfo(r)); } return; }   // hand the room to another member (Tower + Radar: the tower runs the shift)
       if (m.t === 'state' && r.host === ws.user.id) { r.state = m.state === 'run' ? 'run' : 'lobby'; bcast(r, roomInfo(r)); return; }
       if (m.t === 'kick' && r.host === ws.user.id) { const k = r.members.get(String(m.id)); if (k && k.ws !== ws) { k.ws.send(JSON.stringify({ t: 'closed', why: 'kicked' })); leave(k.ws); } return; }
       if (m.t === 'to') {   // relay: to = 'all' | 'host' | user id
