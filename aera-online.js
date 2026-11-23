@@ -514,6 +514,16 @@ function attach(server) {
         room.members.set(ws.user.id, { ws, user: ws.user, pos: Array.isArray(m.pos) ? m.pos.slice(0, 3) : ['TWR'] });
         ROOMS.set(c, room); ws.room = c; ws.send(JSON.stringify(roomInfo(room))); return;
       }
+      if (m.t === 'list') {   // public rooms anyone can join (the host ticked "public")
+        const L = [];
+        for (const x of ROOMS.values()) {
+          if (x.event || !x.cfg || !x.cfg.pub || x.members.size >= ROOM_MAX) continue;
+          const h = x.members.get(x.host);
+          L.push({ code: x.code, host: h ? h.user.name : '', mode: x.cfg.mode || 'TWR', apt: x.cfg.apt || '', ver: x.cfg.ver || '', state: x.state, n: x.members.size, max: ROOM_MAX, taken: [...x.members.values()].flatMap(y => y.pos || []) });
+          if (L.length >= 40) break;
+        }
+        ws.send(JSON.stringify({ t: 'rooms', L })); return;
+      }
       if (m.t === 'join') {
         const room = ROOMS.get(String(m.code || '').toUpperCase().trim());
         if (!room) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
