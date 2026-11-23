@@ -21,9 +21,6 @@
    ]
   }
  ],
- "filled": [
-  "community-lead"
- ],
  "roles": [
   {
    "id": "community-lead",
@@ -137,7 +134,7 @@
    },
    "name": "ATC Procedures Specialist",
    "seats": 1,
-   "taken": false,
+   "taken": true,
    "about": {
     "de": "Du sorgst dafür, dass AERA sich anfühlt wie echte Flugsicherung.",
     "en": "You make sure AERA feels like real air traffic control."
@@ -165,7 +162,7 @@
    },
    "name": "Quality Assurance Manager",
    "seats": 1,
-   "taken": false,
+   "taken": true,
    "about": {
     "de": "Du findest die Bugs, bevor die Spieler es tun.",
     "en": "You find the bugs before the players do."
@@ -239,5 +236,10 @@
     ]
    }
   }
+ ],
+ "filled": [
+  "community-lead",
+  "atc-procedures",
+  "qa"
  ]
 }
