@@ -363,6 +363,11 @@ async function handle(req, res, u, p, send, readJson) {
   if (p === '/api/aera/status') { J(200, { login: configured() || DEV, stt: sttOn(), nlu: nluOn(), ranked: true, storage: !!FILE, week: week(), queues: QUEUES, ranks: RANKS, rooms: ROOMS.size }); return true; }
   const me = bearer(req);
   if (!me) { J(401, { error: 'Not signed in' }); return true; }
+    if (p === '/api/aera/studio') {
+    const ids = (process.env.AERA_ADMIN_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
+    if (!ids.includes(String(me.id))) { J(403, { error: 'no access' }); return true; }
+    J(200, { ok: true, name: me.name }); return true;
+  }
   if (p === '/api/aera/me') { const e = DB.users[me.id]; J(200, { user: { id: me.id, name: me.name, avatar: me.avatar }, ranked: Object.fromEntries(Object.keys(QUEUES).map(q => [q, qPub(e && e.q[q])])) }); return true; }
   if (p === '/api/aera/ranked/start' && req.method === 'POST') {
     const b = await readJson(req); const q = String(b.q || '');
