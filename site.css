@@ -76,8 +76,8 @@ section { padding: 88px 0 0; }
 .aera-shot { display: block; border: 1px solid var(--line); overflow: hidden; }
 .aera-shot img { width: 100%; transition: transform .6s ease; }
 .aera-shot:hover img { transform: scale(1.012); }
-.aera-info { display: grid; grid-template-columns: 220px 1fr 300px; gap: 40px; margin-top: 28px; align-items: start; }
-.aera-logo { width: 220px; }
+.aera-info { display: grid; grid-template-columns: 200px minmax(0, 1fr) 360px; gap: 40px; margin-top: 28px; align-items: start; }
+.aera-logo { width: 200px; }
 .aera-info p { margin: 0; font-size: 17px; color: #c8cac6; max-width: 560px; }
 .aera-data { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 22px; font: 400 13px var(--mono); }
 .aera-data dt { color: var(--muted); }

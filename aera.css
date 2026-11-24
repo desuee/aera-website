@@ -100,7 +100,9 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .sub{color:var(--grey);opacity:.82;max-width:660px;font-size:17px;margin:16px 0 0}
 
 /* sectors */
-.sectors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:44px}
+.sectors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:44px}
+.sector .new{font:600 13px var(--mono);color:var(--sky);padding:3px 9px;border-radius:7px;background:#1e88e51f;border:1px solid #1e88e544}
+.sector ul{align-content:start}
 .sector{position:relative;display:flex;flex-direction:column;padding:20px 20px 18px;border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;overflow:hidden}
 .sector::before{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 100% 0,#1e88e522,transparent 60%);opacity:0;transition:.3s}
 .sector:hover{transform:translateY(-4px);border-color:#1e88e588;box-shadow:0 20px 50px #0009}

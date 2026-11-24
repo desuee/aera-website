@@ -14,7 +14,7 @@ const CHANGELOG = SITE_DATA.changelog;
 // Projekte: Reihenfolge = Reihenfolge auf der Seite
 const PROJECTS = [
   { id: 'aera', kind: 'game', img: 'img/proj-aera.webp', name: 'AERA', link: 'aera.html',
-    de: 'Fluglotsen-Spiel über Deutschland: Anflug Köln/Bonn und Frankfurt, Langen und Rhein Radar – mit Funk auf Deutsch und Englisch. Early Access.', en: 'Air traffic control game over Germany: approach Cologne/Bonn and Frankfurt, Langen and Rhein Radar – with radio in German and English. Early Access.', tags: ['Game', 'ATC', 'Early Access'] },
+    de: 'Fluglotsen-Spiel: Köln/Bonn, Frankfurt, Lyon und London Heathrow von Delivery bis Departure, dazu Langen und Rhein Radar – mit Funk auf Deutsch und Englisch. Early Access.', en: 'Air traffic control game: Cologne/Bonn, Frankfurt, Lyon and London Heathrow from delivery to departure, plus Langen and Rhein Radar – with radio in German and English. Early Access.', tags: ['Game', 'ATC', 'Early Access'] },
   { id: 'mediagrab', kind: 'app', img: 'img/proj-mediagrab.webp', name: 'MediaGrab', link: '#mediagrab',
     de: 'Desktop-App: YouTube und SoundCloud als MP3, MP4 oder WAV speichern. Windows und macOS.', en: 'Desktop app: save YouTube and SoundCloud as MP3, MP4 or WAV. Windows and macOS.', tags: ['Electron', 'yt-dlp', 'FFmpeg'] },
   { id: 'uploader', kind: 'app', img: 'img/proj-uploader.webp', name: 'Steam Workshop Uploader', link: '#uploader',
