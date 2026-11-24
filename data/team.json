@@ -108,7 +108,7 @@
    },
    "name": "Social Media Manager",
    "seats": 1,
-   "taken": false,
+   "taken": true,
    "about": {
     "de": "Du zeigst der Welt, was AERA kann.",
     "en": "You show the world what AERA can do."
@@ -239,6 +239,7 @@
  ],
  "filled": [
   "community-lead",
+  "social",
   "atc-procedures",
   "qa"
  ]
