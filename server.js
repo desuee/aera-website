@@ -331,16 +331,16 @@ const readJson = req => new Promise((resolve, reject) => {
 const cookie = (req, n) => { const m = (req.headers.cookie || '').match(new RegExp('(?:^|; )' + n + '=([^;]+)')); return m ? m[1] : ''; };
 const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',').pop().trim();
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
-const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8' };
+const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8', woff2: 'font/woff2' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'site.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
   const ext = path.extname(file).slice(1).toLowerCase();
   send(res, 200, fs.readFileSync(file), TYPES[ext] || 'application/octet-stream', { 'Cache-Control': cache, 'Content-Security-Policy': csp, 'X-Robots-Tag': csp === SITE_CSP ? 'all' : 'noindex, nofollow' });
 }
-const notFound = () => '<!doctype html><meta charset="utf-8"><title>404</title><link rel="stylesheet" href="/style.css"><main class="legal"><h1>404</h1><p>Diese Seite gibt es nicht. <a href="/">Zur Startseite</a></p></main>';
+const notFound = () => '<!doctype html><meta charset="utf-8"><title>404</title><link rel="stylesheet" href="/site.css"><main class="legal"><h1>404</h1><p>Diese Seite gibt es nicht. <a href="/">Zur Startseite</a></p></main>';
 const errText = e => {
   const m = String(e && (e.responseText || e.message) || e);
   if (/auth|login|credentials|password/i.test(m)) return 'Anmeldung beim Mailserver fehlgeschlagen';
@@ -406,6 +406,7 @@ const SERVER = http.createServer(async (req, res) => {
       const name = decodeURIComponent(p.slice(1));
       if (SITE.has(name)) return serveFile(res, path.join(ROOT, name), /\.html$/.test(name) ? 'no-cache' : 'public, max-age=3600', SITE_CSP);
       if (/^img\/[a-z0-9._-]+\.(png|webp|jpg|svg|ico)$/i.test(name)) return serveFile(res, path.join(ROOT, name), 'public, max-age=86400', SITE_CSP);
+      if (/^fonts\/[a-z0-9._-]+\.woff2$/i.test(name)) return serveFile(res, path.join(ROOT, name), 'public, max-age=31536000, immutable', SITE_CSP);
     }
     if (!p.startsWith('/api/')) return send(res, 404, notFound(), TYPES.html);
     // every change needs this header: a plain form or link from another site cannot set it

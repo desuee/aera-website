@@ -31,9 +31,10 @@ const PROJECTS = [
 // ============================================================
 
 const url = file => `https://github.com/${GITHUB}/${REPO}/releases/latest/download/${file}`;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const T = {
-  de: { for: 'für', win: 'Windows', mac: 'macOS', arm: 'Apple Silicon (M1–M4)', intel: 'Intel', dl: 'Herunterladen', also: 'Auch für:', only: 'Nur für Windows verfügbar.', copied: 'Kopiert ✓', version: 'Version' },
-  en: { for: 'for', win: 'Windows', mac: 'macOS', arm: 'Apple Silicon (M1–M4)', intel: 'Intel', dl: 'Download', also: 'Also for:', only: 'Windows only.', copied: 'Copied ✓', version: 'Version' },
+  de: { for: 'für', win: 'Windows', mac: 'macOS', arm: 'Apple Silicon (M1–M4)', intel: 'Intel', dl: 'Herunterladen', also: 'Auch für', only: 'Nur für Windows verfügbar.', copied: 'Kopiert', version: 'Version' },
+  en: { for: 'for', win: 'Windows', mac: 'macOS', arm: 'Apple Silicon (M1–M4)', intel: 'Intel', dl: 'Download', also: 'Also for', only: 'Windows only.', copied: 'Copied', version: 'Version' },
 };
 let L = (navigator.language || 'de').slice(0, 2) === 'de' ? 'de' : 'en';
 try { const saved = localStorage.getItem('lang'); if (saved === 'de' || saved === 'en') L = saved; } catch {}
@@ -59,8 +60,9 @@ if (OS === 'mac' && ARM === null) {
 const icon = {
   win: '<svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.4 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.4z"/></svg>',
   mac: '<svg viewBox="0 0 24 24"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C6.9 7.3 5.5 8.2 4.7 9.6c-1.6 2.8-.4 6.9 1.2 9.1.8 1.1 1.7 2.3 2.8 2.3s1.6-.7 3-.7 1.8.7 3 .7 2-1.1 2.8-2.2c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.4-.9-2.4-3.6zM14.2 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.7-1.3z"/></svg>',
-  dl: '<svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>',
 };
+
+const platforms = a => [a.win && 'Windows', a.macArm && 'macOS'].filter(Boolean).join(' · ');
 
 function drawDownloads() {
   const t = T[L];
@@ -68,58 +70,64 @@ function drawDownloads() {
     const a = APPS[box.dataset.app]; if (!a) continue;
     const opts = [];
     if (a.win) opts.push({ k: 'win', label: t.win, file: a.win });
-    if (a.macArm) opts.push({ k: 'macArm', label: t.mac + ' · ' + t.arm, file: a.macArm });
-    if (a.macIntel) opts.push({ k: 'macIntel', label: t.mac + ' · ' + t.intel, file: a.macIntel });
+    if (a.macArm) opts.push({ k: 'macArm', label: t.mac + ' · Apple Silicon', file: a.macArm });
+    if (a.macIntel) opts.push({ k: 'macIntel', label: t.mac + ' · Intel', file: a.macIntel });
     let main = opts[0];
     if (OS === 'mac') main = opts.find(o => o.k === (ARM === false ? 'macIntel' : 'macArm')) || main;
     const isMac = main.k !== 'win';
-    let html = `<a class="btn ${a.style}" href="${url(main.file)}">${isMac ? icon.mac : icon.win}<span>${t.dl} ${t.for} ${isMac ? t.mac : t.win}<small>${isMac ? (main.k === 'macArm' ? t.arm : t.intel) + ' · ' : ''}${t.version} ${a.version}</small></span></a>`;
+    let html = `<a class="btn" href="${url(main.file)}">${isMac ? icon.mac : icon.win}<span>${t.dl} ${t.for} ${isMac ? t.mac : t.win}</span></a>`;
+    html += `<span class="dl-meta">${isMac ? (main.k === 'macArm' ? t.arm : t.intel) + ' · ' : ''}v${esc(a.version)}</span>`;
     const rest = opts.filter(o => o !== main);
-    if (rest.length) html += `<div class="others"><span>${t.also}</span>${rest.map(o => `<a href="${url(o.file)}">${o.label}</a>`).join('')}</div>`;
+    if (rest.length) html += `<div class="others">${t.also}: ${rest.map(o => `<a href="${url(o.file)}">${o.label}</a>`).join(' / ')}</div>`;
     if (OS === 'mac' && !a.macArm) html += `<div class="na">${t.only}</div>`;
     box.innerHTML = html;
   }
-  const v = (id, app) => { const el = document.getElementById(id); if (el) el.textContent = T[L].version + ' ' + APPS[app].version + ' · ' + [APPS[app].win && 'Windows', APPS[app].macArm && 'macOS'].filter(Boolean).join(' · '); };
+  const v = (id, app) => { const el = document.getElementById(id); if (el && APPS[app]) el.textContent = 'v' + APPS[app].version + ' · ' + platforms(APPS[app]); };
   v('mg-ver', 'mediagrab'); v('wu-ver', 'uploader');
+  const ix = (id, app) => { const el = document.getElementById(id); if (el && APPS[app]) el.textContent = platforms(APPS[app]) + ' · v' + APPS[app].version; };
+  ix('ix-mg', 'mediagrab'); ix('ix-wu', 'uploader');
 }
 
 let pjFilter = 'all';
 function drawProjects() {
   const grid = document.getElementById('pj-grid'); if (!grid) return;
   const K = { all: L === 'de' ? 'Alle' : 'All', game: L === 'de' ? 'Spiele' : 'Games', app: 'Apps', mod: L === 'de' ? 'Puck-Mods' : 'Puck mods', web: 'Websites' };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  document.getElementById('pj-tabs').innerHTML = ['all', 'game', 'app', 'mod', 'web'].map(k => `<button data-pj="${k}" class="${k === pjFilter ? 'on' : ''}">${K[k]}</button>`).join('');
-  const more = { game: L === 'de' ? 'Zur Spielseite' : 'View game', app: L === 'de' ? 'Zur App' : 'View app', mod: L === 'de' ? 'Im Steam Workshop' : 'On Steam Workshop', web: L === 'de' ? 'Website öffnen' : 'Open website' };
-  grid.innerHTML = PROJECTS.filter(p => pjFilter === 'all' || p.kind === pjFilter).map(p => {
+  const one = { game: L === 'de' ? 'Spiel' : 'Game', app: 'App', mod: 'Mod', web: 'Website' };
+  const count = k => k === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.kind === k).length;
+  document.getElementById('pj-tabs').innerHTML = ['all', 'game', 'app', 'mod', 'web'].map(k => `<button data-pj="${k}" class="${k === pjFilter ? 'on' : ''}">${K[k]} <sup>${count(k)}</sup></button>`).join('');
+  grid.innerHTML = PROJECTS.map((p, i) => ({ p, i })).filter(({ p }) => pjFilter === 'all' || p.kind === pjFilter).map(({ p, i }) => {
     const ext = /^https?:/.test(p.link);
-    return `<a class="pj ${p.kind}" href="${esc(p.link)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
-      <div class="pj-img"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="pj-kind">${K[p.kind]}</span></div>
-      <div class="pj-body"><h3>${esc(p.name)}</h3><p>${esc(L === 'de' ? p.de : p.en)}</p>
-      <div class="pj-foot"><div class="pj-tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div><span class="pj-go">${more[p.kind]} ${ext ? '↗' : '→'}</span></div></div></a>`;
+    return `<a class="pj" href="${esc(p.link)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
+      <span class="pj-n">${String(i + 1).padStart(2, '0')}</span>
+      <span class="pj-img"><img src="${esc(p.img)}" alt="" loading="lazy"></span>
+      <span class="pj-main"><b>${esc(p.name)}</b><span class="pj-desc">${esc(L === 'de' ? p.de : p.en)}</span></span>
+      <span class="pj-kind">${one[p.kind]}</span>
+      <span class="pj-tags">${p.tags.map(esc).join(' · ')}</span>
+      <span class="pj-go">${ext ? '↗' : '→'}</span></a>`;
   }).join('');
 }
-document.addEventListener('click', e => { const b = e.target.closest('[data-pj]'); if (b) { pjFilter = b.dataset.pj; drawProjects(); } });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pj]'); if (b) { pjFilter = b.dataset.pj; drawProjects(); }
+  const j = e.target.closest('[data-pj-jump]'); if (j) { pjFilter = j.dataset.pjJump; drawProjects(); }
+});
 
 let clFilter = 'all', clMore = false;
 function drawChangelog() {
   const box = document.getElementById('cl-list'); if (!box) return;
   const name = { mediagrab: 'MediaGrab', uploader: 'Steam Workshop Uploader' };
-  const icon = { mediagrab: 'img/mediagrab-icon.png', uploader: 'img/uploader-icon.png' };
-  const tag = { new: [L === 'de' ? 'Neu' : 'New', 'new'], imp: [L === 'de' ? 'Verbessert' : 'Improved', 'imp'], fix: [L === 'de' ? 'Behoben' : 'Fixed', 'fix'] };
-  const fmt = d => { const p = d.split('-'); return p.length < 3 ? new Date(+p[0], +p[1] - 1).toLocaleDateString(L, { month: 'short', year: 'numeric' }) : new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(L, { day: 'numeric', month: 'short', year: 'numeric' }); };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const tag = { new: L === 'de' ? 'Neu' : 'New', imp: L === 'de' ? 'Besser' : 'Improved', fix: 'Fix' };
+  const fmt = d => { const p = d.split('-'); return p.length < 3 ? new Date(+p[0], +p[1] - 1).toLocaleDateString(L, { month: 'short', year: 'numeric' }) : new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(L, { day: '2-digit', month: 'short', year: 'numeric' }); };
   const list = CHANGELOG.filter(e => clFilter === 'all' || e.app === clFilter);
   const seen = {};
   const shown = clMore ? list : list.slice(0, 3);
   box.innerHTML = shown.map(e => {
     const latest = !seen[e.app]; seen[e.app] = true;
-    const items = e.items.map(([k, de, en]) => `<li><span class="tg ${tag[k][1]}">${tag[k][0]}</span><span>${esc(L === 'de' ? de : en)}</span></li>`).join('');
-    return `<article class="tl ${e.app}${latest ? ' latest' : ''}">
-      <div class="tl-when"><time>${fmt(e.date)}</time></div>
-      <div class="tl-dot"></div>
-      <div class="tl-card"><header><img src="${icon[e.app]}" alt=""><div><span class="tl-app">${name[e.app]}</span><b>v${esc(e.version)}</b></div>${latest ? `<span class="tl-latest">${L === 'de' ? 'Aktuell' : 'Latest'}</span>` : ''}</header><ul>${items}</ul></div>
+    const items = e.items.map(([k, de, en]) => `<li><span class="tg ${esc(k)}">${tag[k] || esc(k)}</span><span>${esc(L === 'de' ? de : en)}</span></li>`).join('');
+    return `<article class="cl${latest ? ' latest' : ''}">
+      <div class="cl-when"><time>${fmt(e.date)}</time></div>
+      <div class="cl-body"><header><b>${name[e.app] || esc(e.app)}</b> <span class="cl-v">v${esc(e.version)}</span>${latest ? `<span class="cl-latest">${L === 'de' ? 'aktuell' : 'latest'}</span>` : ''}</header><ul>${items}</ul></div>
     </article>`;
-  }).join('') + (list.length > 3 ? `<button class="tl-more" id="cl-more">${clMore ? (L === 'de' ? 'Weniger anzeigen' : 'Show less') : (L === 'de' ? `Ältere Versionen anzeigen (${list.length - 3})` : `Show older versions (${list.length - 3})`)}</button>` : '');
+  }).join('') + (list.length > 3 ? `<button class="more" id="cl-more">${clMore ? (L === 'de' ? 'Weniger anzeigen' : 'Show less') : (L === 'de' ? `Ältere Versionen anzeigen (${list.length - 3})` : `Show older versions (${list.length - 3})`)}</button>` : '');
   for (const b of document.querySelectorAll('[data-cl]')) b.classList.toggle('on', b.dataset.cl === clFilter);
 }
 document.addEventListener('click', e => { if (e.target.closest('#cl-more')) { clMore = !clMore; drawChangelog(); } });

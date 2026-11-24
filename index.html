@@ -7,8 +7,9 @@
 <meta name="description" content="MediaGrab und Steam Workshop Uploader – kostenlose Desktop-Apps von Desue für Windows und Mac.">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.dataset.theme="dark"}catch(e){}</script>
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="site.css?v=1">
 </head>
 <body>
 <header class="nav">
@@ -16,9 +17,9 @@
     <a class="logo" href="#top"><img class="mark" src="img/logo.png" alt="">Desue</a>
     <nav>
       <a href="#projects" data-de="Projekte" data-en="Projects">Projekte</a>
-      <a href="aera.html" class="nav-aera">AERA</a>
+      <a href="aera.html">AERA</a>
       <a href="#mediagrab">MediaGrab</a>
-      <a href="#uploader">Steam Workshop Uploader</a>
+      <a href="#uploader" data-de="Uploader" data-en="Uploader">Uploader</a>
       <a href="#install" data-de="Installation" data-en="Install">Installation</a>
       <a href="#changelog">Changelog</a>
       <a href="#faq">FAQ</a>
@@ -29,48 +30,56 @@
 </header>
 
 <main id="top">
-  <div class="chrome-bg" aria-hidden="true"></div>
-  <section class="hero in">
-    <img class="hero-logo" src="img/logo.png" alt="Desue">
-    <p class="kicker" data-de="Kostenlose Desktop-Apps" data-en="Free desktop apps">Kostenlose Desktop-Apps</p>
-    <h1 data-de="Kleine Tools,<br>die einfach funktionieren." data-en="Small tools<br>that just work.">Kleine Tools,<br>die einfach funktionieren.</h1>
-    <p class="lead" data-de="Gebaut von Desue. Kein Account, keine Werbung, kein Abo – herunterladen, installieren, loslegen." data-en="Built by Desue. No account, no ads, no subscription – download, install, go.">Gebaut von Desue. Kein Account, keine Werbung, kein Abo – herunterladen, installieren, loslegen.</p>
-    <div class="apps">
-      <a href="aera.html" class="app-chip aera-chip"><img src="img/aera-touch-icon.png" alt=""><span><b>AERA</b><small data-de="ATC-Spiel · Early Access" data-en="ATC game · Early Access">ATC-Spiel · Early Access</small></span></a>
-      <a href="#mediagrab" class="app-chip"><img src="img/mediagrab-icon.png" alt=""><span><b>MediaGrab</b><small>Windows · macOS</small></span></a>
-      <a href="#uploader" class="app-chip"><img src="img/uploader-icon.png" alt=""><span><b>Steam Workshop Uploader</b><small>Windows</small></span></a>
+
+  <!-- Intro -->
+  <section class="intro in">
+    <div class="intro-text">
+      <p class="label">dev-dsue.de</p>
+      <h1 data-de="Apps, Puck-Mods und ein Fluglotsen&shy;spiel." data-en="Apps, Puck mods and an air traffic control game.">Apps, Puck-Mods und ein Fluglotsen&shy;spiel.</h1>
+      <p class="lead" data-de="Gebaut von Desue. Alles kostenlos – kein Account, keine Werbung, kein Abo." data-en="Built by Desue. All free – no account, no ads, no subscription.">Gebaut von Desue. Alles kostenlos – kein Account, keine Werbung, kein Abo.</p>
     </div>
+    <ol class="index">
+      <li><a href="aera.html"><span class="n">01</span><b>AERA</b><span class="m" data-de="ATC-Spiel · Early Access" data-en="ATC game · Early Access">ATC-Spiel · Early Access</span></a></li>
+      <li><a href="#mediagrab"><span class="n">02</span><b>MediaGrab</b><span class="m" id="ix-mg">Windows · macOS</span></a></li>
+      <li><a href="#uploader"><span class="n">03</span><b>Steam Workshop Uploader</b><span class="m" id="ix-wu">Windows</span></a></li>
+      <li><a href="#projects" data-pj-jump="mod"><span class="n">04</span><b>Puck-Mods</b><span class="m">Steam Workshop</span></a></li>
+      <li><a href="https://europeanpuckseries.com" target="_blank" rel="noopener"><span class="n">05</span><b>European Puck Series</b><span class="m">Website ↗</span></a></li>
+    </ol>
   </section>
 
-  <!-- AERA: featured -->
-  <section class="in" id="aera">
-    <a class="aera-feat" href="aera.html">
-      <div class="af-scope" aria-hidden="true"><div class="af-sweep"></div></div>
-      <div class="af-copy">
-        <span class="af-badge"><i></i><span data-de="Mein größtes Projekt · Early Access" data-en="My biggest project · Early Access">Mein größtes Projekt · Early Access</span></span>
-        <img class="af-logo" src="img/aera-logo.webp" alt="AERA – Airspace & Enroute Radar Authority" width="1400" height="544">
-        <p class="af-motto">Control the Skies</p>
-        <p class="af-text" data-de="Mein Fluglotsen-Spiel über Deutschland: Anflug Köln/Bonn und Frankfurt, Langen Radar und Rhein Radar – mit echten Fixes, Live-Wetter und Funk, den du einfach sprichst. Auf Deutsch und Englisch." data-en="My air traffic control game over Germany: approach Cologne/Bonn and Frankfurt, Langen Radar and Rhein Radar – with real fixes, live weather and radio you simply speak. In German and English.">Mein Fluglotsen-Spiel über Deutschland: Anflug Köln/Bonn und Frankfurt, Langen Radar und Rhein Radar – mit echten Fixes, Live-Wetter und Funk, den du einfach sprichst. Auf Deutsch und Englisch.</p>
-        <div class="af-chips"><span>EDDK</span><span>EDDF</span><span>Langen Radar</span><span>Rhein Radar</span><span>FL000–400</span></div>
-        <span class="af-btn"><span data-de="Zur AERA-Seite" data-en="Visit the AERA page">Zur AERA-Seite</span> <b>→</b></span>
+  <!-- AERA -->
+  <section class="aera" id="aera">
+    <div class="in">
+      <div class="sec-head"><span>01</span><h2>AERA</h2><span class="r" data-de="Mein größtes Projekt · Early Access" data-en="My biggest project · Early Access">Mein größtes Projekt · Early Access</span></div>
+      <a class="aera-shot" href="aera.html"><img src="img/aera-rhein-de.webp" alt="AERA Radarbildschirm" loading="lazy" width="1456" height="814"></a>
+      <div class="aera-info">
+        <img class="aera-logo" src="img/aera-logo.webp" alt="AERA – Airspace & Enroute Radar Authority" width="1400" height="544">
+        <p data-de="Mein Fluglotsen-Spiel über Deutschland: Anflug Köln/Bonn und Frankfurt, Langen Radar und Rhein Radar – mit echten Fixes, Live-Wetter und Funk, den du einfach sprichst. Auf Deutsch und Englisch." data-en="My air traffic control game over Germany: approach Cologne/Bonn and Frankfurt, Langen Radar and Rhein Radar – with real fixes, live weather and radio you simply speak. In German and English.">Mein Fluglotsen-Spiel über Deutschland: Anflug Köln/Bonn und Frankfurt, Langen Radar und Rhein Radar – mit echten Fixes, Live-Wetter und Funk, den du einfach sprichst. Auf Deutsch und Englisch.</p>
+        <div class="aera-side">
+          <dl class="aera-data">
+            <dt data-de="Flughäfen" data-en="Airports">Flughäfen</dt><dd>EDDK · EDDF</dd>
+            <dt data-de="Sektoren" data-en="Sectors">Sektoren</dt><dd>Langen Radar · Rhein Radar</dd>
+            <dt data-de="Höhen" data-en="Levels">Höhen</dt><dd>FL000–400</dd>
+          </dl>
+          <a class="btn inv" href="aera.html"><span data-de="Zur AERA-Seite" data-en="Visit the AERA page">Zur AERA-Seite</span> →</a>
+        </div>
       </div>
-      <figure class="af-shot"><img src="img/aera-rhein-de.webp" alt="AERA Radarbildschirm" loading="lazy" width="1456" height="814"></figure>
-    </a>
+    </div>
   </section>
 
   <!-- Projects -->
   <section class="in projects" id="projects">
-    <h2 data-de="Projekte" data-en="Projects">Projekte</h2>
-    <p class="sub" data-de="Apps, Mods und Websites, die ich gebaut habe." data-en="Apps, mods and websites I have built.">Apps, Mods und Websites, die ich gebaut habe.</p>
-    <div class="pj-tabs" id="pj-tabs"></div>
-    <div class="pj-grid" id="pj-grid"></div>
+    <div class="sec-head"><span>02</span><h2 data-de="Projekte" data-en="Projects">Projekte</h2><span class="r" data-de="Apps, Mods und Websites, die ich gebaut habe." data-en="Apps, mods and websites I have built.">Apps, Mods und Websites, die ich gebaut habe.</span></div>
+    <div class="tabs" id="pj-tabs"></div>
+    <div class="pj-list" id="pj-grid"></div>
   </section>
 
   <!-- MediaGrab -->
-  <section class="product" id="mediagrab">
-    <div class="in grid">
+  <section class="in product" id="mediagrab">
+    <div class="sec-head"><span>03</span><h2>MediaGrab</h2><span class="r ver" id="mg-ver"></span></div>
+    <div class="p-grid">
       <div class="copy">
-        <div class="ptitle"><img src="img/mediagrab-icon.png" alt=""><div><h2>MediaGrab</h2><span class="ver" id="mg-ver"></span></div></div>
+        <img class="p-icon" src="img/mediagrab-icon.png" alt="">
         <p class="pitch" data-de="Link einfügen, Format wählen, fertig. Videos und Musik von YouTube und SoundCloud als MP3, MP4 oder WAV speichern." data-en="Paste a link, pick a format, done. Save videos and music from YouTube and SoundCloud as MP3, MP4 or WAV.">Link einfügen, Format wählen, fertig. Videos und Musik von YouTube und SoundCloud als MP3, MP4 oder WAV speichern.</p>
         <ul class="feats">
           <li><b>MP3</b> <span data-de="mit 320 kbps, Cover und Titel" data-en="at 320 kbps with cover and title">mit 320 kbps, Cover und Titel</span></li>
@@ -78,7 +87,7 @@
           <li><b>WAV</b> <span data-de="verlustfrei für DJs und Produzenten" data-en="lossless for DJs and producers">verlustfrei für DJs und Produzenten</span></li>
           <li><b>SoundCloud-Sets</b> <span data-de="und Playlists komplett in einem Rutsch" data-en="and playlists in one go">und Playlists komplett in einem Rutsch</span></li>
           <li><b data-de="Mehrere Downloads" data-en="Multiple downloads">Mehrere Downloads</b> <span data-de="gleichzeitig, mit Fortschritt" data-en="at once, with progress">gleichzeitig, mit Fortschritt</span></li>
-          <li><b data-de="Aktualisiert sich selbst" data-en="Updates itself">Aktualisiert sich selbst</b> <span data-de="– bleibt mit YouTube kompatibel" data-en="– stays compatible with YouTube">– bleibt mit YouTube kompatibel</span></li>
+          <li><b data-de="Updates" data-en="Updates">Updates</b> <span data-de="aktualisiert sich selbst – bleibt mit YouTube kompatibel" data-en="updates itself – stays compatible with YouTube">aktualisiert sich selbst – bleibt mit YouTube kompatibel</span></li>
         </ul>
         <div class="dl" data-app="mediagrab"></div>
         <p class="fine" data-de="Bitte nur Inhalte herunterladen, an denen du die Rechte hast oder die zum Download freigegeben sind." data-en="Only download content you own or that is offered for download.">Bitte nur Inhalte herunterladen, an denen du die Rechte hast oder die zum Download freigegeben sind.</p>
@@ -88,17 +97,18 @@
   </section>
 
   <!-- Steam Workshop Uploader -->
-  <section class="product alt" id="uploader">
-    <div class="in grid rev">
+  <section class="in product" id="uploader">
+    <div class="sec-head"><span>04</span><h2>Steam Workshop Uploader</h2><span class="r ver" id="wu-ver"></span></div>
+    <div class="p-grid">
       <div class="copy">
-        <div class="ptitle"><img src="img/uploader-icon.png" alt=""><div><h2>Steam Workshop Uploader</h2><span class="ver" id="wu-ver"></span></div></div>
+        <img class="p-icon" src="img/uploader-icon.png" alt="">
         <p class="pitch" data-de="Mods für Puck in den Steam Workshop hochladen – ohne Konsole, ohne Skripte. Einfach mit Steam anmelden und Dateien reinziehen." data-en="Upload Puck mods to the Steam Workshop – no console, no scripts. Just sign in with Steam and drop your files.">Mods für Puck in den Steam Workshop hochladen – ohne Konsole, ohne Skripte. Einfach mit Steam anmelden und Dateien reinziehen.</p>
         <ul class="feats">
-          <li><b data-de="Anmeldung über Steam" data-en="Steam sign-in">Anmeldung über Steam</b> <span data-de="– kein Passwort nötig" data-en="– no password needed">– kein Passwort nötig</span></li>
-          <li><b data-de="Alle deine Mods" data-en="All your mods">Alle deine Mods</b> <span data-de="auf einen Blick, mit Abonnenten" data-en="at a glance, with subscribers">auf einen Blick, mit Abonnenten</span></li>
+          <li><b data-de="Anmeldung" data-en="Sign-in">Anmeldung</b> <span data-de="über Steam – kein Passwort nötig" data-en="with Steam – no password needed">über Steam – kein Passwort nötig</span></li>
+          <li><b data-de="Deine Mods" data-en="Your mods">Deine Mods</b> <span data-de="alle auf einen Blick, mit Abonnenten" data-en="all at a glance, with subscribers">alle auf einen Blick, mit Abonnenten</span></li>
           <li><b>Drag & Drop</b> <span data-de="für Dateien und ganze Ordner" data-en="for files and whole folders">für Dateien und ganze Ordner</span></li>
           <li><b data-de="Neue Mods" data-en="New mods">Neue Mods</b> <span data-de="mit Titel, Bild und Sichtbarkeit anlegen" data-en="with title, image and visibility">mit Titel, Bild und Sichtbarkeit anlegen</span></li>
-          <li><b>DE · EN · CS</b> <span data-de="– Deutsch, Englisch, Tschechisch" data-en="– German, English, Czech">– Deutsch, Englisch, Tschechisch</span></li>
+          <li><b data-de="Sprachen" data-en="Languages">Sprachen</b> <span data-de="Deutsch, Englisch, Tschechisch" data-en="German, English, Czech">Deutsch, Englisch, Tschechisch</span></li>
         </ul>
         <div class="dl" data-app="uploader"></div>
       </div>
@@ -108,19 +118,19 @@
 
   <!-- Install help -->
   <section class="in help" id="install">
-    <h2 data-de="Installation" data-en="Installation">Installation</h2>
+    <div class="sec-head"><span>05</span><h2 data-de="Installation" data-en="Installation">Installation</h2></div>
     <p class="sub" data-de="Die Apps sind nicht bei Microsoft oder Apple signiert (das kostet jährlich Geld). Beim ersten Start fragt dein System deshalb einmal nach." data-en="The apps are not signed with Microsoft or Apple (that costs money every year), so your system asks once on first launch.">Die Apps sind nicht bei Microsoft oder Apple signiert (das kostet jährlich Geld). Beim ersten Start fragt dein System deshalb einmal nach.</p>
-    <div class="cards">
-      <div class="card">
-        <h3><svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.4 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.4z"/></svg>Windows</h3>
+    <div class="cols">
+      <div class="col">
+        <h3>Windows</h3>
         <ol>
           <li data-de="Setup-Datei herunterladen und doppelklicken." data-en="Download the setup file and double-click it.">Setup-Datei herunterladen und doppelklicken.</li>
           <li data-de="Erscheint „Der Computer wurde durch Windows geschützt“: auf <b>Weitere Informationen</b> und dann <b>Trotzdem ausführen</b> klicken." data-en="If “Windows protected your PC” appears: click <b>More info</b>, then <b>Run anyway</b>.">Erscheint „Der Computer wurde durch Windows geschützt“: auf <b>Weitere Informationen</b> und dann <b>Trotzdem ausführen</b> klicken.</li>
           <li data-de="Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü." data-en="Click through the installer – done. The app is on your desktop and in the Start menu.">Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü.</li>
         </ol>
       </div>
-      <div class="card">
-        <h3><svg viewBox="0 0 24 24"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C6.9 7.3 5.5 8.2 4.7 9.6c-1.6 2.8-.4 6.9 1.2 9.1.8 1.1 1.7 2.3 2.8 2.3s1.6-.7 3-.7 1.8.7 3 .7 2-1.1 2.8-2.2c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.4-.9-2.4-3.6zM14.2 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.7-1.3z"/></svg>macOS</h3>
+      <div class="col">
+        <h3>macOS</h3>
         <ol>
           <li data-de="Die passende Zip laden: <b>Apple Silicon</b> für M1–M4, <b>Intel</b> für ältere Macs ( → Über diesen Mac)." data-en="Get the right zip: <b>Apple Silicon</b> for M1–M4, <b>Intel</b> for older Macs ( → About This Mac).">Die passende Zip laden: <b>Apple Silicon</b> für M1–M4, <b>Intel</b> für ältere Macs ( → Über diesen Mac).</li>
           <li data-de="Entpacken und <b>MediaGrab</b> in den Ordner <b>Programme</b> ziehen." data-en="Unzip and drag <b>MediaGrab</b> into <b>Applications</b>.">Entpacken und <b>MediaGrab</b> in den Ordner <b>Programme</b> ziehen.</li>
@@ -133,20 +143,19 @@
 
   <!-- Changelog -->
   <section class="in changelog" id="changelog">
-    <h2>Changelog</h2>
-    <p class="sub" data-de="Was sich in den Apps geändert hat." data-en="What changed in the apps.">Was sich in den Apps geändert hat.</p>
-    <div class="cl-tabs"><button data-cl="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-cl="mediagrab">MediaGrab</button><button data-cl="uploader">Steam Workshop Uploader</button></div>
+    <div class="sec-head"><span>06</span><h2>Changelog</h2><span class="r" data-de="Was sich in den Apps geändert hat." data-en="What changed in the apps.">Was sich in den Apps geändert hat.</span></div>
+    <div class="tabs cl-tabs"><button data-cl="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-cl="mediagrab">MediaGrab</button><button data-cl="uploader">Steam Workshop Uploader</button></div>
     <div id="cl-list" class="cl-list"></div>
   </section>
 
   <!-- FAQ -->
   <section class="in faq" id="faq">
-    <h2>FAQ</h2>
+    <div class="sec-head"><span>07</span><h2>FAQ</h2></div>
     <details><summary data-de="Kostet das was?" data-en="Does it cost anything?">Kostet das was?</summary><p data-de="Nein. Beide Apps sind kostenlos, ohne Werbung und ohne Account." data-en="No. Both apps are free, without ads and without an account.">Nein. Beide Apps sind kostenlos, ohne Werbung und ohne Account.</p></details>
     <details><summary data-de="Warum warnt Windows / macOS?" data-en="Why does Windows / macOS warn me?">Warum warnt Windows / macOS?</summary><p data-de="Weil die Apps nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest." data-en="Because the apps aren't signed with a paid developer certificate, which is common for small free tools. The steps above show how to open them anyway.">Weil die Apps nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest.</p></details>
     <details><summary data-de="MediaGrab lädt nichts mehr – was tun?" data-en="MediaGrab stopped working – what now?">MediaGrab lädt nichts mehr – was tun?</summary><p data-de="YouTube ändert sich oft. Unten in der App auf „Engine aktualisieren“ klicken – meist ist das Problem danach weg. Die App macht das beim Start auch automatisch." data-en="YouTube changes often. Click “Update engine” at the bottom of the app – that usually fixes it. The app also does this on every start.">YouTube ändert sich oft. Unten in der App auf „Engine aktualisieren“ klicken – meist ist das Problem danach weg. Die App macht das beim Start auch automatisch.</p></details>
     <details><summary data-de="Warum klingt SoundCloud als WAV nicht besser?" data-en="Why doesn't SoundCloud sound better as WAV?">Warum klingt SoundCloud als WAV nicht besser?</summary><p data-de="SoundCloud liefert meist nur 128 kbps. WAV oder 320 kbps machen die Datei größer, aber nicht besser als das Original." data-en="SoundCloud usually streams at 128 kbps. WAV or 320 kbps make the file bigger, not better than the source.">SoundCloud liefert meist nur 128 kbps. WAV oder 320 kbps machen die Datei größer, aber nicht besser als das Original.</p></details>
-    <details><summary data-de="Open-Source-Komponenten" data-en="Open-source components">Open-Source-Komponenten</summary><p data-de="MediaGrab nutzt <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) und <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, Builds von <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, Quellcode auf ffmpeg.org). Die Apps basieren auf <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT)." data-en="MediaGrab uses <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) and <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, builds from <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, source at ffmpeg.org). The apps are built on <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT).">MediaGrab nutzt yt-dlp und FFmpeg. Die Apps basieren auf Electron.</p></details>
+    <details><summary data-de="Open-Source-Komponenten" data-en="Open-source components">Open-Source-Komponenten</summary><p data-de="MediaGrab nutzt <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) und <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, Builds von <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, Quellcode auf ffmpeg.org). Die Apps basieren auf <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Schriften: Archivo und IBM Plex Mono (SIL Open Font License), lokal ausgeliefert." data-en="MediaGrab uses <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) and <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, builds from <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, source at ffmpeg.org). The apps are built on <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Fonts: Archivo and IBM Plex Mono (SIL Open Font License), served locally.">MediaGrab nutzt yt-dlp und FFmpeg. Die Apps basieren auf Electron.</p></details>
   </section>
 </main>
 
@@ -160,6 +169,6 @@
 </footer>
 <script src="theme.js?v=4"></script>
 <script src="/site-data.js"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
