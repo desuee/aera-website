@@ -10,7 +10,7 @@ const MOCK_ENV = process.env.MOCK === '1';
 const ENV_USER = (process.env.ICLOUD_USER || process.env.CALDAV_USER || '').trim();
 const ENV_PASS = (process.env.ICLOUD_APP_PASSWORD || process.env.CALDAV_PASSWORD || '').replace(/\s+/g, '');
 const ROOT_DEFAULT = process.env.CALDAV_URL || 'https://caldav.icloud.com/';
-const OWNER = (process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || (MOCK_ENV ? 'kontakt@dev-dsue.de' : '')).trim().toLowerCase();
+const OWNER = (process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || (MOCK_ENV ? 'kontakt@aerastudios.de' : '')).trim().toLowerCase();
 const DATA_DIR = process.env.CAL_DATA_DIR || process.env.AERA_DATA_DIR || '';
 const TZ = 'Europe/Berlin';
 
