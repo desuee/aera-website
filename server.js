@@ -333,7 +333,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8', woff2: 'font/woff2' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'site.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['brand.css', 'index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'site.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -437,17 +437,39 @@ const SERVER = http.createServer(async (req, res) => {
       if (!d.name || !d.discord || !d.why || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail, Discord und „Warum“ ausfüllen.' : 'Please fill in name, a valid email, Discord and "why".' });
       if (b.adult !== true || b.privacy !== true) return send(res, 400, { error: de ? 'Bitte Alter (18+) und Datenschutz bestätigen.' : 'Please confirm age (18+) and the privacy note.' });
       h.push(now); teamHits.set(ip, h);
-      const text = `Neue Bewerbung über dev-dsue.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
+      const text = `Neue Bewerbung über aerastudios.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
       const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
                       : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
       if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
-      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an kontakt@aerastudios.de schreiben.' : 'Applications are not available right now – please write to kontakt@aerastudios.de.' });
-      const to = process.env.TEAM_MAIL_TO || 'kontakt@aerastudios.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
+      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply@aerastudios.de schreiben.' : 'Applications are not available right now – please write to apply@aerastudios.de.' });
+      const to = process.env.TEAM_MAIL_TO || 'apply@aerastudios.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
       const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
       try {
         await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
         await mail({ from: `AERA Recruiting <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
       } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@aerastudios.de schreiben.' : 'Sending failed – please write to kontakt@aerastudios.de.' }); }
+      return send(res, 200, { ok: true });
+    }
+    // public: contact form on the start page – sent as mail to the inbox, nothing is stored on the server
+    if (p === '/api/contact' && req.method === 'POST') {
+      const ip = ipOf(req), now = Date.now(), h = (teamHits.get('c|' + ip) || []).filter(t => now - t < 3600e3);
+      const b = await readJson(req); const de = b.lang !== 'en';
+      if (h.length >= 5) return send(res, 429, { error: de ? 'Zu viele Nachrichten – bitte später nochmal.' : 'Too many messages – please try again later.' });
+      if (b.website) return send(res, 200, { ok: true });   // honeypot
+      const c = (v, n) => String(v || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
+      const d = { name: c(b.name, 80), email: c(b.email, 120), topic: c(b.topic, 60), msg: String(b.msg || '').trim().slice(0, 4000) };
+      if (!d.name || !d.msg || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail und Nachricht ausfüllen.' : 'Please fill in name, a valid email and your message.' });
+      if (b.privacy !== true) return send(res, 400, { error: de ? 'Bitte den Datenschutzhinweis bestätigen.' : 'Please confirm the privacy note.' });
+      h.push(now); teamHits.set('c|' + ip, h);
+      const text = `Neue Nachricht über aerastudios.de\n\nName: ${d.name}\nE-Mail: ${d.email}\nThema: ${d.topic || '–'}\n\n${d.msg}\n`;
+      if (MOCK) { console.log('[contact]', text); return send(res, 200, { ok: true }); }
+      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Das Formular geht gerade nicht – bitte an kontakt@aerastudios.de schreiben.' : 'The form is not available right now – please write to kontakt@aerastudios.de.' });
+      const to = process.env.CONTACT_MAIL_TO || 'kontakt@aerastudios.de', from = process.env.CONTACT_MAIL_FROM || process.env.TEAM_MAIL_FROM || to;
+      try {
+        const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: `AERA Website <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `Kontakt: ${d.topic || 'Nachricht'} – ${d.name}`, text }) });
+        if (!r.ok) throw new Error('resend ' + r.status);
+      } catch (e) { console.error('contact', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@aerastudios.de schreiben.' : 'Sending failed – please write to kontakt@aerastudios.de.' }); }
       return send(res, 200, { ok: true });
     }
     if (p === '/api/login' && req.method === 'POST') {

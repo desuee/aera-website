@@ -22,10 +22,10 @@
   }
   var en = (function () { try { var l = ls.getItem('lang'); if (l) return l === 'en'; } catch (e) {} return !/^de/i.test(navigator.language || ''); })();
   var T = en ? {
-    t: 'Cookies & storage', p: 'This site uses no tracking or advertising. Necessary cookies are only set when you sign in (beta area). With your consent your browser also remembers your language and light/dark mode.',
+    t: 'Cookies & storage', p: 'This site uses no tracking or advertising. Necessary cookies are only set when you sign in (beta area). With your consent your browser also remembers your language.',
     a: 'Accept', r: 'Decline', more: 'Privacy policy', link: 'Cookie settings'
   } : {
-    t: 'Cookies & Speicher', p: 'Diese Seite nutzt kein Tracking und keine Werbung. Notwendige Cookies werden nur beim Anmelden (Beta-Bereich) gesetzt. Mit deiner Zustimmung merkt sich dein Browser außerdem deine Sprache und den Hell/Dunkel-Modus.',
+    t: 'Cookies & Speicher', p: 'Diese Seite nutzt kein Tracking und keine Werbung. Notwendige Cookies werden nur beim Anmelden (Beta-Bereich) gesetzt. Mit deiner Zustimmung merkt sich dein Browser außerdem deine Sprache.',
     a: 'Akzeptieren', r: 'Ablehnen', more: 'Datenschutz', link: 'Cookie-Einstellungen'
   };
   var css = '#cc{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;width:min(640px,calc(100% - 24px));padding:18px 20px;border-radius:18px;' +

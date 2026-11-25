@@ -17,8 +17,8 @@
 
   // "Request beta": opens the visitor's mail app with a prepared mail to Desue
   var BETA = {
-    de: { subject: 'AERA Beta-Anfrage', body: 'Hallo Desue,\n\nich würde gern an der AERA-Beta teilnehmen.\n\nName / Nickname: \nSystem (z. B. Windows 11): \nErfahrung mit ATC (keine / VATSIM / IVAO / andere Spiele): \nSprache im Spiel (Deutsch / Englisch): \n\nViele Grüße' },
-    en: { subject: 'AERA beta request', body: 'Hi Desue,\n\nI would like to join the AERA beta.\n\nName / nickname: \nSystem (e.g. Windows 11): \nATC experience (none / VATSIM / IVAO / other games): \nIn-game language (German / English): \n\nBest regards' },
+    de: { subject: 'AERA Beta-Anfrage', body: 'Hallo AERA-Team,\n\nich würde gern an der AERA-Beta teilnehmen.\n\nName / Nickname: \nSystem (z. B. Windows 11): \nErfahrung mit ATC (keine / VATSIM / IVAO / andere Spiele): \nSprache im Spiel (Deutsch / Englisch): \n\nViele Grüße' },
+    en: { subject: 'AERA beta request', body: 'Hi AERA team,\n\nI would like to join the AERA beta.\n\nName / nickname: \nSystem (e.g. Windows 11): \nATC experience (none / VATSIM / IVAO / other games): \nIn-game language (German / English): \n\nBest regards' },
   };
   function betaLinks() {
     var m = BETA[L], href = 'mailto:kontakt@aerastudios.de?subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body);

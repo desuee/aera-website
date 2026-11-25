@@ -53,11 +53,20 @@ img{max-width:100%;height:auto}
 .game .cta{display:flex;gap:12px;flex-wrap:wrap}
 .about{display:grid;grid-template-columns:1fr 1.3fr;gap:60px;border-top:1px solid var(--line);padding-top:60px;margin-top:120px}
 .about h2{font-size:40px;margin-top:10px}.about p{color:#b5c3d4;margin-bottom:16px}.about .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.contact{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;background:var(--navy);border:1px solid var(--line);border-radius:18px;padding:52px}
+.contact .sym{height:54px;width:auto;margin-bottom:22px;display:block}.contact h2{font-size:38px;margin:8px 0 14px}.contact p{color:#a9b8ca}.contact .alt{margin-top:22px;font-size:14px;line-height:1.9}.contact .alt a{color:var(--sky)}
+.cf{display:flex;flex-direction:column;gap:14px}.cf .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cf label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--steel)}
+.cf input,.cf select,.cf textarea{font:15px Archivo,sans-serif;color:var(--cloud);background:var(--night);border:1px solid #23446b;border-radius:8px;padding:11px 12px;outline:none;width:100%}
+.cf input:focus,.cf select:focus,.cf textarea:focus{border-color:var(--blue)}.cf textarea{resize:vertical}
+.cf .ck{flex-direction:row;align-items:flex-start;gap:10px;font-size:13px}.cf .ck input{width:auto;margin-top:3px}.cf .ck a{color:var(--sky)}
+.cf .hp{position:absolute;left:-9999px;width:1px;height:1px}
+.cf .send{display:flex;align-items:center;gap:16px}.cfm{font-size:14px}.cfm.ok{color:#4fd69c}.cfm.err{color:#ff8a8a}
 .cta2{margin-top:120px;background:var(--navy);border:1px solid var(--line);border-radius:18px;padding:52px;display:flex;align-items:center;gap:30px}
 .cta2 img{height:64px}.cta2 h2{font-size:32px}.cta2 p{color:#a9b8ca;margin-top:6px}.cta2 .b{margin-left:auto;display:flex;gap:12px}
 .foot{border-top:1px solid var(--line);margin-top:120px;padding:34px 0;color:var(--steel);font-size:13px}
 .foot .in{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.foot .sp{flex:1}.foot img{height:16px}.foot a:hover{color:#fff}
-@media (max-width:900px){.pl{min-height:0}.pl .st{margin-top:16px}.game{padding-top:90px!important}.game>a{display:block}.nav nav{display:none}.hero{padding:100px 0 90px}.hero h1{font-size:38px}.pillars,.game,.about{grid-template-columns:1fr}.sec{padding-top:80px}.hd h2,.about h2{font-size:30px}.cta2{flex-direction:column;align-items:flex-start;padding:34px}.cta2 .b{margin-left:0}.in{padding:0 20px}}
+@media (max-width:900px){.contact{grid-template-columns:1fr;padding:30px}.cf .row{grid-template-columns:1fr}.pl{min-height:0}.pl .st{margin-top:16px}.game{padding-top:90px!important}.game>a{display:block}.nav nav{display:none}.hero{padding:100px 0 90px}.hero h1{font-size:38px}.pillars,.game,.about{grid-template-columns:1fr}.sec{padding-top:80px}.hd h2,.about h2{font-size:30px}.cta2{flex-direction:column;align-items:flex-start;padding:34px}.cta2 .b{margin-left:0}.in{padding:0 20px}}
 </style>
 </head>
 <body>
@@ -68,6 +77,7 @@ img{max-width:100%;height:auto}
     <a href="#bereiche">MSFS</a>
     <a href="#bereiche">Charts</a>
     <a href="#ueber" data-de="Über uns" data-en="About">Über uns</a>
+    <a href="/aera/team">Join us</a>
     <a href="#kontakt" data-de="Kontakt" data-en="Contact">Kontakt</a>
   </nav>
   <div class="lang"><button data-lang="de">DE</button><button data-lang="en">EN</button></div>
@@ -112,10 +122,18 @@ img{max-width:100%;height:auto}
   </div>
 </section>
 
-<section class="in" id="kontakt"><div class="cta2">
-  <img src="img/brand-symbol.svg" alt="">
-  <div><h2 class="x" data-de="Sag Hallo." data-en="Say hello.">Sag Hallo.</h2><p>kontakt@aerastudios.de · Discord</p></div>
-  <div class="b"><a class="btn p" href="mailto:kontakt@aerastudios.de" data-de="E-Mail schreiben" data-en="Send an email">E-Mail schreiben</a><a class="btn g" href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a></div>
+<section class="in sec" id="kontakt"><div class="contact">
+  <div class="ci"><img src="img/brand-symbol.svg" alt="" class="sym"><p class="lab" data-de="Kontakt" data-en="Contact">Kontakt</p><h2 class="x" data-de="Sag Hallo." data-en="Say hello.">Sag Hallo.</h2>
+    <p data-de="Fragen, Feedback, Kooperationen oder Presse – schreib uns. Wir antworten in der Regel innerhalb von ein paar Tagen." data-en="Questions, feedback, partnerships or press – write to us. We usually reply within a few days.">Fragen, Feedback, Kooperationen oder Presse – schreib uns. Wir antworten in der Regel innerhalb von ein paar Tagen.</p>
+    <p class="alt"><span data-de="Direkt:" data-en="Direct:">Direkt:</span> <a href="mailto:kontakt@aerastudios.de">kontakt@aerastudios.de</a><br><span data-de="Bewerbungen:" data-en="Applications:">Bewerbungen:</span> <a href="/aera/team">Join us</a> · <a href="mailto:apply@aerastudios.de">apply@aerastudios.de</a><br>Community: <a href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a></p></div>
+  <form id="cf" class="cf" novalidate>
+    <div class="row"><label><span>Name</span><input name="name" maxlength="80" required autocomplete="name"></label><label><span data-de="E-Mail" data-en="Email">E-Mail</span><input name="email" type="email" maxlength="120" required autocomplete="email"></label></div>
+    <label><span data-de="Thema" data-en="Topic">Thema</span><select name="topic"><option value="Allgemein" data-de="Allgemein" data-en="General">Allgemein</option><option value="AERA (Spiel)" data-de="AERA (Spiel)" data-en="AERA (game)">AERA (Spiel)</option><option value="Kooperation" data-de="Kooperation" data-en="Partnership">Kooperation</option><option value="Presse" data-de="Presse" data-en="Press">Presse</option></select></label>
+    <label><span data-de="Nachricht" data-en="Message">Nachricht</span><textarea name="msg" rows="6" maxlength="4000" required></textarea></label>
+    <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="ck"><input type="checkbox" name="privacy"><span data-de="Ich habe den <a href='datenschutz.html#kontakt'>Datenschutzhinweis</a> gelesen. Meine Angaben werden nur zur Antwort verwendet." data-en="I have read the <a href='datenschutz.html#kontakt'>privacy note</a>. My details are only used to reply.">Ich habe den <a href="datenschutz.html#kontakt">Datenschutzhinweis</a> gelesen. Meine Angaben werden nur zur Antwort verwendet.</span></label>
+    <div class="send"><button class="btn p" type="submit" data-de="Nachricht senden" data-en="Send message">Nachricht senden</button><span id="cfm" class="cfm"></span></div>
+  </form>
 </div></section>
 </main>
 
@@ -129,6 +147,13 @@ function set(l){L=l;document.documentElement.lang=l;var n=document.querySelector
 var b=document.querySelectorAll('[data-lang]');for(var j=0;j<b.length;j++)b[j].classList.toggle('on',b[j].getAttribute('data-lang')===l);try{localStorage.setItem('lang',l);}catch(e){}}
 document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b)set(b.getAttribute('data-lang'));});set(L);
 var y=document.getElementById('year');if(y)y.textContent=new Date().getFullYear();})();
+(function(){var f=document.getElementById('cf'),m=document.getElementById('cfm');if(!f)return;
+f.addEventListener('submit',function(e){e.preventDefault();var en=document.documentElement.lang==='en',b=f.querySelector('button');
+var d={name:f.name.value,email:f.email.value,topic:f.topic.value,msg:f.msg.value,website:f.website.value,privacy:f.privacy.checked,lang:en?'en':'de'};
+m.className='cfm';m.textContent=en?'Sending …':'Wird gesendet …';b.disabled=true;
+fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json','X-Dsue':'1'},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+.then(function(x){b.disabled=false;if(x.ok){f.reset();m.className='cfm ok';m.textContent=en?'Thanks! Your message is on its way.':'Danke! Deine Nachricht ist unterwegs.';}else{m.className='cfm err';m.textContent=(x.j&&x.j.error)||'Error';}})
+.catch(function(){b.disabled=false;m.className='cfm err';m.textContent=en?'Sending failed – please write to kontakt@aerastudios.de.':'Senden fehlgeschlagen – bitte an kontakt@aerastudios.de schreiben.';});});})();
 </script>
 </body>
 </html>
