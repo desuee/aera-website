@@ -1,6 +1,6 @@
 {
-  "name": "dev-dsue Admin",
-  "short_name": "DSUE Admin",
+  "name": "AERA Admin",
+  "short_name": "AERA Admin",
   "description": "Postfach, Kalender, Beta-Tester und AERA-Studio von dev-dsue.de",
   "id": "/admin/",
   "start_url": "/admin/",
@@ -10,18 +10,18 @@
     "window-controls-overlay",
     "standalone"
   ],
-  "background_color": "#060708",
-  "theme_color": "#060708",
+  "background_color": "#07111F",
+  "theme_color": "#07111F",
   "lang": "de",
   "icons": [
     {
-      "src": "/img/logo.png",
+      "src": "/img/brand-app-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/img/apple-touch-icon.png",
+      "src": "/img/brand-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
@@ -33,7 +33,7 @@
       "url": "/admin/#mail",
       "icons": [
         {
-          "src": "/img/logo.png",
+          "src": "/img/brand-app-512.png",
           "sizes": "512x512"
         }
       ]
@@ -43,7 +43,7 @@
       "url": "/admin/#cal",
       "icons": [
         {
-          "src": "/img/logo.png",
+          "src": "/img/brand-app-512.png",
           "sizes": "512x512"
         }
       ]
@@ -53,7 +53,7 @@
       "url": "/admin/#compose",
       "icons": [
         {
-          "src": "/img/logo.png",
+          "src": "/img/brand-app-512.png",
           "sizes": "512x512"
         }
       ]

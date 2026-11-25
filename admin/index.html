@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Admin – dev-dsue</title>
-<link rel="icon" type="image/png" href="/img/favicon.png">
+<title>Admin – AERA</title>
+<link rel="icon" type="image/png" href="/img/brand-favicon-64.png">
 <link rel="manifest" href="/admin/manifest.webmanifest">
-<meta name="theme-color" content="#060708">
-<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<meta name="theme-color" content="#07111F">
+<link rel="apple-touch-icon" href="/img/brand-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DSUE Admin">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="/admin/style.css?v=3">
-<script src="/admin/app.js?v=3" defer></script>
-<script src="/admin/views.js?v=3" defer></script>
+<link rel="stylesheet" href="/admin/style.css?v=4">
+<script src="/admin/app.js?v=4" defer></script>
+<script src="/admin/views.js?v=4" defer></script>
 <script src="/admin/cal.js?v=1" defer></script>
 </head>
 <body>
 <!-- sign in -->
 <section id="login" class="login hidden">
   <form id="loginForm" class="login-card" autocomplete="on">
-    <img src="/img/logo.png" alt="" class="login-logo">
+    <img src="/img/brand-symbol.svg" alt="AERA" class="login-logo">
     <h1 class="chrome">Admin</h1>
     <p class="muted">Melde dich mit deiner E-Mail-Adresse und dem Passwort deines Postfachs an.</p>
     <label>E-Mail<input id="lUser" type="email" name="username" autocomplete="username" required></label>
@@ -37,7 +37,7 @@
 <section id="app" class="shell hidden">
   <!-- side rail -->
   <aside class="rail" id="rail">
-    <a href="/" class="rail-brand" title="Zur Website"><img src="/img/logo.png" alt=""><span><b class="chrome">DESUE</b><small>Admin</small></span></a>
+    <a href="/" class="rail-brand" title="Zur Website"><span><img class="wm" src="/img/brand-wortmarke.svg" alt="AERA"><small>Admin</small></span></a>
     <nav class="rail-nav" id="nav">
       <button data-view="dash"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Dashboard</span></button>
       <button data-view="mail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Postfach</span><i id="navUnread" class="hidden"></i></button>

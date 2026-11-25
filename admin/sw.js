@@ -1,7 +1,7 @@
-// dev-dsue Admin – service worker: makes the admin installable as an app.
+// AERA Admin – service worker: makes the admin installable as an app.
 // Always loads fresh from the server; the cached copy is only a fallback when offline. Never touches /api/ (mail data stays live).
-const CACHE = 'dsue-admin-v1';
-const SHELL = ['/admin/', '/admin/style.css', '/admin/app.js', '/admin/views.js', '/admin/cal.js', '/img/logo.png', '/img/favicon.png'];
+const CACHE = 'aera-admin-v2';
+const SHELL = ['/admin/', '/admin/style.css', '/admin/app.js', '/admin/views.js', '/admin/cal.js', '/img/brand-symbol.svg', '/img/brand-favicon-64.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})))).then(() => self.skipWaiting()));
