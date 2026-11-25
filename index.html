@@ -3,138 +3,132 @@
 <head><script src="/consent.js?v=1"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Desue – Apps</title>
-<meta name="description" content="AERA, Steam Workshop Uploader und Puck-Mods – kostenlose Projekte von Desue.">
-<link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<title>AERA – Built for Flight Simmers</title>
+<meta name="description" content="AERA – Aviation Entertainment, Resources & Add-ons. Spiele, MSFS-Add-ons, Charts und Cheat Sheets für Flugsimulation.">
+<meta property="og:title" content="AERA – Built for Flight Simmers">
+<meta property="og:description" content="Spiele, MSFS-Add-ons, Charts und Cheat Sheets für Flugsimulation.">
+<meta property="og:image" content="https://www.aerastudios.de/img/brand-og.jpg">
+<meta property="og:url" content="https://www.aerastudios.de/">
+<meta name="theme-color" content="#07111F">
+<link rel="icon" type="image/png" href="img/brand-favicon-64.png">
+<link rel="apple-touch-icon" href="img/brand-touch-icon.png">
 <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
-<script>try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.dataset.theme="dark"}catch(e){}</script>
-<link rel="stylesheet" href="site.css?v=3">
+<style>
+@font-face{font-family:Archivo;src:url(/fonts/archivo.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+@font-face{font-family:Plex;src:url(/fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2");font-display:swap}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1E88E5;--night:#07111F;--navy:#0B1D33;--sky:#8CC8FF;--cloud:#F5F7FA;--steel:#8597AD;--line:#16304f}
+html{background:var(--night);color:var(--cloud);font:16px/1.55 Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased;scroll-behavior:smooth;scroll-padding-top:80px}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto}
+.in{max-width:1200px;margin:0 auto;padding:0 32px}
+.x{font-stretch:125%;font-weight:800;letter-spacing:-.01em;line-height:1.04}
+.lab{font:12px Plex,monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--sky)}
+.nav{position:sticky;top:0;z-index:9;background:rgba(7,17,31,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .in{display:flex;align-items:center;height:68px;gap:30px}.nav .wm img{height:24px;display:block}
+.nav nav{margin-left:auto;display:flex;gap:26px;font-size:14px}.nav nav a{color:#c9d4e2}.nav nav a:hover{color:#fff}
+.lang{display:flex;gap:2px;font:12px Plex}.lang button{all:unset;cursor:pointer;padding:4px 7px;border-radius:5px;color:var(--steel)}.lang button.on{color:#fff;background:var(--navy)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:8px;font-weight:600;font-size:15px;border:1px solid transparent;transition:.15s}
+.btn.p{background:var(--blue);color:#fff}.btn.p:hover{background:#3698ef}
+.btn.g{border-color:#26476f;color:#fff}.btn.g:hover{border-color:var(--blue)}.btn.s{padding:9px 16px;font-size:13px}
+.lead{color:#b5c3d4;font-size:19px;max-width:640px}
+.hero{position:relative;overflow:hidden;padding:150px 0 130px;border-bottom:1px solid var(--line);background:radial-gradient(900px 520px at 50% 40%,rgba(30,136,229,.18),transparent 70%)}
+.hero:before{content:"";position:absolute;left:-10%;right:-10%;top:58%;height:120px;background:linear-gradient(90deg,transparent,rgba(140,200,255,.07),transparent);transform:rotate(-9deg)}
+.hero:after{content:"";position:absolute;left:-10%;right:-10%;top:48%;height:2px;background:linear-gradient(90deg,transparent,rgba(30,136,229,.55),transparent);transform:rotate(-9deg)}
+.hero .in{position:relative;z-index:2;text-align:center}
+.hero .logo{width:min(640px,86%);margin:0 auto 40px;display:block}
+.hero h1{font-size:62px}.hero .lead{margin:18px auto 0}
+.hero .cats{margin-top:26px;font:13px Plex;letter-spacing:.2em;color:var(--sky)}
+.hero .cta{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+.sec{padding-top:120px}.hd{margin-bottom:36px}.hd h2{font-size:40px;margin-top:10px}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.pl{background:var(--navy);border:1px solid var(--line);border-radius:16px;padding:30px;display:flex;flex-direction:column;min-height:300px;transition:.2s}
+.pl .n{font:12px Plex;color:var(--steel)}.pl h3{font-size:26px;margin:16px 0 10px}.pl p{color:#a9b8ca;font-size:15px;flex:1}
+.pl .st{font:12px Plex;letter-spacing:.14em;margin-top:22px;color:var(--steel)}
+.pl.on{border-color:var(--blue);background:linear-gradient(180deg,#0f2a4a,#0B1D33)}.pl.on .st{color:var(--sky)}.pl.on:hover{transform:translateY(-3px)}
+.game{display:grid;grid-template-columns:1.15fr 1fr;gap:56px;align-items:center}
+.game .shot{border-radius:12px;border:1px solid #1d3a5e;box-shadow:0 30px 80px rgba(0,0,0,.5);width:100%;display:block}
+.game .gl{width:300px;max-width:100%;margin:18px 0 20px;display:block}.game p{color:#b5c3d4}
+.game ul{list-style:none;margin:24px 0 32px;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}.game li{font:13px Plex;color:#c9d4e2}.game li:before{content:"// ";color:var(--blue)}
+.game .cta{display:flex;gap:12px;flex-wrap:wrap}
+.about{display:grid;grid-template-columns:1fr 1.3fr;gap:60px;border-top:1px solid var(--line);padding-top:60px;margin-top:120px}
+.about h2{font-size:40px;margin-top:10px}.about p{color:#b5c3d4;margin-bottom:16px}.about .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.cta2{margin-top:120px;background:var(--navy);border:1px solid var(--line);border-radius:18px;padding:52px;display:flex;align-items:center;gap:30px}
+.cta2 img{height:64px}.cta2 h2{font-size:32px}.cta2 p{color:#a9b8ca;margin-top:6px}.cta2 .b{margin-left:auto;display:flex;gap:12px}
+.foot{border-top:1px solid var(--line);margin-top:120px;padding:34px 0;color:var(--steel);font-size:13px}
+.foot .in{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.foot .sp{flex:1}.foot img{height:16px}.foot a:hover{color:#fff}
+@media (max-width:900px){.pl{min-height:0}.pl .st{margin-top:16px}.game{padding-top:90px!important}.game>a{display:block}.nav nav{display:none}.hero{padding:100px 0 90px}.hero h1{font-size:38px}.pillars,.game,.about{grid-template-columns:1fr}.sec{padding-top:80px}.hd h2,.about h2{font-size:30px}.cta2{flex-direction:column;align-items:flex-start;padding:34px}.cta2 .b{margin-left:0}.in{padding:0 20px}}
+</style>
 </head>
 <body>
-<header class="nav">
-  <div class="in">
-    <a class="logo" href="#top"><img class="mark" src="img/logo.png" alt="">Desue</a>
-    <nav>
-      <a href="#projects" data-de="Projekte" data-en="Projects">Projekte</a>
-      <a href="aera.html">AERA</a>
-      <a href="#uploader" data-de="Uploader" data-en="Uploader">Uploader</a>
-      <a href="#install" data-de="Installation" data-en="Install">Installation</a>
-      <a href="#changelog">Changelog</a>
-      <a href="#faq">FAQ</a>
-    </nav>
-    <div class="lang"><button data-lang="de">DE</button><button data-lang="en">EN</button></div>
-    <button class="theme" id="theme" aria-label="Dark mode" title="Hell / Dunkel"><svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+<header class="nav"><div class="in">
+  <a class="wm" href="/" aria-label="AERA"><img src="img/brand-wortmarke.svg" alt="AERA"></a>
+  <nav>
+    <a href="#bereiche" data-de="Spiele" data-en="Games">Spiele</a>
+    <a href="#bereiche">MSFS</a>
+    <a href="#bereiche">Charts</a>
+    <a href="#ueber" data-de="Über uns" data-en="About">Über uns</a>
+    <a href="#kontakt" data-de="Kontakt" data-en="Contact">Kontakt</a>
+  </nav>
+  <div class="lang"><button data-lang="de">DE</button><button data-lang="en">EN</button></div>
+  <a class="btn g s" href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a>
+</div></header>
+
+<main>
+<section class="hero"><div class="in">
+  <img class="logo" src="img/brand-logo.svg" alt="AERA – Aviation Entertainment, Resources &amp; Add-ons" width="640" height="160">
+  <h1 class="x">Built for Flight Simmers.</h1>
+  <p class="lead" data-de="Spiele, MSFS-Add-ons, Charts und Cheat Sheets für Flugsimulation." data-en="Games, MSFS add-ons, charts and cheat sheets for flight simulation.">Spiele, MSFS-Add-ons, Charts und Cheat Sheets für Flugsimulation.</p>
+  <div class="cats">GAMES · MSFS ADD-ONS · CHARTS</div>
+  <div class="cta"><a class="btn p" href="#bereiche"><span data-de="Projekte ansehen" data-en="See our projects">Projekte ansehen</span> →</a><a class="btn g" href="https://discord.gg/aera" target="_blank" rel="noopener" data-de="Discord beitreten" data-en="Join our Discord">Discord beitreten</a></div>
+</div></section>
+
+<section class="in sec" id="bereiche">
+  <div class="hd"><p class="lab" data-de="Was wir machen" data-en="What we do">Was wir machen</p><h2 class="x" data-de="Drei Bereiche. Ein Anspruch." data-en="Three fields. One standard.">Drei Bereiche. Ein Anspruch.</h2></div>
+  <div class="pillars">
+    <a class="pl on" href="aera.html"><span class="n">01 · GAMES</span><h3 class="x" data-de="Spiele" data-en="Games">Spiele</h3><p data-de="Simulationen mit echten Verfahren. Unser erstes Spiel: AERA, die Fluglotsen-Simulation." data-en="Simulations with real procedures. Our first game: AERA, the air traffic control simulation.">Simulationen mit echten Verfahren. Unser erstes Spiel: AERA, die Fluglotsen-Simulation.</p><span class="st">AERA · EARLY ACCESS →</span></a>
+    <div class="pl"><span class="n">02 · MSFS</span><h3 class="x" data-de="MSFS-Add-ons" data-en="MSFS add-ons">MSFS-Add-ons</h3><p data-de="Erweiterungen für den Microsoft Flight Simulator." data-en="Add-ons for Microsoft Flight Simulator.">Erweiterungen für den Microsoft Flight Simulator.</p><span class="st" data-de="IN ARBEIT" data-en="IN THE WORKS">IN ARBEIT</span></div>
+    <div class="pl"><span class="n">03 · RESOURCES</span><h3 class="x">Charts &amp; Cheat Sheets</h3><p data-de="Ressourcen für Simmer: Übersichten, Spickzettel und Karten zum Fliegen und Lotsen." data-en="Resources for simmers: overviews, cheat sheets and charts for flying and controlling.">Ressourcen für Simmer: Übersichten, Spickzettel und Karten zum Fliegen und Lotsen.</p><span class="st" data-de="IN ARBEIT" data-en="IN THE WORKS">IN ARBEIT</span></div>
   </div>
-</header>
+</section>
 
-<main id="top">
+<section class="in sec game" id="spiel">
+  <a href="aera.html"><img class="shot" src="img/aera-rhein-de.webp" alt="AERA – Radar" width="1456" height="814" loading="lazy"></a>
+  <div>
+    <p class="lab" data-de="Spiel · Early Access" data-en="Game · Early Access">Spiel · Early Access</p>
+    <img class="gl" src="img/aera-logo.webp" alt="AERA – Airspace &amp; Enroute Radar Authority" width="1400" height="544" loading="lazy">
+    <p data-de="Die Fluglotsen-Simulation: Köln/Bonn, Frankfurt, Lyon und London Heathrow, Langen und Rhein Radar – mit Sprachfunk und Multiplayer." data-en="The air traffic control simulation: Cologne/Bonn, Frankfurt, Lyon and London Heathrow, Langen and Rhein Radar – with voice radio and multiplayer.">Die Fluglotsen-Simulation: Köln/Bonn, Frankfurt, Lyon und London Heathrow, Langen und Rhein Radar – mit Sprachfunk und Multiplayer.</p>
+    <ul><li>EDDK · EDDF · LFLL · EGLL</li><li>DEL → CTR</li><li data-de="Sprachfunk DE/EN" data-en="Voice radio DE/EN">Sprachfunk DE/EN</li><li data-de="Multiplayer &amp; Events" data-en="Multiplayer &amp; events">Multiplayer &amp; Events</li></ul>
+    <div class="cta"><a class="btn p" href="aera.html"><span data-de="Zum Spiel" data-en="Visit the game">Zum Spiel</span> →</a><a class="btn g" href="/aera/changelog">Changelog</a></div>
+  </div>
+</section>
 
-  <!-- Intro -->
-  <section class="intro in">
-    <div class="intro-text">
-      <p class="label">aerastudios.de</p>
-      <h1 data-de="Apps, Puck-Mods und ein Fluglotsen&shy;spiel." data-en="Apps, Puck mods and an air traffic control game.">Apps, Puck-Mods und ein Fluglotsen&shy;spiel.</h1>
-      <p class="lead" data-de="Gebaut von Desue. Alles kostenlos – kein Account, keine Werbung, kein Abo." data-en="Built by Desue. All free – no account, no ads, no subscription.">Gebaut von Desue. Alles kostenlos – kein Account, keine Werbung, kein Abo.</p>
-    </div>
-    <ol class="index">
-      <li><a href="aera.html"><span class="n">01</span><b>AERA</b><span class="m" data-de="ATC-Spiel · Early Access" data-en="ATC game · Early Access">ATC-Spiel · Early Access</span></a></li>
-      <li><a href="#uploader"><span class="n">02</span><b>Steam Workshop Uploader</b><span class="m" id="ix-wu">Windows</span></a></li>
-      <li><a href="#projects" data-pj-jump="mod"><span class="n">03</span><b>Puck-Mods</b><span class="m">Steam Workshop</span></a></li>
-      <li><a href="https://europeanpuckseries.com" target="_blank" rel="noopener"><span class="n">04</span><b>European Puck Series</b><span class="m">Website ↗</span></a></li>
-    </ol>
-  </section>
+<section class="in about" id="ueber">
+  <div><p class="lab" data-de="Über uns" data-en="About us">Über uns</p><h2 class="x" data-de="Von Simmern, für Simmer." data-en="By simmers, for simmers.">Von Simmern, für Simmer.</h2></div>
+  <div>
+    <p data-de="AERA steht für Aviation Entertainment, Resources &amp; Add-ons. Wir bauen Spiele und Werkzeuge für alle, die Luftfahrt nicht nur anschauen, sondern verstehen wollen." data-en="AERA stands for Aviation Entertainment, Resources &amp; Add-ons. We build games and tools for everyone who wants to understand aviation, not just watch it.">AERA steht für Aviation Entertainment, Resources &amp; Add-ons. Wir bauen Spiele und Werkzeuge für alle, die Luftfahrt nicht nur anschauen, sondern verstehen wollen.</p>
+    <p data-de="Echte Verfahren statt Schätzungen und Feedback aus der Community statt Annahmen." data-en="Real procedures instead of guesswork, and feedback from the community instead of assumptions.">Echte Verfahren statt Schätzungen und Feedback aus der Community statt Annahmen.</p>
+    <div class="cta"><a class="btn g" href="/aera/team" data-de="Mitmachen →" data-en="Join us →">Mitmachen →</a><a class="btn g" href="/aera/crew" data-de="Das Team →" data-en="The team →">Das Team →</a></div>
+  </div>
+</section>
 
-  <!-- AERA -->
-  <section class="aera" id="aera">
-    <div class="in">
-      <div class="sec-head"><span>01</span><h2>AERA</h2><span class="r" data-de="Mein größtes Projekt · Early Access" data-en="My biggest project · Early Access">Mein größtes Projekt · Early Access</span></div>
-      <a class="aera-shot" href="aera.html"><img src="img/aera-rhein-de.webp" alt="AERA Radarbildschirm" loading="lazy" width="1456" height="814"></a>
-      <div class="aera-info">
-        <img class="aera-logo" src="img/aera-logo.webp" alt="AERA – Airspace & Enroute Radar Authority" width="1400" height="544">
-        <p data-de="Mein Fluglotsen-Spiel: Köln/Bonn, Frankfurt, Lyon und London Heathrow – an jedem Flughafen von Delivery bis Departure. Dazu Langen Radar und Rhein Radar, Szenarien mit Gewitter, Bahnsperrungen und Notfällen und Funk, den du einfach sprichst. Auf Deutsch und Englisch." data-en="My air traffic control game: Cologne/Bonn, Frankfurt, Lyon and London Heathrow – every airport from delivery to departure. Plus Langen Radar and Rhein Radar, scenarios with thunderstorms, runway closures and emergencies, and radio you simply speak. In German and English.">Mein Fluglotsen-Spiel: Köln/Bonn, Frankfurt, Lyon und London Heathrow – an jedem Flughafen von Delivery bis Departure. Dazu Langen Radar und Rhein Radar, Szenarien mit Gewitter, Bahnsperrungen und Notfällen und Funk, den du einfach sprichst. Auf Deutsch und Englisch.</p>
-        <div class="aera-side">
-          <dl class="aera-data">
-            <dt data-de="Flughäfen" data-en="Airports">Flughäfen</dt><dd>EDDK · EDDF · LFLL · EGLL</dd>
-            <dt data-de="Sektoren" data-en="Sectors">Sektoren</dt><dd>Langen Radar · Rhein Radar</dd>
-            <dt data-de="Positionen" data-en="Positions">Positionen</dt><dd>DEL · GND · TWR · APP · ARR · DEP</dd>
-            <dt data-de="Höhen" data-en="Levels">Höhen</dt><dd>FL000–400</dd>
-          </dl>
-          <a class="btn inv" href="aera.html"><span data-de="Zur AERA-Seite" data-en="Visit the AERA page">Zur AERA-Seite</span> →</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Projects -->
-  <section class="in projects" id="projects">
-    <div class="sec-head"><span>02</span><h2 data-de="Projekte" data-en="Projects">Projekte</h2><span class="r" data-de="Apps, Mods und Websites, die ich gebaut habe." data-en="Apps, mods and websites I have built.">Apps, Mods und Websites, die ich gebaut habe.</span></div>
-    <div class="tabs" id="pj-tabs"></div>
-    <div class="pj-list" id="pj-grid"></div>
-  </section>
-
-  <!-- Steam Workshop Uploader -->
-  <section class="in product" id="uploader">
-    <div class="sec-head"><span>03</span><h2>Steam Workshop Uploader</h2><span class="r ver" id="wu-ver"></span></div>
-    <div class="p-grid">
-      <div class="copy">
-        <img class="p-icon" src="img/uploader-icon.png" alt="">
-        <p class="pitch" data-de="Mods für Puck in den Steam Workshop hochladen – ohne Konsole, ohne Skripte. Einfach mit Steam anmelden und Dateien reinziehen." data-en="Upload Puck mods to the Steam Workshop – no console, no scripts. Just sign in with Steam and drop your files.">Mods für Puck in den Steam Workshop hochladen – ohne Konsole, ohne Skripte. Einfach mit Steam anmelden und Dateien reinziehen.</p>
-        <ul class="feats">
-          <li><b data-de="Anmeldung" data-en="Sign-in">Anmeldung</b> <span data-de="über Steam – kein Passwort nötig" data-en="with Steam – no password needed">über Steam – kein Passwort nötig</span></li>
-          <li><b data-de="Deine Mods" data-en="Your mods">Deine Mods</b> <span data-de="alle auf einen Blick, mit Abonnenten" data-en="all at a glance, with subscribers">alle auf einen Blick, mit Abonnenten</span></li>
-          <li><b>Drag & Drop</b> <span data-de="für Dateien und ganze Ordner" data-en="for files and whole folders">für Dateien und ganze Ordner</span></li>
-          <li><b data-de="Neue Mods" data-en="New mods">Neue Mods</b> <span data-de="mit Titel, Bild und Sichtbarkeit anlegen" data-en="with title, image and visibility">mit Titel, Bild und Sichtbarkeit anlegen</span></li>
-          <li><b data-de="Sprachen" data-en="Languages">Sprachen</b> <span data-de="Deutsch, Englisch, Tschechisch" data-en="German, English, Czech">Deutsch, Englisch, Tschechisch</span></li>
-        </ul>
-        <div class="dl" data-app="uploader"></div>
-      </div>
-      <figure class="shot"><img src="img/uploader.webp" alt="Steam Workshop Uploader" loading="lazy"></figure>
-    </div>
-  </section>
-
-  <!-- Install help -->
-  <section class="in help" id="install">
-    <div class="sec-head"><span>04</span><h2 data-de="Installation" data-en="Installation">Installation</h2></div>
-    <p class="sub" data-de="Der Uploader ist nicht bei Microsoft signiert (das kostet jährlich Geld). Beim ersten Start fragt Windows deshalb einmal nach." data-en="The uploader is not signed with Microsoft (that costs money every year), so Windows asks once on first launch.">Der Uploader ist nicht bei Microsoft signiert (das kostet jährlich Geld). Beim ersten Start fragt Windows deshalb einmal nach.</p>
-    <div class="cols one">
-      <div class="col">
-        <h3>Windows</h3>
-        <ol>
-          <li data-de="Setup-Datei herunterladen und doppelklicken." data-en="Download the setup file and double-click it.">Setup-Datei herunterladen und doppelklicken.</li>
-          <li data-de="Erscheint „Der Computer wurde durch Windows geschützt“: auf <b>Weitere Informationen</b> und dann <b>Trotzdem ausführen</b> klicken." data-en="If “Windows protected your PC” appears: click <b>More info</b>, then <b>Run anyway</b>.">Erscheint „Der Computer wurde durch Windows geschützt“: auf <b>Weitere Informationen</b> und dann <b>Trotzdem ausführen</b> klicken.</li>
-          <li data-de="Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü." data-en="Click through the installer – done. The app is on your desktop and in the Start menu.">Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü.</li>
-        </ol>
-      </div>
-    </div>
-  </section>
-
-  <!-- Changelog -->
-  <section class="in changelog" id="changelog">
-    <div class="sec-head"><span>05</span><h2>Changelog</h2><span class="r" data-de="Was sich in den Apps geändert hat." data-en="What changed in the apps.">Was sich in den Apps geändert hat.</span></div>
-    <div class="tabs cl-tabs"><button data-cl="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-cl="uploader">Steam Workshop Uploader</button></div>
-    <div id="cl-list" class="cl-list"></div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="in faq" id="faq">
-    <div class="sec-head"><span>06</span><h2>FAQ</h2></div>
-    <details><summary data-de="Kostet das was?" data-en="Does it cost anything?">Kostet das was?</summary><p data-de="Nein. Alles ist kostenlos, ohne Werbung und ohne Account." data-en="No. Everything is free, without ads and without an account.">Nein. Alles ist kostenlos, ohne Werbung und ohne Account.</p></details>
-    <details><summary data-de="Warum warnt Windows?" data-en="Why does Windows warn me?">Warum warnt Windows?</summary><p data-de="Weil der Uploader nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest." data-en="Because the uploader isn't signed with a paid developer certificate, which is common for small free tools. The steps above show how to open them anyway.">Weil der Uploader nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest.</p></details>
-    <details><summary data-de="Open-Source-Komponenten" data-en="Open-source components">Open-Source-Komponenten</summary><p data-de="Der Steam Workshop Uploader basiert auf <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Schriften: Archivo und IBM Plex Mono (SIL Open Font License), lokal ausgeliefert." data-en="The Steam Workshop Uploader is built on <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Fonts: Archivo and IBM Plex Mono (SIL Open Font License), served locally.">Der Steam Workshop Uploader basiert auf Electron.</p></details>
-  </section>
+<section class="in" id="kontakt"><div class="cta2">
+  <img src="img/brand-symbol.svg" alt="">
+  <div><h2 class="x" data-de="Sag Hallo." data-en="Say hello.">Sag Hallo.</h2><p>kontakt@aerastudios.de · Discord</p></div>
+  <div class="b"><a class="btn p" href="mailto:kontakt@aerastudios.de" data-de="E-Mail schreiben" data-en="Send an email">E-Mail schreiben</a><a class="btn g" href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a></div>
+</div></section>
 </main>
 
-<footer class="foot">
-  <div class="in">
-    <span class="fl"><img src="img/logo.png" alt="">© <span id="year">2026</span> Desue · aerastudios.de · <span data-de="Alle Rechte vorbehalten" data-en="All rights reserved">Alle Rechte vorbehalten</span></span>
-    <span class="sp"></span>
-    <a href="impressum.html">Impressum</a>
-    <a href="datenschutz.html" data-de="Datenschutz" data-en="Privacy">Datenschutz</a>
-  </div>
-</footer>
-<script src="theme.js?v=4"></script>
-<script src="/site-data.js"></script>
-<script src="app.js?v=10"></script>
+<footer class="foot"><div class="in">
+  <img src="img/brand-wortmarke.svg" alt="AERA"><span>© <span id="year">2026</span> AERA – Aviation Entertainment, Resources &amp; Add-ons</span><span class="sp"></span>
+  <a href="impressum.html">Impressum</a><a href="datenschutz.html" data-de="Datenschutz" data-en="Privacy">Datenschutz</a>
+</div></footer>
+<script>
+(function(){var L='de';try{L=localStorage.getItem('lang')||((navigator.language||'de').slice(0,2)==='de'?'de':'en');}catch(e){}
+function set(l){L=l;document.documentElement.lang=l;var n=document.querySelectorAll('[data-de]');for(var i=0;i<n.length;i++){var t=n[i].getAttribute('data-'+l);if(t!=null)n[i].innerHTML=t;}
+var b=document.querySelectorAll('[data-lang]');for(var j=0;j<b.length;j++)b[j].classList.toggle('on',b[j].getAttribute('data-lang')===l);try{localStorage.setItem('lang',l);}catch(e){}}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b)set(b.getAttribute('data-lang'));});set(L);
+var y=document.getElementById('year');if(y)y.textContent=new Date().getFullYear();})();
+</script>
 </body>
 </html>
