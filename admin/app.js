@@ -823,7 +823,7 @@ function startApp() {
 }
 window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, composeFill, fillMe, sigText, myName, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
 (async () => {
-  $('lUser').value = 'kontakt@dev-dsue.de';
+  $('lUser').value = 'kontakt@aerastudios.de';
   try { const r = await call('me'); if (r.user) { ME = r.user; startApp(); } else showLogin(); } catch { showLogin(); }
 })();
 
