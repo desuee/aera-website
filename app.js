@@ -2,7 +2,7 @@
 //  EINSTELLUNGEN – nur hier etwas ändern
 //  GITHUB = dein GitHub-Name, REPO = das Repository mit den Releases.
 //  Die Download-Links zeigen immer auf das neueste Release ("latest").
-//  Versionen, Dateinamen und Changelog pflegst du unter dev-dsue.de/admin/studio.
+//  Versionen, Dateinamen und Changelog pflegst du unter aerastudios.de/admin/studio.
 // ============================================================
 const GITHUB = 'desuee';
 const REPO = 'dev-dsue-website';

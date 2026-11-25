@@ -1,19 +1,19 @@
 {
  "users": {
-  "apply-aera@dev-dsue.de": {
+  "apply-aera@aerastudios.de": {
    "sender": "Recruiting Team",
    "role": "",
-   "sig": "Recruiting Team\nAERA – Airspace & Enroute Radar Authority\napply-aera@dev-dsue.de · www.dev-dsue.de/aera\nDiscord: discord.gg/aera",
+   "sig": "Recruiting Team\nAERA – Airspace & Enroute Radar Authority\napply-aera@aerastudios.de · www.aerastudios.de/aera\nDiscord: discord.gg/aera",
    "templates": [
     {
      "name": "🇩🇪 Beta angenommen",
      "subject": "Dein Zugang zur AERA Beta ✈️",
-     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉\n\nSo bekommst du deinen Zugang:\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.\n3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.\n4. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen (Anmeldung mit Discord).\n\nWir freuen uns auf dein Feedback!\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉\n\nSo bekommst du deinen Zugang:\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.\n3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.\n4. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen (Anmeldung mit Discord).\n\nWir freuen uns auf dein Feedback!\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Beta accepted",
      "subject": "Your access to the AERA Beta ✈️",
-     "body": "Hi [Name],\n\nthanks a lot for signing up for the AERA Beta – you're in! 🎉\n\nHere's how to get your access:\n1. Join our Discord: discord.gg/aera\n2. Open the channel \"🧪┃beta-apply\" and click \"Apply (English)\".\n3. Under \"Why do you want to test AERA?\" mention that you were accepted by email – we'll unlock you right away.\n4. Then download the beta at www.dev-dsue.de/beta (sign in with Discord).\n\nWe're looking forward to your feedback!\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nthanks a lot for signing up for the AERA Beta – you're in! 🎉\n\nHere's how to get your access:\n1. Join our Discord: discord.gg/aera\n2. Open the channel \"🧪┃beta-apply\" and click \"Apply (English)\".\n3. Under \"Why do you want to test AERA?\" mention that you were accepted by email – we'll unlock you right away.\n4. Then download the beta at www.aerastudios.de/beta (sign in with Discord).\n\nWe're looking forward to your feedback!\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Beta voll / Warteliste",
@@ -58,32 +58,32 @@
     {
      "name": "🇩🇪 Bereits dabei / doppelt",
      "subject": "Du bist schon in der AERA Beta",
-     "body": "Hallo [Name],\n\ngute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊\n\nDen aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ngute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊\n\nDen aktuellen Beta-Build bekommst du jederzeit unter www.aerastudios.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Already in / duplicate",
      "subject": "You're already in the AERA Beta",
-     "body": "Hi [Name],\n\ngood news: you already have access to the AERA Beta – no need to sign up again. 😊\n\nYou can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\ngood news: you already have access to the AERA Beta – no need to sign up again. 😊\n\nYou can always get the current beta build at www.aerastudios.de/beta (sign in with Discord). If anything doesn't work there, just let me know.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Erinnerung: Discord fehlt",
      "subject": "AERA Beta – nur noch ein Schritt",
-     "body": "Hallo [Name],\n\ndu bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂\n\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.\n3. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen.\n\nOhne die Discord-Rolle klappt der Download leider nicht.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ndu bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂\n\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.\n3. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen.\n\nOhne die Discord-Rolle klappt der Download leider nicht.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Reminder: Discord missing",
      "subject": "AERA Beta – just one more step",
-     "body": "Hi [Name],\n\nyou've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂\n\n1. Join our Discord: discord.gg/aera\n2. Post in the \"🧪┃beta-apply\" channel and you'll get the beta role.\n3. Then you can download the beta at www.dev-dsue.de/beta.\n\nUnfortunately the download doesn't work without the Discord role.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nyou've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂\n\n1. Join our Discord: discord.gg/aera\n2. Post in the \"🧪┃beta-apply\" channel and you'll get the beta role.\n3. Then you can download the beta at www.aerastudios.de/beta.\n\nUnfortunately the download doesn't work without the Discord role.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Hilfe: Download / Login",
      "subject": "Hilfe zum AERA-Beta-Download",
-     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:\n\n1. Melde dich unter www.dev-dsue.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.\n2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.\n3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.\n\nKlappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:\n\n1. Melde dich unter www.aerastudios.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.\n2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.\n3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.\n\nKlappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Help: download / sign-in",
      "subject": "Help with the AERA Beta download",
-     "body": "Hi [Name],\n\nthanks for your message! If the beta download doesn't work, it's usually one of these:\n\n1. Sign in at www.dev-dsue.de/beta with exactly the Discord account you use on our server.\n2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.\n3. If Windows warns you on launch (\"Windows protected your PC\"), click \"More info\" and then \"Run anyway\".\n\nIf it still doesn't work, feel free to send me a screenshot of the error.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nthanks for your message! If the beta download doesn't work, it's usually one of these:\n\n1. Sign in at www.aerastudios.de/beta with exactly the Discord account you use on our server.\n2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.\n3. If Windows warns you on launch (\"Windows protected your PC\"), click \"More info\" and then \"Run anyway\".\n\nIf it still doesn't work, feel free to send me a screenshot of the error.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Nur Windows (Mac/Linux)",
@@ -213,20 +213,20 @@
     "🇬🇧 Team: under 18"
    ]
   },
-  "kontakt@dev-dsue.de": {
+  "kontakt@aerastudios.de": {
    "sender": "Simon B. J. Risse",
    "role": "Leading Developer & Executive",
-   "sig": "[Mein Name]\n[Meine Rolle] · AERA – Airspace & Enroute Radar Authority\nkontakt@dev-dsue.de · www.dev-dsue.de/aera\nDiscord: discord.gg/aera",
+   "sig": "[Mein Name]\n[Meine Rolle] · AERA – Airspace & Enroute Radar Authority\nkontakt@aerastudios.de · www.aerastudios.de/aera\nDiscord: discord.gg/aera",
    "templates": [
     {
      "name": "🇩🇪 Beta angenommen",
      "subject": "Dein Zugang zur AERA Beta ✈️",
-     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉\n\nSo bekommst du deinen Zugang:\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.\n3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.\n4. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen (Anmeldung mit Discord).\n\nWir freuen uns auf dein Feedback!\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\nvielen Dank für deine Anmeldung zur AERA Beta – du bist dabei! 🎉\n\nSo bekommst du deinen Zugang:\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.\n3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.\n4. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen (Anmeldung mit Discord).\n\nWir freuen uns auf dein Feedback!\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Beta accepted",
      "subject": "Your access to the AERA Beta ✈️",
-     "body": "Hi [Name],\n\nthanks a lot for signing up for the AERA Beta – you're in! 🎉\n\nHere's how to get your access:\n1. Join our Discord: discord.gg/aera\n2. Open the channel \"🧪┃beta-apply\" and click \"Apply (English)\".\n3. Under \"Why do you want to test AERA?\" mention that you were accepted by email – we'll unlock you right away.\n4. Then download the beta at www.dev-dsue.de/beta (sign in with Discord).\n\nWe're looking forward to your feedback!\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nthanks a lot for signing up for the AERA Beta – you're in! 🎉\n\nHere's how to get your access:\n1. Join our Discord: discord.gg/aera\n2. Open the channel \"🧪┃beta-apply\" and click \"Apply (English)\".\n3. Under \"Why do you want to test AERA?\" mention that you were accepted by email – we'll unlock you right away.\n4. Then download the beta at www.aerastudios.de/beta (sign in with Discord).\n\nWe're looking forward to your feedback!\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Beta voll / Warteliste",
@@ -271,32 +271,32 @@
     {
      "name": "🇩🇪 Bereits dabei / doppelt",
      "subject": "Du bist schon in der AERA Beta",
-     "body": "Hallo [Name],\n\ngute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊\n\nDen aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ngute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊\n\nDen aktuellen Beta-Build bekommst du jederzeit unter www.aerastudios.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Already in / duplicate",
      "subject": "You're already in the AERA Beta",
-     "body": "Hi [Name],\n\ngood news: you already have access to the AERA Beta – no need to sign up again. 😊\n\nYou can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\ngood news: you already have access to the AERA Beta – no need to sign up again. 😊\n\nYou can always get the current beta build at www.aerastudios.de/beta (sign in with Discord). If anything doesn't work there, just let me know.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Erinnerung: Discord fehlt",
      "subject": "AERA Beta – nur noch ein Schritt",
-     "body": "Hallo [Name],\n\ndu bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂\n\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.\n3. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen.\n\nOhne die Discord-Rolle klappt der Download leider nicht.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ndu bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Beitritt. 🙂\n\n1. Tritt unserem Discord bei: discord.gg/aera\n2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.\n3. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen.\n\nOhne die Discord-Rolle klappt der Download leider nicht.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Reminder: Discord missing",
      "subject": "AERA Beta – just one more step",
-     "body": "Hi [Name],\n\nyou've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂\n\n1. Join our Discord: discord.gg/aera\n2. Post in the \"🧪┃beta-apply\" channel and you'll get the beta role.\n3. Then you can download the beta at www.dev-dsue.de/beta.\n\nUnfortunately the download doesn't work without the Discord role.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nyou've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂\n\n1. Join our Discord: discord.gg/aera\n2. Post in the \"🧪┃beta-apply\" channel and you'll get the beta role.\n3. Then you can download the beta at www.aerastudios.de/beta.\n\nUnfortunately the download doesn't work without the Discord role.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Hilfe: Download / Login",
      "subject": "Hilfe zum AERA-Beta-Download",
-     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:\n\n1. Melde dich unter www.dev-dsue.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.\n2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.\n3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.\n\nKlappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.\n\nViele Grüße\n[Mein Name]"
+     "body": "Hallo [Name],\n\ndanke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:\n\n1. Melde dich unter www.aerastudios.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.\n2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.\n3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.\n\nKlappt es dann immer noch nicht, schick mir gern einen Screenshot der Fehlermeldung.\n\nViele Grüße\n[Mein Name]"
     },
     {
      "name": "🇬🇧 Help: download / sign-in",
      "subject": "Help with the AERA Beta download",
-     "body": "Hi [Name],\n\nthanks for your message! If the beta download doesn't work, it's usually one of these:\n\n1. Sign in at www.dev-dsue.de/beta with exactly the Discord account you use on our server.\n2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.\n3. If Windows warns you on launch (\"Windows protected your PC\"), click \"More info\" and then \"Run anyway\".\n\nIf it still doesn't work, feel free to send me a screenshot of the error.\n\nBest regards\n[Mein Name]"
+     "body": "Hi [Name],\n\nthanks for your message! If the beta download doesn't work, it's usually one of these:\n\n1. Sign in at www.aerastudios.de/beta with exactly the Discord account you use on our server.\n2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.\n3. If Windows warns you on launch (\"Windows protected your PC\"), click \"More info\" and then \"Run anyway\".\n\nIf it still doesn't work, feel free to send me a screenshot of the error.\n\nBest regards\n[Mein Name]"
     },
     {
      "name": "🇩🇪 Nur Windows (Mac/Linux)",

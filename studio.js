@@ -1,4 +1,4 @@
-// dev-dsue.de – Studio (/admin/studio): changelogs and program downloads – by Desue
+// aerastudios.de – Studio (/admin/studio): changelogs and program downloads – by Desue
 //
 // Everything that should survive a redeploy is written to GitHub, never to this container's disk:
 //   - changelogs and app versions: committed as data/*.json to the repository (Railway then redeploys)
@@ -26,7 +26,7 @@ const load = f => JSON.parse(fs.readFileSync(path.join(__dirname, f), 'utf8'));
 const mem = { aera: load(FILES.aera), site: load(FILES.site), mail: (() => { try { return load(FILES.mail); } catch { return null; } })(), team: (() => { try { return load(FILES.team); } catch { return { members: [], filled: [] }; } })() };
 const js = {
   aera: () => '// AERA changelog – generated from data/aera-changelog.json (edit at /admin/studio)\nwindow.AERA_CHANGELOG = ' + JSON.stringify(mem.aera) + ';\n',
-  site: () => '// dev-dsue.de apps and changelog – generated from data/apps.json (edit at /admin/studio)\nwindow.DSUE_DATA = ' + JSON.stringify(mem.site) + ';\n',
+  site: () => '// aerastudios.de apps and changelog – generated from data/apps.json (edit at /admin/studio)\nwindow.DSUE_DATA = ' + JSON.stringify(mem.site) + ';\n',
   team: () => '// AERA team – generated from data/team.json (edit at /admin/studio#team)\nwindow.AERA_TEAM = ' + JSON.stringify(mem.team).replace(/</g, '\\x3c') + ';\n',
 };
 

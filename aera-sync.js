@@ -1,4 +1,4 @@
-// dev-dsue.de – AERA changelog straight from the GitHub releases of the beta repository – by Desue
+// aerastudios.de – AERA changelog straight from the GitHub releases of the beta repository – by Desue
 //
 // Publish a release in BETA_REPO (default desuee/aera-beta) with the changelog as its text – the website picks it up
 // within a few minutes (or at once with the webhook below). No more typing it into /admin/studio.
@@ -24,7 +24,7 @@
 // Environment:
 //   BETA_REPO               default desuee/aera-beta
 //   BETA_GITHUB_TOKEN       token with Contents: Read for BETA_REPO (already set for /beta)
-//   RELEASE_WEBHOOK_SECRET  optional – GitHub webhook "Releases" → POST https://www.dev-dsue.de/hooks/aera-release
+//   RELEASE_WEBHOOK_SECRET  optional – GitHub webhook "Releases" → POST https://www.aerastudios.de/hooks/aera-release
 //   CHANGELOG_SYNC_MIN      poll interval in minutes, default 5
 const crypto = require('crypto');
 const REPO = process.env.BETA_REPO || 'desuee/aera-beta';

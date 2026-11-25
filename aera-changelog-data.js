@@ -218,8 +218,8 @@ const AERA_CHANGELOG = [
         en: "Voice input via Whisper, offline." },
       { de: "Sprechende Piloten mit neuronalen Piper-Stimmen und Funkeffekt.",
         en: "Talking pilots with neural Piper voices and a radio effect." },
-      { de: "Eigenes UX-Design und Logo, Schrift passend zu dev-dsue.de, Credit „by Desue“.",
-        en: "Own UX design and logo, font matching dev-dsue.de, credit “by Desue”." },
+      { de: "Eigenes UX-Design und Logo, Schrift passend zu aerastudios.de, Credit „by Desue“.",
+        en: "Own UX design and logo, font matching aerastudios.de, credit “by Desue”." },
     ] },
   ] },
 ];

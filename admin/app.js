@@ -99,7 +99,7 @@ function drawFolders() {
   const f = folders.find(x => x.path === folder); $('folderTitle').textContent = f ? (isBetaF(f) ? f.name : fname(f)) : folder;
   const unread = (folders.find(x => x.special === '\\Inbox' || x.path === 'INBOX') || {}).unseen || 0;
   setBadge('navUnread', unread);
-  document.title = (unread ? `(${unread}) ` : '') + 'Admin – dev-dsue';
+  document.title = (unread ? `(${unread}) ` : '') + 'Admin – AERA Studios';
   try { if (navigator.setAppBadge) unread ? navigator.setAppBadge(unread) : navigator.clearAppBadge(); } catch {}
   $('bulkMove').innerHTML = '<option value="">Verschieben …</option>' + folders.filter(x => x.path !== folder).map(x => `<option value="${esc(x.path)}">${esc(isBetaF(x) ? x.name : fname(x))}</option>`).join('');
 }
@@ -266,7 +266,7 @@ function afterRemove() { order = items.map(x => x.uid); const id = cur.uid; item
 // default signature for every login – [Mein Name], [Meine Rolle] and [Meine E-Mail] are filled in from the settings
 const SIG_DEF = `[Mein Name]
 [Meine Rolle] · AERA – Airspace & Enroute Radar Authority
-[Meine E-Mail] · www.dev-dsue.de/aera
+[Meine E-Mail] · www.aerastudios.de/aera
 Discord: discord.gg/aera`;
 const TPL_DEF = [
   { name: '🇩🇪 Beta angenommen', subject: 'Dein Zugang zur AERA Beta ✈️', body: `Hallo [Name],
@@ -277,7 +277,7 @@ So bekommst du deinen Zugang:
 1. Tritt unserem Discord bei: discord.gg/aera
 2. Öffne den Kanal „🧪┃beta-apply“ und klick auf „Bewerben (Deutsch)“.
 3. Schreib bei „Warum willst du AERA testen?“ kurz dazu, dass du per E-Mail angenommen wurdest – dann schalten wir dich sofort frei.
-4. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen (Anmeldung mit Discord).
+4. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen (Anmeldung mit Discord).
 
 Wir freuen uns auf dein Feedback!
 
@@ -291,7 +291,7 @@ Here's how to get your access:
 1. Join our Discord: discord.gg/aera
 2. Open the channel "🧪┃beta-apply" and click "Apply (English)".
 3. Under "Why do you want to test AERA?" mention that you were accepted by email – we'll unlock you right away.
-4. Then download the beta at www.dev-dsue.de/beta (sign in with Discord).
+4. Then download the beta at www.aerastudios.de/beta (sign in with Discord).
 
 We're looking forward to your feedback!
 
@@ -385,7 +385,7 @@ Best regards
 
 gute Nachricht: Du bist bereits für die AERA Beta freigeschaltet – eine zweite Anmeldung brauchst du nicht. 😊
 
-Den aktuellen Beta-Build bekommst du jederzeit unter www.dev-dsue.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.
+Den aktuellen Beta-Build bekommst du jederzeit unter www.aerastudios.de/beta (Anmeldung mit Discord). Falls dort etwas nicht klappt, sag mir einfach Bescheid.
 
 Viele Grüße
 [Mein Name]` },
@@ -393,7 +393,7 @@ Viele Grüße
 
 good news: you already have access to the AERA Beta – no need to sign up again. 😊
 
-You can always get the current beta build at www.dev-dsue.de/beta (sign in with Discord). If anything doesn't work there, just let me know.
+You can always get the current beta build at www.aerastudios.de/beta (sign in with Discord). If anything doesn't work there, just let me know.
 
 Best regards
 [Mein Name]` },
@@ -403,7 +403,7 @@ du bist für die AERA Beta freigeschaltet – mir fehlt nur noch dein Discord-Be
 
 1. Tritt unserem Discord bei: discord.gg/aera
 2. Melde dich im Kanal „🧪┃beta-apply“, dann bekommst du die Beta-Rolle.
-3. Danach kannst du die Beta unter www.dev-dsue.de/beta herunterladen.
+3. Danach kannst du die Beta unter www.aerastudios.de/beta herunterladen.
 
 Ohne die Discord-Rolle klappt der Download leider nicht.
 
@@ -415,7 +415,7 @@ you've been accepted to the AERA Beta – I'm just missing you on Discord. 🙂
 
 1. Join our Discord: discord.gg/aera
 2. Post in the "🧪┃beta-apply" channel and you'll get the beta role.
-3. Then you can download the beta at www.dev-dsue.de/beta.
+3. Then you can download the beta at www.aerastudios.de/beta.
 
 Unfortunately the download doesn't work without the Discord role.
 
@@ -425,7 +425,7 @@ Best regards
 
 danke für deine Nachricht! Wenn der Beta-Download nicht klappt, liegt es meistens an einem dieser Punkte:
 
-1. Melde dich unter www.dev-dsue.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.
+1. Melde dich unter www.aerastudios.de/beta mit genau dem Discord-Konto an, mit dem du auf unserem Server bist.
 2. Du brauchst auf dem AERA-Discord die Beta-Rolle. Siehst du dort keine Beta-Kanäle, fehlt sie dir noch – dann schreib mir kurz deinen Discord-Namen.
 3. Wenn Windows beim Start warnt („Der Computer wurde durch Windows geschützt“): auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.
 
@@ -437,7 +437,7 @@ Viele Grüße
 
 thanks for your message! If the beta download doesn't work, it's usually one of these:
 
-1. Sign in at www.dev-dsue.de/beta with exactly the Discord account you use on our server.
+1. Sign in at www.aerastudios.de/beta with exactly the Discord account you use on our server.
 2. You need the beta role on the AERA Discord. If you can't see any beta channels there, you don't have it yet – just send me your Discord username.
 3. If Windows warns you on launch ("Windows protected your PC"), click "More info" and then "Run anyway".
 
@@ -823,7 +823,7 @@ function startApp() {
 }
 window.ADM = { call, toast, esc, when, who, initial, ICON, show, openMail, openCompose, applyTemplate, composeFill, fillMe, sigText, myName, setBadge, firstName, fillName, get MS() { return MS; }, SIG_SEP, get ME() { return ME; } };
 (async () => {
-  $('lUser').value = 'kontakt@dev-dsue.de';
+  $('lUser').value = 'kontakt@aerastudios.de';
   try { const r = await call('me'); if (r.user) { ME = r.user; startApp(); } else showLogin(); } catch { showLogin(); }
 })();
 

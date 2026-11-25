@@ -1,5 +1,5 @@
 // dev-dsue Admin – helpers for the webmail: formatted (HTML) mails and the beta inbox – by Desue
-const LOGO = (process.env.PUBLIC_URL || 'https://www.dev-dsue.de').replace(/\/$/, '') + '/img/logo.png';
+const LOGO = (process.env.PUBLIC_URL || 'https://www.aerastudios.de').replace(/\/$/, '') + '/img/logo.png';
 const SIG_SEP = '\n-- \n';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const link = t => esc(t)

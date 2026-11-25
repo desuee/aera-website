@@ -1,4 +1,4 @@
-/* dev-dsue.de – Startseite, Impressum, Datenschutz (aera-lizenz.html nutzt weiter style.css). Schriften liegen lokal in /fonts (keine fremden Server, siehe Datenschutz) */
+/* aerastudios.de – Startseite, Impressum, Datenschutz (aera-lizenz.html nutzt weiter style.css). Schriften liegen lokal in /fonts (keine fremden Server, siehe Datenschutz) */
 @font-face { font-family: 'Archivo'; src: url(/fonts/archivo.woff2) format('woff2-variations'); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
 @font-face { font-family: 'Plex Mono'; src: url(/fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Plex Mono'; src: url(/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2'); font-weight: 500; font-display: swap; }

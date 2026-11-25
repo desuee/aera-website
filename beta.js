@@ -1,4 +1,4 @@
-// dev-dsue.de – AERA beta area (/beta): sign in with Discord, download the newest beta build – by Desue
+// aerastudios.de – AERA beta area (/beta): sign in with Discord, download the newest beta build – by Desue
 //
 // Who gets in: everybody who is on the AERA Discord server and has one of the roles in BETA_ROLE_IDS.
 // Take the role away and the next sign-in fails; a session lasts at most SESSION_DAYS.
@@ -11,7 +11,7 @@
 //   DISCORD_GUILD_ID       ID of the AERA Discord server
 //   BETA_ROLE_IDS          comma separated role IDs that may download (Beta Tester, Developer, …)
 //   TEAM_ROLE_IDS          comma separated role IDs of the AERA team – only they get the online speech recognition (and always get in)
-//   PUBLIC_URL             default https://www.dev-dsue.de   (redirect: PUBLIC_URL/beta/callback)
+//   PUBLIC_URL             default https://www.aerastudios.de   (redirect: PUBLIC_URL/beta/callback)
 //   BETA_REPO              default desuee/aera-beta          (private repository with the releases)
 //   BETA_GITHUB_TOKEN      fine-grained token with Contents: Read for BETA_REPO (falls back to GITHUB_TOKEN)
 //   BETA_SECRET            optional, signs the session cookie (default: derived from the client secret)
@@ -25,7 +25,7 @@ const GUILD = process.env.DISCORD_GUILD_ID || '';
 const ROLES = (process.env.BETA_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 // TEAM_ROLE_IDS: comma separated role IDs of the AERA team (online speech recognition is only for them)
 const TEAM = (process.env.TEAM_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
-const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://www.dev-dsue.de').replace(/\/$/, '');
+const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://www.aerastudios.de').replace(/\/$/, '');
 const REPO = process.env.BETA_REPO || 'desuee/aera-beta';
 const TOKEN = process.env.BETA_GITHUB_TOKEN || process.env.GITHUB_TOKEN || '';
 const SECRET = crypto.createHash('sha256').update(process.env.BETA_SECRET || ('aera-beta:' + CSECRET)).digest();

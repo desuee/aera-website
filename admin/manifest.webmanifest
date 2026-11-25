@@ -1,7 +1,7 @@
 {
-  "name": "dev-dsue Admin",
+  "name": "AERA Studios Admin",
   "short_name": "DSUE Admin",
-  "description": "Postfach, Kalender, Beta-Tester und AERA-Studio von dev-dsue.de",
+  "description": "Postfach, Kalender, Beta-Tester und AERA-Studio von aerastudios.de",
   "id": "/admin/",
   "start_url": "/admin/",
   "scope": "/admin/",

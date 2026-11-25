@@ -319,7 +319,7 @@
     const e = v => String(v || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
     const me = A.myName(), title = info.team ? 'AERA – Kennenlernen' + (me ? ' mit ' + me.split(/\s+/)[0] : '') : ev.title;
     const desc = info.team ? 'Kurzes Kennenlernen fürs AERA-Team im Discord-Sprach-Chat.\nDiscord: https://discord.gg/aera' : '';
-    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dev-dsue.de//Admin//DE', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '@dev-dsue.de'), 'DTSTAMP:' + z(new Date()),
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//aerastudios.de//Admin//DE', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '@aerastudios.de'), 'DTSTAMP:' + z(new Date()),
       ...(ev.allDay ? ['DTSTART;VALUE=DATE:' + ev.start.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + ev.end.replace(/-/g, '')] : ['DTSTART:' + z(ev.startD), 'DTEND:' + z(ev.endD)]),
       'SUMMARY:' + e(title), ...(ev.location ? ['LOCATION:' + e(ev.location)] : []), ...(desc ? ['DESCRIPTION:' + e(desc)] : []), 'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Erinnerung', 'TRIGGER:-PT15M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR', ''];
     const txt = L.join('\r\n'), bytes = new TextEncoder().encode(txt);

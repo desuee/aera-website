@@ -213,7 +213,7 @@
       out.push('', `## ${KIND[s.kind][0]} ${KIND[s.kind][2]} · ${KIND[s.kind][1]}`);
       for (const i of s.items) { out.push(`- 🇬🇧 ${i.en || i.de}`); if (i.de && i.en) out.push(`  🇩🇪 ${i.de}`); }
     }
-    out.push('', '📥 Download: <https://www.dev-dsue.de/beta> · 📝 <https://www.dev-dsue.de/aera/changelog>');
+    out.push('', '📥 Download: <https://www.aerastudios.de/beta> · 📝 <https://www.aerastudios.de/aera/changelog>');
     return out.join('\n');
   }
   function githubText(c) {

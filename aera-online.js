@@ -1,9 +1,9 @@
-// dev-dsue.de – AERA online: sign in with Discord from the game, ranked shifts + leaderboard, multiplayer rooms – by Desue
+// aerastudios.de – AERA online: sign in with Discord from the game, ranked shifts + leaderboard, multiplayer rooms – by Desue
 //
 // Environment (Railway → Variables):
 //   DISCORD_CLIENT_ID / DISCORD_CLIENT_SECRET   same Discord application as the beta area
 //                                               redirect to add in the portal: PUBLIC_URL/aera/auth/callback
-//   PUBLIC_URL        default https://www.dev-dsue.de
+//   PUBLIC_URL        default https://www.aerastudios.de
 //   AERA_SECRET       optional, signs the game tokens (default: derived from the client secret)
 //   AERA_DATA_DIR     folder for ranked data – a Railway Volume (e.g. mounted at /data). Without it ranked data lives
 //                     in memory only and is lost on every restart / deploy.
@@ -16,7 +16,7 @@ const crypto = require('crypto'), fs = require('fs'), path = require('path');
 
 const CID = process.env.DISCORD_CLIENT_ID || '';
 const CSECRET = process.env.DISCORD_CLIENT_SECRET || '';
-const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://www.dev-dsue.de').replace(/\/$/, '');
+const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://www.aerastudios.de').replace(/\/$/, '');
 const REDIRECT = PUBLIC_URL + '/aera/auth/callback';
 const SECRET = crypto.createHash('sha256').update(process.env.AERA_SECRET || ('aera-online:' + CSECRET + ':' + CID)).digest();
 const DEV = process.env.AERA_DEV_AUTH === '1';

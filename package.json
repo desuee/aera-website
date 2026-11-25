@@ -2,7 +2,7 @@
   "name": "dsue-mail",
   "version": "1.0.0",
   "private": true,
-  "description": "Webmail for dev-dsue.de – by Desue",
+  "description": "Webmail for aerastudios.de – by Desue",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

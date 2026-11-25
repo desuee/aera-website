@@ -1,11 +1,11 @@
-// dev-dsue.de – website + webmail (/admin) + studio for changelogs and downloads (/admin/studio, see studio.js) – by Desue
-// The website files are served as they are (same files GitHub Pages used). /admin is a small webmail for kontakt@dev-dsue.de.
+// aerastudios.de – website + webmail (/admin) + studio for changelogs and downloads (/admin/studio, see studio.js) – by Desue
+// The website files are served as they are (same files GitHub Pages used). /admin is a small webmail for kontakt@aerastudios.de.
 // Signs in with the mailbox's own address + password (checked by the mail server over IMAP).
 // The password is never written anywhere: it lives only in this process's memory, encrypted, for the session.
 //
 // Environment:
 //   PORT            port to listen on (Railway sets it)
-//   ALLOWED_USERS   comma separated mail addresses that may sign in (required), e.g. kontakt@dev-dsue.de
+//   ALLOWED_USERS   comma separated mail addresses that may sign in (required), e.g. kontakt@aerastudios.de
 //   IMAP_HOST       default dmail01.bero-host.de      IMAP_PORT  default 993 (TLS)
 //   SMTP_HOST       default = IMAP_HOST               SMTP_PORT  default 465 (TLS)
 //   SESSION_MINUTES idle timeout, default 60
@@ -271,7 +271,7 @@ const api = {
         body: JSON.stringify({ from: msg.fromName ? `${msg.fromName} <${s.user}>` : s.user, to: list(msg.to), cc: list(msg.cc).length ? list(msg.cc) : undefined, subject: msg.subject || '(kein Betreff)', text: msg.text, html, reply_to: s.user, headers, attachments: atts.length ? atts.map(a => ({ filename: a.filename, content: a.content.toString('base64') })) : undefined }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error('Versand fehlgeschlagen (Resend): ' + (j.message || r.status));
-      info = { messageId: `<${j.id || crypto.randomBytes(8).toString('hex')}@dev-dsue.de>` };
+      info = { messageId: `<${j.id || crypto.randomBytes(8).toString('hex')}@aerastudios.de>` };
     } else {
       const pass = open(s.pass);
       const t = nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: s.user, pass }, connectionTimeout: 12000, greetingTimeout: 10000, socketTimeout: 20000 });
@@ -371,10 +371,24 @@ async function discordStats() {
   return dcCache.data;
 }
 
+// alte Domain(s) und neue Hauptadresse (überschreibbar per Env)
+const NEW_ORIGIN = (process.env.PUBLIC_URL || 'https://www.aerastudios.de').replace(/\/$/, '');
+const OLD_HOSTS = new Set((process.env.OLD_HOSTS || 'dev-dsue.de,www.dev-dsue.de').split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+if (OLD_HOSTS.has(new URL(NEW_ORIGIN).hostname)) OLD_HOSTS.clear();   // Schutz: PUBLIC_URL zeigt noch auf die alte Domain -> keine Umleitung (sonst Schleife)
+
 const SERVER = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'), p = u.pathname;
   try {
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
+    // Domain-Umzug: dev-dsue.de -> www.aerastudios.de. Seiten im Browser werden umgeleitet (Pfad + Query bleiben).
+    // API, Webhooks und POSTs laufen auf der alten Domain weiter, damit ältere Spielversionen nicht brechen
+    // (der Multiplayer-WebSocket läuft über 'upgrade' und ist davon ohnehin nicht betroffen).
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim().split(':')[0].toLowerCase();
+    if (OLD_HOSTS.has(host) && (req.method === 'GET' || req.method === 'HEAD') && !p.startsWith('/api/') && !p.startsWith('/hooks/')) {
+      const temp = p.startsWith('/aera/auth/') || p.startsWith('/beta/') || p.startsWith('/admin');   // Logins: nicht dauerhaft cachen
+      res.writeHead(temp ? 302 : 301, { Location: NEW_ORIGIN + req.url, 'Cache-Control': temp ? 'no-store' : 'public, max-age=86400' });
+      return res.end();
+    }
     if (p === '/hooks/aera-release' && req.method === 'POST') return aeraSync.hook(req, res, send);
     if (p.startsWith('/aera/auth/') || p.startsWith('/api/aera/')) { if (await aeraOnline.handle(req, res, u, p, send, readJson)) return; }
     // beta area: own CSP so Discord avatars can load
@@ -382,7 +396,7 @@ const SERVER = http.createServer(async (req, res) => {
       const BETA_CSP = SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com");
       if (await beta.handle(req, res, u, p, send, (r, f) => serveFile(r, f, 'no-cache', BETA_CSP), path.join(ROOT, 'beta.html'))) return;
     }
-    // dev-dsue.de is the main address (www.dev-dsue.de is forwarded there by the DNS provider)
+    // aerastudios.de is the main address (www.aerastudios.de is forwarded there by the DNS provider)
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (p === '/admin') { res.writeHead(301, { Location: '/admin/' }); return res.end(); }
       if (p === '/admin/' || /^\/admin\/(app\.js|views\.js|style\.css|studio\.js|studio\.css|downloads\.js|cal\.js|sw\.js|manifest\.webmanifest)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
@@ -428,17 +442,17 @@ const SERVER = http.createServer(async (req, res) => {
       if (!d.name || !d.discord || !d.why || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail, Discord und „Warum“ ausfüllen.' : 'Please fill in name, a valid email, Discord and "why".' });
       if (b.adult !== true || b.privacy !== true) return send(res, 400, { error: de ? 'Bitte Alter (18+) und Datenschutz bestätigen.' : 'Please confirm age (18+) and the privacy note.' });
       h.push(now); teamHits.set(ip, h);
-      const text = `Neue Bewerbung über dev-dsue.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
-      const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
-                      : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
+      const text = `Neue Bewerbung über aerastudios.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
+      const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · aerastudios.de`
+                      : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · aerastudios.de`;
       if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
-      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply-aera@dev-dsue.de schreiben.' : 'Applications are not available right now – please write to apply-aera@dev-dsue.de.' });
-      const to = process.env.TEAM_MAIL_TO || 'apply-aera@dev-dsue.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
+      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply-aera@aerastudios.de schreiben.' : 'Applications are not available right now – please write to apply-aera@aerastudios.de.' });
+      const to = process.env.TEAM_MAIL_TO || 'apply-aera@aerastudios.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
       const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
       try {
         await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
         await mail({ from: `AERA Recruiting <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
-      } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an apply-aera@dev-dsue.de schreiben.' : 'Sending failed – please write to apply-aera@dev-dsue.de.' }); }
+      } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an apply-aera@aerastudios.de schreiben.' : 'Sending failed – please write to apply-aera@aerastudios.de.' }); }
       return send(res, 200, { ok: true });
     }
     if (p === '/api/login' && req.method === 'POST') {

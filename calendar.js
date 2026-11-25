@@ -10,7 +10,7 @@ const MOCK_ENV = process.env.MOCK === '1';
 const ENV_USER = (process.env.ICLOUD_USER || process.env.CALDAV_USER || '').trim();
 const ENV_PASS = (process.env.ICLOUD_APP_PASSWORD || process.env.CALDAV_PASSWORD || '').replace(/\s+/g, '');
 const ROOT_DEFAULT = process.env.CALDAV_URL || 'https://caldav.icloud.com/';
-const OWNER = (process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || (MOCK_ENV ? 'kontakt@dev-dsue.de' : '')).trim().toLowerCase();
+const OWNER = (process.env.CAL_OWNER || (process.env.ALLOWED_USERS || '').split(',')[0] || (MOCK_ENV ? 'kontakt@aerastudios.de' : '')).trim().toLowerCase();
 const DATA_DIR = process.env.CAL_DATA_DIR || process.env.AERA_DATA_DIR || '';
 const TZ = 'Europe/Berlin';
 
@@ -194,7 +194,7 @@ function eventLines(e, now) {
 function alarmLines(min) { return min == null || min < 0 ? [] : ['BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Erinnerung', 'TRIGGER:' + (min === 0 ? 'PT0S' : '-PT' + Math.round(min) + 'M'), 'END:VALARM']; }
 function buildIcs(e, uid) {
   const now = Date.now();
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dev-dsue.de//Admin//DE', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', 'UID:' + uid, 'CREATED:' + icsDate(now), 'SEQUENCE:0',
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//aerastudios.de//Admin//DE', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', 'UID:' + uid, 'CREATED:' + icsDate(now), 'SEQUENCE:0',
     ...eventLines(e, now), ...alarmLines(e.alarm), 'END:VEVENT', 'END:VCALENDAR', ''].map(fold).join('\r\n');
 }
 // change a stored event in place: keep everything we do not edit (attendees, URL, other alarms' settings …)
