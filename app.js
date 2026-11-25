@@ -9,14 +9,12 @@ const REPO = 'dev-dsue-website';
 // Versionen, Dateinamen und Changelog kommen aus data/apps.json (bearbeiten unter /admin/studio)
 const SITE_DATA = window.DSUE_DATA || { apps: {}, changelog: [] };
 const APPS = SITE_DATA.apps;
-const CHANGELOG = SITE_DATA.changelog;
+const CHANGELOG = SITE_DATA.changelog.filter(e => e.app !== 'mediagrab'); // MediaGrab ist offline
 
 // Projekte: Reihenfolge = Reihenfolge auf der Seite
 const PROJECTS = [
   { id: 'aera', kind: 'game', img: 'img/proj-aera.webp', name: 'AERA', link: 'aera.html',
     de: 'Fluglotsen-Spiel: Köln/Bonn, Frankfurt, Lyon und London Heathrow von Delivery bis Departure, dazu Langen und Rhein Radar – mit Funk auf Deutsch und Englisch. Early Access.', en: 'Air traffic control game: Cologne/Bonn, Frankfurt, Lyon and London Heathrow from delivery to departure, plus Langen and Rhein Radar – with radio in German and English. Early Access.', tags: ['Game', 'ATC', 'Early Access'] },
-  { id: 'mediagrab', kind: 'app', img: 'img/proj-mediagrab.webp', name: 'MediaGrab', link: '#mediagrab',
-    de: 'Desktop-App: YouTube und SoundCloud als MP3, MP4 oder WAV speichern. Windows und macOS.', en: 'Desktop app: save YouTube and SoundCloud as MP3, MP4 or WAV. Windows and macOS.', tags: ['Electron', 'yt-dlp', 'FFmpeg'] },
   { id: 'uploader', kind: 'app', img: 'img/proj-uploader.webp', name: 'Steam Workshop Uploader', link: '#uploader',
     de: 'Mods für Puck mit Steam-Anmeldung in den Steam Workshop hochladen – ohne Konsole.', en: 'Upload Puck mods to the Steam Workshop with your Steam sign-in – no console.', tags: ['Electron', 'Steamworks'] },
   { id: 'broadcast', kind: 'mod', img: 'img/proj-broadcast.webp', name: 'EPS Broadcast', link: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3832358279',

@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Desue – Apps</title>
-<meta name="description" content="MediaGrab und Steam Workshop Uploader – kostenlose Desktop-Apps von Desue für Windows und Mac.">
+<meta name="description" content="AERA, Steam Workshop Uploader und Puck-Mods – kostenlose Projekte von Desue.">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.dataset.theme="dark"}catch(e){}</script>
-<link rel="stylesheet" href="site.css?v=2">
+<link rel="stylesheet" href="site.css?v=3">
 </head>
 <body>
 <header class="nav">
@@ -18,7 +18,6 @@
     <nav>
       <a href="#projects" data-de="Projekte" data-en="Projects">Projekte</a>
       <a href="aera.html">AERA</a>
-      <a href="#mediagrab">MediaGrab</a>
       <a href="#uploader" data-de="Uploader" data-en="Uploader">Uploader</a>
       <a href="#install" data-de="Installation" data-en="Install">Installation</a>
       <a href="#changelog">Changelog</a>
@@ -40,10 +39,9 @@
     </div>
     <ol class="index">
       <li><a href="aera.html"><span class="n">01</span><b>AERA</b><span class="m" data-de="ATC-Spiel · Early Access" data-en="ATC game · Early Access">ATC-Spiel · Early Access</span></a></li>
-      <li><a href="#mediagrab"><span class="n">02</span><b>MediaGrab</b><span class="m" id="ix-mg">Windows · macOS</span></a></li>
-      <li><a href="#uploader"><span class="n">03</span><b>Steam Workshop Uploader</b><span class="m" id="ix-wu">Windows</span></a></li>
-      <li><a href="#projects" data-pj-jump="mod"><span class="n">04</span><b>Puck-Mods</b><span class="m">Steam Workshop</span></a></li>
-      <li><a href="https://europeanpuckseries.com" target="_blank" rel="noopener"><span class="n">05</span><b>European Puck Series</b><span class="m">Website ↗</span></a></li>
+      <li><a href="#uploader"><span class="n">02</span><b>Steam Workshop Uploader</b><span class="m" id="ix-wu">Windows</span></a></li>
+      <li><a href="#projects" data-pj-jump="mod"><span class="n">03</span><b>Puck-Mods</b><span class="m">Steam Workshop</span></a></li>
+      <li><a href="https://europeanpuckseries.com" target="_blank" rel="noopener"><span class="n">04</span><b>European Puck Series</b><span class="m">Website ↗</span></a></li>
     </ol>
   </section>
 
@@ -75,31 +73,9 @@
     <div class="pj-list" id="pj-grid"></div>
   </section>
 
-  <!-- MediaGrab -->
-  <section class="in product" id="mediagrab">
-    <div class="sec-head"><span>03</span><h2>MediaGrab</h2><span class="r ver" id="mg-ver"></span></div>
-    <div class="p-grid">
-      <div class="copy">
-        <img class="p-icon" src="img/mediagrab-icon.png" alt="">
-        <p class="pitch" data-de="Link einfügen, Format wählen, fertig. Videos und Musik von YouTube und SoundCloud als MP3, MP4 oder WAV speichern." data-en="Paste a link, pick a format, done. Save videos and music from YouTube and SoundCloud as MP3, MP4 or WAV.">Link einfügen, Format wählen, fertig. Videos und Musik von YouTube und SoundCloud als MP3, MP4 oder WAV speichern.</p>
-        <ul class="feats">
-          <li><b>MP3</b> <span data-de="mit 320 kbps, Cover und Titel" data-en="at 320 kbps with cover and title">mit 320 kbps, Cover und Titel</span></li>
-          <li><b>MP4</b> <span data-de="bis 4K – oder 1080p, das überall läuft" data-en="up to 4K – or 1080p that plays everywhere">bis 4K – oder 1080p, das überall läuft</span></li>
-          <li><b>WAV</b> <span data-de="verlustfrei für DJs und Produzenten" data-en="lossless for DJs and producers">verlustfrei für DJs und Produzenten</span></li>
-          <li><b>SoundCloud-Sets</b> <span data-de="und Playlists komplett in einem Rutsch" data-en="and playlists in one go">und Playlists komplett in einem Rutsch</span></li>
-          <li><b data-de="Mehrere Downloads" data-en="Multiple downloads">Mehrere Downloads</b> <span data-de="gleichzeitig, mit Fortschritt" data-en="at once, with progress">gleichzeitig, mit Fortschritt</span></li>
-          <li><b data-de="Updates" data-en="Updates">Updates</b> <span data-de="aktualisiert sich selbst – bleibt mit YouTube kompatibel" data-en="updates itself – stays compatible with YouTube">aktualisiert sich selbst – bleibt mit YouTube kompatibel</span></li>
-        </ul>
-        <div class="dl" data-app="mediagrab"></div>
-        <p class="fine" data-de="Bitte nur Inhalte herunterladen, an denen du die Rechte hast oder die zum Download freigegeben sind." data-en="Only download content you own or that is offered for download.">Bitte nur Inhalte herunterladen, an denen du die Rechte hast oder die zum Download freigegeben sind.</p>
-      </div>
-      <figure class="shot"><img src="img/mediagrab.webp" alt="MediaGrab" loading="lazy"></figure>
-    </div>
-  </section>
-
   <!-- Steam Workshop Uploader -->
   <section class="in product" id="uploader">
-    <div class="sec-head"><span>04</span><h2>Steam Workshop Uploader</h2><span class="r ver" id="wu-ver"></span></div>
+    <div class="sec-head"><span>03</span><h2>Steam Workshop Uploader</h2><span class="r ver" id="wu-ver"></span></div>
     <div class="p-grid">
       <div class="copy">
         <img class="p-icon" src="img/uploader-icon.png" alt="">
@@ -119,9 +95,9 @@
 
   <!-- Install help -->
   <section class="in help" id="install">
-    <div class="sec-head"><span>05</span><h2 data-de="Installation" data-en="Installation">Installation</h2></div>
-    <p class="sub" data-de="Die Apps sind nicht bei Microsoft oder Apple signiert (das kostet jährlich Geld). Beim ersten Start fragt dein System deshalb einmal nach." data-en="The apps are not signed with Microsoft or Apple (that costs money every year), so your system asks once on first launch.">Die Apps sind nicht bei Microsoft oder Apple signiert (das kostet jährlich Geld). Beim ersten Start fragt dein System deshalb einmal nach.</p>
-    <div class="cols">
+    <div class="sec-head"><span>04</span><h2 data-de="Installation" data-en="Installation">Installation</h2></div>
+    <p class="sub" data-de="Der Uploader ist nicht bei Microsoft signiert (das kostet jährlich Geld). Beim ersten Start fragt Windows deshalb einmal nach." data-en="The uploader is not signed with Microsoft (that costs money every year), so Windows asks once on first launch.">Der Uploader ist nicht bei Microsoft signiert (das kostet jährlich Geld). Beim ersten Start fragt Windows deshalb einmal nach.</p>
+    <div class="cols one">
       <div class="col">
         <h3>Windows</h3>
         <ol>
@@ -130,33 +106,22 @@
           <li data-de="Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü." data-en="Click through the installer – done. The app is on your desktop and in the Start menu.">Installer durchklicken – fertig. Die App liegt auf dem Desktop und im Startmenü.</li>
         </ol>
       </div>
-      <div class="col">
-        <h3>macOS</h3>
-        <ol>
-          <li data-de="Die passende Zip laden: <b>Apple Silicon</b> für M1–M4, <b>Intel</b> für ältere Macs ( → Über diesen Mac)." data-en="Get the right zip: <b>Apple Silicon</b> for M1–M4, <b>Intel</b> for older Macs ( → About This Mac).">Die passende Zip laden: <b>Apple Silicon</b> für M1–M4, <b>Intel</b> für ältere Macs ( → Über diesen Mac).</li>
-          <li data-de="Entpacken und <b>MediaGrab</b> in den Ordner <b>Programme</b> ziehen." data-en="Unzip and drag <b>MediaGrab</b> into <b>Applications</b>.">Entpacken und <b>MediaGrab</b> in den Ordner <b>Programme</b> ziehen.</li>
-          <li data-de="Sagt macOS „beschädigt“ oder „nicht verifiziert“: Terminal öffnen und diese Zeile einfügen:" data-en="If macOS says “damaged” or “unverified”: open Terminal and paste this line:">Sagt macOS „beschädigt“ oder „nicht verifiziert“: Terminal öffnen und diese Zeile einfügen:</li>
-        </ol>
-        <div class="code"><code id="xattr">xattr -cr /Applications/MediaGrab.app</code><button class="copybtn" data-copy="xattr" data-de="Kopieren" data-en="Copy">Kopieren</button></div>
-      </div>
     </div>
   </section>
 
   <!-- Changelog -->
   <section class="in changelog" id="changelog">
-    <div class="sec-head"><span>06</span><h2>Changelog</h2><span class="r" data-de="Was sich in den Apps geändert hat." data-en="What changed in the apps.">Was sich in den Apps geändert hat.</span></div>
-    <div class="tabs cl-tabs"><button data-cl="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-cl="mediagrab">MediaGrab</button><button data-cl="uploader">Steam Workshop Uploader</button></div>
+    <div class="sec-head"><span>05</span><h2>Changelog</h2><span class="r" data-de="Was sich in den Apps geändert hat." data-en="What changed in the apps.">Was sich in den Apps geändert hat.</span></div>
+    <div class="tabs cl-tabs"><button data-cl="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-cl="uploader">Steam Workshop Uploader</button></div>
     <div id="cl-list" class="cl-list"></div>
   </section>
 
   <!-- FAQ -->
   <section class="in faq" id="faq">
-    <div class="sec-head"><span>07</span><h2>FAQ</h2></div>
-    <details><summary data-de="Kostet das was?" data-en="Does it cost anything?">Kostet das was?</summary><p data-de="Nein. Beide Apps sind kostenlos, ohne Werbung und ohne Account." data-en="No. Both apps are free, without ads and without an account.">Nein. Beide Apps sind kostenlos, ohne Werbung und ohne Account.</p></details>
-    <details><summary data-de="Warum warnt Windows / macOS?" data-en="Why does Windows / macOS warn me?">Warum warnt Windows / macOS?</summary><p data-de="Weil die Apps nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest." data-en="Because the apps aren't signed with a paid developer certificate, which is common for small free tools. The steps above show how to open them anyway.">Weil die Apps nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest.</p></details>
-    <details><summary data-de="MediaGrab lädt nichts mehr – was tun?" data-en="MediaGrab stopped working – what now?">MediaGrab lädt nichts mehr – was tun?</summary><p data-de="YouTube ändert sich oft. Unten in der App auf „Engine aktualisieren“ klicken – meist ist das Problem danach weg. Die App macht das beim Start auch automatisch." data-en="YouTube changes often. Click “Update engine” at the bottom of the app – that usually fixes it. The app also does this on every start.">YouTube ändert sich oft. Unten in der App auf „Engine aktualisieren“ klicken – meist ist das Problem danach weg. Die App macht das beim Start auch automatisch.</p></details>
-    <details><summary data-de="Warum klingt SoundCloud als WAV nicht besser?" data-en="Why doesn't SoundCloud sound better as WAV?">Warum klingt SoundCloud als WAV nicht besser?</summary><p data-de="SoundCloud liefert meist nur 128 kbps. WAV oder 320 kbps machen die Datei größer, aber nicht besser als das Original." data-en="SoundCloud usually streams at 128 kbps. WAV or 320 kbps make the file bigger, not better than the source.">SoundCloud liefert meist nur 128 kbps. WAV oder 320 kbps machen die Datei größer, aber nicht besser als das Original.</p></details>
-    <details><summary data-de="Open-Source-Komponenten" data-en="Open-source components">Open-Source-Komponenten</summary><p data-de="MediaGrab nutzt <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) und <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, Builds von <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, Quellcode auf ffmpeg.org). Die Apps basieren auf <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Schriften: Archivo und IBM Plex Mono (SIL Open Font License), lokal ausgeliefert." data-en="MediaGrab uses <a href='https://github.com/yt-dlp/yt-dlp' rel='noopener'>yt-dlp</a> (Unlicense) and <a href='https://ffmpeg.org' rel='noopener'>FFmpeg</a> (GPL, builds from <a href='https://github.com/eugeneware/ffmpeg-static' rel='noopener'>ffmpeg-static</a>, source at ffmpeg.org). The apps are built on <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Fonts: Archivo and IBM Plex Mono (SIL Open Font License), served locally.">MediaGrab nutzt yt-dlp und FFmpeg. Die Apps basieren auf Electron.</p></details>
+    <div class="sec-head"><span>06</span><h2>FAQ</h2></div>
+    <details><summary data-de="Kostet das was?" data-en="Does it cost anything?">Kostet das was?</summary><p data-de="Nein. Alles ist kostenlos, ohne Werbung und ohne Account." data-en="No. Everything is free, without ads and without an account.">Nein. Alles ist kostenlos, ohne Werbung und ohne Account.</p></details>
+    <details><summary data-de="Warum warnt Windows?" data-en="Why does Windows warn me?">Warum warnt Windows?</summary><p data-de="Weil der Uploader nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest." data-en="Because the uploader isn't signed with a paid developer certificate, which is common for small free tools. The steps above show how to open them anyway.">Weil der Uploader nicht mit einem kostenpflichtigen Entwickler-Zertifikat signiert sind. Das ist bei kleinen, kostenlosen Tools üblich. Die Schritte oben erklären, wie du sie trotzdem öffnest.</p></details>
+    <details><summary data-de="Open-Source-Komponenten" data-en="Open-source components">Open-Source-Komponenten</summary><p data-de="Der Steam Workshop Uploader basiert auf <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Schriften: Archivo und IBM Plex Mono (SIL Open Font License), lokal ausgeliefert." data-en="The Steam Workshop Uploader is built on <a href='https://www.electronjs.org' rel='noopener'>Electron</a> (MIT). Fonts: Archivo and IBM Plex Mono (SIL Open Font License), served locally.">Der Steam Workshop Uploader basiert auf Electron.</p></details>
   </section>
 </main>
 
@@ -170,6 +135,6 @@
 </footer>
 <script src="theme.js?v=4"></script>
 <script src="/site-data.js"></script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>
