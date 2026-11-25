@@ -325,6 +325,8 @@ async function handle(req, res, u, p, send, readJson) {
   const J = (code, body) => send(res, code, body, 'application/json', CORS);
 
   if (p === '/aera/auth/login') {
+    // the sign-in cookies must live on the host Discord sends the user back to (PUBLIC_URL) – start there
+    { const want = new URL(PUBLIC_URL).host, here = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim(); if (/(dev-dsue|aerastudios)\.de$/i.test(here) && here !== want) { res.writeHead(302, { Location: PUBLIC_URL + req.url, 'Cache-Control': 'no-store' }); res.end(); return true; } }
     if (!configured()) { send(res, 503, page('AERA', '<p>Discord sign-in is not set up yet.</p>'), 'text/html; charset=utf-8'); return true; }
     const state = crypto.randomBytes(16).toString('hex');
     const q = new URLSearchParams({ client_id: CID, redirect_uri: REDIRECT, response_type: 'code', scope: 'identify guilds.members.read', state, prompt: 'none' });

@@ -1,4 +1,4 @@
-/* dev-dsue.de – cookie / storage consent.
+/* aerastudios.de – cookie / storage consent.
    Necessary: login session cookies (/beta, /admin) and this choice itself – always on.
    Optional ("Einstellungen merken"): language + light/dark choice in localStorage – only after "Akzeptieren". */
 (function () {

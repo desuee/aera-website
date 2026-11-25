@@ -371,18 +371,27 @@ async function discordStats() {
   return dcCache.data;
 }
 
+const OLD_HOST = /(^|\.)dev-dsue\.de(:\d+)?$/i;
+const MAIN_ORIGIN = (() => { try { return new URL(process.env.PUBLIC_URL || 'https://www.dev-dsue.de').origin; } catch (_) { return 'https://www.dev-dsue.de'; } })();
+const MAIN_HOST = new URL(MAIN_ORIGIN).host;
 const SERVER = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'), p = u.pathname;
   try {
     if (p === '/healthz') return send(res, 200, 'ok', 'text/plain');
     if (p === '/hooks/aera-release' && req.method === 'POST') return aeraSync.hook(req, res, send);
     if (p.startsWith('/aera/auth/') || p.startsWith('/api/aera/')) { if (await aeraOnline.handle(req, res, u, p, send, readJson)) return; }
+    // new home aerastudios.de: once PUBLIC_URL points there, pages opened on the old dev-dsue.de move over (301).
+    // API, Discord callbacks and webhooks still answer on the old name – games up to 0.16.11 only know dev-dsue.de.
+    if ((req.method === 'GET' || req.method === 'HEAD') && OLD_HOST.test(String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim()) && !OLD_HOST.test(MAIN_HOST)
+        && !p.startsWith('/api/') && !p.startsWith('/aera/auth/') && !p.startsWith('/hooks/') && !p.endsWith('/callback')) {
+      res.writeHead(301, { Location: MAIN_ORIGIN + req.url, 'Cache-Control': 'max-age=3600' }); return res.end();
+    }
     // beta area: own CSP so Discord avatars can load
     if (req.method === 'GET' && (p === '/beta' || p.startsWith('/beta/') || p.startsWith('/api/beta/'))) {
       const BETA_CSP = SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com");
       if (await beta.handle(req, res, u, p, send, (r, f) => serveFile(r, f, 'no-cache', BETA_CSP), path.join(ROOT, 'beta.html'))) return;
     }
-    // dev-dsue.de is the main address (www.dev-dsue.de is forwarded there by the DNS provider)
+    // aerastudios.de is the main address (dev-dsue.de forwards there, see above)
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (p === '/admin') { res.writeHead(301, { Location: '/admin/' }); return res.end(); }
       if (p === '/admin/' || /^\/admin\/(app\.js|views\.js|style\.css|studio\.js|studio\.css|downloads\.js|cal\.js|sw\.js|manifest\.webmanifest)$/.test(p)) return serveFile(res, path.join(ADMIN, p === '/admin/' ? 'index.html' : p.slice(7)), 'no-cache', CSP);
