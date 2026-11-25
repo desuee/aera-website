@@ -407,8 +407,11 @@ const SERVER = http.createServer(async (req, res) => {
       if (p === '/aera') return serveFile(res, path.join(ROOT, 'aera.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/lizenz' || p === '/aera/license' || p === '/aera/licence') return serveFile(res, path.join(ROOT, 'aera-lizenz.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/about' || p === '/aera/ueber' || p === '/aera/über' || p === '/aera/%C3%BCber') return serveFile(res, path.join(ROOT, 'aera-about.html'), 'no-cache', SITE_CSP);
-      if (p === '/aera/crew' || p === '/aera/crew/' || p === '/aera/das-team') return serveFile(res, path.join(ROOT, 'aera-crew.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https:"));
-      if (p === '/aera/team' || p === '/aera/mitmachen' || p === '/aera/join') return serveFile(res, path.join(ROOT, 'aera-team.html'), 'no-cache', SITE_CSP);
+      // team pages moved from the game site to the studio site
+      if (p === '/aera/team' || p === '/aera/mitmachen' || p === '/aera/join' || p === '/aera-team.html') { res.writeHead(301, { Location: '/join' }); return res.end(); }
+      if (p === '/aera/crew' || p === '/aera/crew/' || p === '/aera/das-team' || p === '/aera-crew.html') { res.writeHead(301, { Location: '/team' }); return res.end(); }
+      if (p === '/join' || p === '/join/' || p === '/jobs' || p === '/mitmachen') return serveFile(res, path.join(ROOT, 'join.html'), 'no-cache', SITE_CSP);
+      if (p === '/team' || p === '/team/' || p === '/crew') return serveFile(res, path.join(ROOT, 'team.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https:"));
       if (p === '/aera/ranked' || p === '/aera/leaderboard' || p === '/aera/bestenliste') return serveFile(res, path.join(ROOT, 'aera-ranked.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com"));
       if (p === '/aera/changelog' || p === '/aera/changelog/') return serveFile(res, path.join(ROOT, 'aera-changelog.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/discord.json') return send(res, 200, await discordStats(), 'application/json', { 'Cache-Control': 'public, max-age=120', 'X-Robots-Tag': 'noindex' });
@@ -437,7 +440,7 @@ const SERVER = http.createServer(async (req, res) => {
       if (!d.name || !d.discord || !d.why || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return send(res, 400, { error: de ? 'Bitte Name, gültige E-Mail, Discord und „Warum“ ausfüllen.' : 'Please fill in name, a valid email, Discord and "why".' });
       if (b.adult !== true || b.privacy !== true) return send(res, 400, { error: de ? 'Bitte Alter (18+) und Datenschutz bestätigen.' : 'Please confirm age (18+) and the privacy note.' });
       h.push(now); teamHits.set(ip, h);
-      const text = `Neue Bewerbung über aerastudios.de/aera/team\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
+      const text = `Neue Bewerbung über aerastudios.de/join\n\nBereich: ${d.role}\nName: ${d.name}\nE-Mail: ${d.email}\nDiscord: ${d.discord}\nSprachen: ${d.langs || '–'}\nZeit: ${d.time || '–'}\nLinks: ${d.links || '–'}\n18+ bestätigt: ja · Datenschutz bestätigt: ja · Sprache der Seite: ${de ? 'DE' : 'EN'}\n\nErfahrung:\n${d.exp || '–'}\n\nWarum AERA:\n${d.why}\n`;
       const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
                       : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
       if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
