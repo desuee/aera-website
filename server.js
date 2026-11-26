@@ -1,4 +1,4 @@
-// dev-dsue.de – website + webmail (/admin) + studio for changelogs and downloads (/admin/studio, see studio.js) – by Desue
+// aerastudios.de – AERA website + webmail (/admin) + studio for changelogs and downloads (/admin/studio, see studio.js) – by Desue
 // The website files are served as they are (same files GitHub Pages used). /admin is a small webmail for kontakt@aerastudios.de.
 // Signs in with the mailbox's own address + password (checked by the mail server over IMAP).
 // The password is never written anywhere: it lives only in this process's memory, encrypted, for the session.

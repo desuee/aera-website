@@ -1,4 +1,4 @@
-// dev-dsue.de – AERA changelog straight from the GitHub releases of the beta repository – by Desue
+// aerastudios.de – AERA changelog straight from the GitHub releases of the beta repository – by Desue
 //
 // Publish a release in BETA_REPO (default desuee/aera-beta) with the changelog as its text – the website picks it up
 // within a few minutes (or at once with the webhook below). No more typing it into /admin/studio.
@@ -24,7 +24,7 @@
 // Environment:
 //   BETA_REPO               default desuee/aera-beta
 //   BETA_GITHUB_TOKEN       token with Contents: Read for BETA_REPO (already set for /beta)
-//   RELEASE_WEBHOOK_SECRET  optional – GitHub webhook "Releases" → POST https://www.dev-dsue.de/hooks/aera-release
+//   RELEASE_WEBHOOK_SECRET  optional – GitHub webhook "Releases" → POST https://www.aerastudios.de/hooks/aera-release
 //   CHANGELOG_SYNC_MIN      poll interval in minutes, default 5
 const crypto = require('crypto');
 const REPO = process.env.BETA_REPO || 'desuee/aera-beta';
@@ -195,7 +195,7 @@ function start(studio) {
   async function sync() {
     if (!TOKEN) { state.error = 'BETA_GITHUB_TOKEN fehlt'; return state; }
     try {
-      const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'dev-dsue-changelog' } });
+      const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Authorization: 'Bearer ' + TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'aera-changelog' } });
       if (!r.ok) throw new Error('GitHub ' + r.status);
       const rel = (await r.json()).filter(x => !x.draft);
       // newest release first (GitHub order): if two releases still end up with the same version, the newer one counts –

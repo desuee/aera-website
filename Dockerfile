@@ -1,4 +1,4 @@
-# dev-dsue.de – Website + Postfach (/admin)
+# aerastudios.de – AERA Website + Postfach (/admin)
 FROM node:22-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./

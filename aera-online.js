@@ -1,4 +1,4 @@
-// dev-dsue.de – AERA online: sign in with Discord from the game, ranked shifts + leaderboard, multiplayer rooms – by Desue
+// aerastudios.de – AERA online: sign in with Discord from the game, ranked shifts + leaderboard, multiplayer rooms – by Desue
 //
 // Environment (Railway → Variables):
 //   DISCORD_CLIENT_ID / DISCORD_CLIENT_SECRET   same Discord application as the beta area

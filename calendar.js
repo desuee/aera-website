@@ -1,4 +1,4 @@
-// dev-dsue Admin – calendar: talks CalDAV to iCloud (or any CalDAV server), so events sync with the Apple Calendar.
+// AERA Admin – calendar: talks CalDAV to iCloud (or any CalDAV server), so events sync with the Apple Calendar.
 // Env: ICLOUD_USER (Apple ID), ICLOUD_APP_PASSWORD (app-specific password from appleid.apple.com), optional CALDAV_URL.
 // No dependencies: plain fetch + a small iCalendar parser (incl. RRULE expansion) – by Desue
 const crypto = require('crypto');
@@ -194,7 +194,7 @@ function eventLines(e, now) {
 function alarmLines(min) { return min == null || min < 0 ? [] : ['BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Erinnerung', 'TRIGGER:' + (min === 0 ? 'PT0S' : '-PT' + Math.round(min) + 'M'), 'END:VALARM']; }
 function buildIcs(e, uid) {
   const now = Date.now();
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dev-dsue.de//Admin//DE', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', 'UID:' + uid, 'CREATED:' + icsDate(now), 'SEQUENCE:0',
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//aerastudios.de//Admin//DE', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', 'UID:' + uid, 'CREATED:' + icsDate(now), 'SEQUENCE:0',
     ...eventLines(e, now), ...alarmLines(e.alarm), 'END:VEVENT', 'END:VCALENDAR', ''].map(fold).join('\r\n');
 }
 // change a stored event in place: keep everything we do not edit (attendees, URL, other alarms' settings …)
@@ -224,7 +224,7 @@ async function dav(method, url, body, headers = {}) {
   for (let i = 0; i < 4; i++) {   // follow redirects by hand: fetch drops the Authorization header on cross-host redirects
     const r = await fetch(u, {
       method, body, redirect: 'manual', signal: AbortSignal.timeout(20000),
-      headers: { Authorization: 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64'), 'User-Agent': 'dev-dsue-admin/1.0', ...(body && !headers['Content-Type'] ? { 'Content-Type': 'application/xml; charset=utf-8' } : {}), ...headers },
+      headers: { Authorization: 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64'), 'User-Agent': 'aera-admin/1.0', ...(body && !headers['Content-Type'] ? { 'Content-Type': 'application/xml; charset=utf-8' } : {}), ...headers },
     });
     if ([301, 302, 307, 308].includes(r.status) && r.headers.get('location')) { u = new URL(r.headers.get('location'), u).href; continue; }
     const text = await r.text();

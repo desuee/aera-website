@@ -1,5 +1,5 @@
-// dev-dsue Admin – helpers for the webmail: formatted (HTML) mails and the beta inbox – by Desue
-const LOGO = (process.env.PUBLIC_URL || 'https://www.dev-dsue.de').replace(/\/$/, '') + '/img/logo.png';
+// AERA Admin – helpers for the webmail: formatted (HTML) mails and the beta inbox – by Desue
+const LOGO = (process.env.PUBLIC_URL || 'https://www.aerastudios.de').replace(/\/$/, '') + '/img/brand-app-512.png';
 const SIG_SEP = '\n-- \n';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const link = t => esc(t)
@@ -29,7 +29,7 @@ function sigHtml(sig) {
   const name = lines.shift() || '';
   const rest = lines.map(l => l ? `<div>${link(l)}</div>` : '<div style="height:8px"></div>').join('');
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:26px;border-top:1px solid #e3e5ea;padding-top:16px;width:100%"><tr>
-<td style="width:58px;vertical-align:top;padding-top:16px"><img src="${LOGO}" width="44" height="44" alt="Desue" style="display:block;border-radius:50%;border:0"></td>
+<td style="width:58px;vertical-align:top;padding-top:16px"><img src="${LOGO}" width="44" height="44" alt="AERA" style="display:block;border-radius:10px;border:0"></td>
 <td style="vertical-align:top;padding-top:14px;font-size:13px;line-height:1.55;color:#5d6372"><div style="font-size:15px;font-weight:700;color:#14161b;letter-spacing:-.01em">${esc(name)}</div>${rest}</td></tr></table>`;
 }
 

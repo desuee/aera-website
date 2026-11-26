@@ -1,4 +1,4 @@
-// dev-dsue Admin: calendar view (week / month / list), event dialog, "Termin aus Mail" – data comes from /api/cal/* (iCloud via CalDAV)
+// AERA Admin: calendar view (week / month / list), event dialog, "Termin aus Mail" – data comes from /api/cal/* (iCloud via CalDAV)
 (() => {
   const A = window.ADM, $ = id => document.getElementById(id), esc = A.esc;
   VIEW_IDS.cal = 'vCal';   // VIEW_IDS / VIEWS / view are declared in app.js (shared global scope)
@@ -83,7 +83,7 @@
       <p class="muted">Jedes Admin-Konto hat seinen eigenen Kalender. Verbinde hier deinen – andere sehen ihn nicht. Termine, die du hier einträgst, landen direkt in deiner Kalender-App auf iPhone und Mac.</p>
       <ol>
         <li>Öffne <a href="https://account.apple.com/account/manage" target="_blank" rel="noopener">account.apple.com</a> → <b>Anmelden und Sicherheit</b> → <b>App-spezifische Passwörter</b>.</li>
-        <li>Neues Passwort erstellen, z. B. „dev-dsue Admin“, und unten einfügen (Format <code>xxxx-xxxx-xxxx-xxxx</code>). Dein normales Apple-Passwort wird nicht gebraucht.</li>
+        <li>Neues Passwort erstellen, z. B. „AERA Admin“, und unten einfügen (Format <code>xxxx-xxxx-xxxx-xxxx</code>). Dein normales Apple-Passwort wird nicht gebraucht.</li>
       </ol>
       <label>Apple-ID (E-Mail)<input id="ccUser" type="email" required placeholder="name@icloud.com" autocomplete="off"></label>
       <label>App-spezifisches Passwort<input id="ccPass" type="password" required placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="new-password"></label>
@@ -319,7 +319,7 @@
     const e = v => String(v || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
     const me = A.myName(), title = info.team ? 'AERA – Kennenlernen' + (me ? ' mit ' + me.split(/\s+/)[0] : '') : ev.title;
     const desc = info.team ? 'Kurzes Kennenlernen fürs AERA-Team im Discord-Sprach-Chat.\nDiscord: https://discord.gg/aera' : '';
-    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dev-dsue.de//Admin//DE', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '@dev-dsue.de'), 'DTSTAMP:' + z(new Date()),
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//aerastudios.de//Admin//DE', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '@aerastudios.de'), 'DTSTAMP:' + z(new Date()),
       ...(ev.allDay ? ['DTSTART;VALUE=DATE:' + ev.start.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + ev.end.replace(/-/g, '')] : ['DTSTART:' + z(ev.startD), 'DTEND:' + z(ev.endD)]),
       'SUMMARY:' + e(title), ...(ev.location ? ['LOCATION:' + e(ev.location)] : []), ...(desc ? ['DESCRIPTION:' + e(desc)] : []), 'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Erinnerung', 'TRIGGER:-PT15M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR', ''];
     const txt = L.join('\r\n'), bytes = new TextEncoder().encode(txt);

@@ -1,4 +1,4 @@
-// dev-dsue.de – /admin/downloads: how often the AERA beta was downloaded – by Desue
+// aerastudios.de – /admin/downloads: how often the AERA beta was downloaded – by Desue
 (function () {
   try { if (localStorage.getItem('theme') === 'light') delete document.documentElement.dataset.theme; } catch (e) {}
   const $ = s => document.querySelector(s);

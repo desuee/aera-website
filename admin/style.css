@@ -1,4 +1,4 @@
-/* dev-dsue Admin – chrome look (also the base for /admin/studio and /admin/downloads) */
+/* AERA Admin – chrome look (also the base for /admin/studio and /admin/downloads) */
 :root{
   --bg:#e9ebee; --soft:#e1e4e8; --line:#cfd3da; --ink:#101215; --ink2:#3b4049; --muted:#6c727d; --card:#f6f7f9; --card2:#ffffff; --hover:#dfe2e7; --sel:#d6dae1; --unread:#111;
   --chrome-text:linear-gradient(180deg,#4a4f56 0%,#202327 36%,#0e0f11 52%,#5d626a 62%,#1d1f23 100%);

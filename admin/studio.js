@@ -1,4 +1,4 @@
-// dev-dsue Studio – changelogs and program downloads
+// AERA Studio – changelogs and program downloads
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const today = () => new Date().toISOString().slice(0, 10);
