@@ -149,6 +149,10 @@ var b=document.querySelectorAll('[data-lang]');for(var j=0;j<b.length;j++)b[j].c
 document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b)set(b.getAttribute('data-lang'));});set(L);
 var y=document.getElementById('year');if(y)y.textContent=new Date().getFullYear();})();
 (function(){var f=document.getElementById('cf'),m=document.getElementById('cfm');if(!f)return;
+// coming from a "Request beta" / "Send feedback" button: topic and a short template are filled in
+try{var q=new URLSearchParams(location.search).get('topic'),en0=document.documentElement.lang==='en';
+if(q==='beta'||q==='feedback'){f.topic.value='AERA (Spiel)';if(!f.msg.value)f.msg.value=q==='beta'?(en0?'I would like to join the AERA beta.\n\nSystem (e.g. Windows 11): \nATC experience (none / VATSIM / IVAO / other games): \nIn-game language (German / English): ':'Ich würde gern an der AERA-Beta teilnehmen.\n\nSystem (z. B. Windows 11): \nErfahrung mit ATC (keine / VATSIM / IVAO / andere Spiele): \nSprache im Spiel (Deutsch / Englisch): '):(en0?'Feedback on AERA: ':'Feedback zu AERA: ');
+setTimeout(function(){var k=document.getElementById('kontakt');if(k)k.scrollIntoView();try{f.name.focus({preventScroll:true});}catch(e){}},50);}}catch(e){}
 f.addEventListener('submit',function(e){e.preventDefault();var en=document.documentElement.lang==='en',b=f.querySelector('button');
 var d={name:f.name.value,email:f.email.value,topic:f.topic.value,msg:f.msg.value,website:f.website.value,privacy:f.privacy.checked,lang:en?'en':'de'};
 m.className='cfm';m.textContent=en?'Sending …':'Wird gesendet …';b.disabled=true;

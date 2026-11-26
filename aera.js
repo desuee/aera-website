@@ -21,7 +21,7 @@
     en: { subject: 'AERA beta request', body: 'Hi AERA team,\n\nI would like to join the AERA beta.\n\nName / nickname: \nSystem (e.g. Windows 11): \nATC experience (none / VATSIM / IVAO / other games): \nIn-game language (German / English): \n\nBest regards' },
   };
   function betaLinks() {
-    var m = BETA[L], href = 'mailto:kontakt@aerastudios.de?subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body);
+    var href = '/?topic=beta#kontakt';   // contact form on the start page (a mailto link does nothing without a mail program)
     document.querySelectorAll('a.beta').forEach(function (a) { a.href = href; });
   }
   document.querySelector('.lang').addEventListener('click', function (e) {

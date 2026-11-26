@@ -20,6 +20,23 @@ const SMTP_HOST = process.env.SMTP_HOST || IMAP_HOST;
 const SMTP_PORT = +process.env.SMTP_PORT || 465;
 // Railway (Hobby plan) blocks outgoing SMTP. With RESEND_API_KEY set, mail is sent over HTTPS via resend.com instead.
 const RESEND_KEY = process.env.RESEND_API_KEY || '';
+// Forms (contact, applications): everything goes to the mailbox you read in /admin. The sender address must be on a domain that
+// is verified at resend.com – so several are tried one after the other (aerastudios.de first, then the old dev-dsue.de one).
+const FORM_TO = process.env.CONTACT_MAIL_TO || 'kontakt@aerastudios.de';
+const FORM_FROMS = [...new Set([process.env.CONTACT_MAIL_FROM, process.env.TEAM_MAIL_FROM, 'kontakt@aerastudios.de', 'apply@aerastudios.de', 'apply-aera@dev-dsue.de', 'kontakt@dev-dsue.de'].filter(Boolean))];
+async function formMail(o, label) {
+  let last = null;
+  for (const from of FORM_FROMS) {
+    try {
+      const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({}, o, { from: `${label} <${from}>` })) });
+      if (r.ok) return from;
+      last = new Error('resend ' + r.status + ' from ' + from + ': ' + (await r.text().catch(() => '')).slice(0, 200));
+      console.error('form mail', last.message);
+      if (r.status === 401 || r.status === 429) break;   // wrong key / too many: another sender will not help
+    } catch (e) { last = e; console.error('form mail', from, e.message); }
+  }
+  throw last || new Error('no sender');
+}
 const IDLE_MS = (+process.env.SESSION_MINUTES || 60) * 60000;
 const MOCK = process.env.MOCK === '1';
 const ROOT = __dirname, ADMIN = path.join(__dirname, 'admin');
@@ -333,7 +350,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8', woff2: 'font/woff2' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['brand.css', 'index.html', 'impressum.html', 'datenschutz.html', 'style.css', 'site.css', 'app.js', 'theme.js', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-team.html', 'aera-crew.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['brand.css', 'index.html', 'impressum.html', 'datenschutz.html', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -444,12 +461,11 @@ const SERVER = http.createServer(async (req, res) => {
       const conf = de ? `Hallo ${d.name},\n\ndanke für deine Bewerbung für ${d.role} bei AERA! Sie ist bei mir angekommen. Ich melde mich in den nächsten Tagen per E-Mail oder über Discord (${d.discord}).\n\nKurz zur Erinnerung: Die Mithilfe ist freiwillig und unbezahlt, ohne Pflichtstunden – und du kannst jederzeit wieder aufhören.\n\nViele Grüße\nSimon (Desue)\nAERA · dev-dsue.de`
                       : `Hi ${d.name},\n\nthanks for applying for ${d.role} at AERA! Your application has arrived. I will get back to you in the next few days by email or on Discord (${d.discord}).\n\nJust as a reminder: helping out is voluntary and unpaid, with no required hours – and you can stop at any time.\n\nBest regards\nSimon (Desue)\nAERA · dev-dsue.de`;
       if (MOCK) { console.log('[team-apply]', text); return send(res, 200, { ok: true }); }
-      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply@aerastudios.de schreiben.' : 'Applications are not available right now – please write to apply@aerastudios.de.' });
-      const to = process.env.TEAM_MAIL_TO || 'apply@aerastudios.de', from = process.env.TEAM_MAIL_FROM || to;   // applications go to their own mailbox
-      const mail = async (o) => { const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); if (!r.ok) throw new Error('resend ' + r.status); };
+      if (!RESEND_KEY) { console.error('team-apply: RESEND_API_KEY is not set'); return send(res, 503, { error: de ? 'Bewerbungen gehen gerade nicht – bitte an apply@aerastudios.de schreiben.' : 'Applications are not available right now – please write to apply@aerastudios.de.' }); }
+      const to = process.env.TEAM_MAIL_TO || 'apply@aerastudios.de';   // applications go to their own mailbox
       try {
-        await mail({ from: `AERA Bewerbungen <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text });
-        await mail({ from: `AERA Recruiting <${from}>`, to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }).catch(() => {});
+        await formMail({ to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `AERA Team-Bewerbung: ${d.role} – ${d.name}`, text }, 'AERA Bewerbungen');
+        await formMail({ to: [d.email], reply_to: to, subject: de ? 'Deine Bewerbung bei AERA' : 'Your application at AERA', text: conf }, 'AERA Recruiting').catch(() => {});
       } catch (e) { console.error('team-apply', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@aerastudios.de schreiben.' : 'Sending failed – please write to kontakt@aerastudios.de.' }); }
       return send(res, 200, { ok: true });
     }
@@ -466,12 +482,9 @@ const SERVER = http.createServer(async (req, res) => {
       h.push(now); teamHits.set('c|' + ip, h);
       const text = `Neue Nachricht über aerastudios.de\n\nName: ${d.name}\nE-Mail: ${d.email}\nThema: ${d.topic || '–'}\n\n${d.msg}\n`;
       if (MOCK) { console.log('[contact]', text); return send(res, 200, { ok: true }); }
-      if (!RESEND_KEY) return send(res, 503, { error: de ? 'Das Formular geht gerade nicht – bitte an kontakt@aerastudios.de schreiben.' : 'The form is not available right now – please write to kontakt@aerastudios.de.' });
-      const to = process.env.CONTACT_MAIL_TO || 'kontakt@aerastudios.de', from = process.env.CONTACT_MAIL_FROM || process.env.TEAM_MAIL_FROM || to;
+      if (!RESEND_KEY) { console.error('contact: RESEND_API_KEY is not set'); return send(res, 503, { error: de ? 'Das Formular geht gerade nicht – bitte an kontakt@aerastudios.de schreiben.' : 'The form is not available right now – please write to kontakt@aerastudios.de.' }); }
       try {
-        const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(20000), headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: `AERA Website <${from}>`, to: [to], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `Kontakt: ${d.topic || 'Nachricht'} – ${d.name}`, text }) });
-        if (!r.ok) throw new Error('resend ' + r.status);
+        await formMail({ to: [FORM_TO], reply_to: `${d.name.replace(/["<>]/g, '')} <${d.email}>`, subject: `Kontakt: ${d.topic || 'Nachricht'} – ${d.name}`, text }, 'AERA Website');
       } catch (e) { console.error('contact', e.message); return send(res, 502, { error: de ? 'Senden fehlgeschlagen – bitte an kontakt@aerastudios.de schreiben.' : 'Sending failed – please write to kontakt@aerastudios.de.' }); }
       return send(res, 200, { ok: true });
     }
