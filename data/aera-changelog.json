@@ -1,5 +1,635 @@
 [
  {
+  "version": "0.16.31",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Labels, Bodenkarte & Frequenzen",
+   "en": "Labels, ground map & frequencies"
+  },
+  "sections": [
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "Einstellung „Label-Einträge“: Manuell = das Label ist nur deine Notiz, Automatisch = eine Auswahl im Label geht als Anweisung an den Piloten",
+      "en": "Setting \"Label entries\": manual = the label is only your note, automatic = a choice in the label goes to the pilot as an instruction"
+     },
+     {
+      "de": "Tower-Karte wie EuroScope: graue Fläche hinter den Bahnenden, gelbe Rolllinien über den Bahnen",
+      "en": "Tower map like EuroScope: grey area beyond the runway ends, yellow taxi lines on top of the runways"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Taste „Nächste“ zeigt die nächste Station auch in den EuroScope-Labels",
+      "en": "The \"Next\" key shows the next station in the EuroScope labels too"
+     },
+     {
+      "de": "Anflug an der Apron-Grenze, der schon bei Ground ist, rollt weiter statt alle 15 s zu fragen",
+      "en": "An arrival at the apron boundary that is already with Ground taxies on instead of asking every 15 s"
+     },
+     {
+      "de": "Düsseldorf: unmögliche Pushback-Richtung (A12 „facing west“) wird abgelehnt statt ins Vorfeld zu schieben",
+      "en": "Düsseldorf: an impossible pushback direction (A12 \"facing west\") is refused instead of pushing into the open apron"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.30",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Bahnwechsel im Endanflug",
+   "en": "Runway change on final"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Ein Anflug, der auf dem Endanflug einer anderen Bahn ist (z. B. von 07L auf 07R umgeplant), fragt nach dieser Bahn",
+      "en": "An arrival on the final of another runway (e.g. changed from 07L to 07R) asks for that runway"
+     },
+     {
+      "de": "„unable via P“ nach dem Abrollen behoben",
+      "en": "\"Unable via P\" after vacating fixed"
+     },
+     {
+      "de": "Buchstabierte Waypoints nur noch nach „direct“, „to“, „via“ – ein buchstabiertes Rufzeichen wird kein Waypoint",
+      "en": "Spelled waypoints only after \"direct\", \"to\", \"via\" – a spelled callsign no longer becomes a waypoint"
+     },
+     {
+      "de": "EuroScope-Labels wieder kleiner",
+      "en": "EuroScope labels smaller again"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.29",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Taxi speed & Minimum Clean Speed",
+   "en": "Taxi speed & minimum clean speed"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "„reduce (to) minimum clean speed“ und „reduce (to) final approach speed“, je nach Typ",
+      "en": "\"reduce (to) minimum clean speed\" and \"reduce (to) final approach speed\", depending on the type"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "„reduce taxi speed“ liest nicht mehr die ganze Rollfreigabe zurück",
+      "en": "\"reduce taxi speed\" no longer reads back the whole taxi clearance"
+     },
+     {
+      "de": "Multiplayer: Liste der öffentlichen Räume wieder lesbar",
+      "en": "Multiplayer: the public room list is readable again"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.25",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Readback correct & Heathrow-Routen",
+   "en": "Readback correct & Heathrow routes"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Nur „readback correct“: keine Antwort mehr vom Piloten",
+      "en": "\"Readback correct\" alone: no reply from the pilot any more"
+     },
+     {
+      "de": "Heathrow: „taxi L A, hold short HORKA“ rollt genau über die genannten Rollwege und hält an HORKA",
+      "en": "Heathrow: \"taxi L A, hold short HORKA\" taxies exactly via the taxiways given and holds at HORKA"
+     },
+     {
+      "de": "Abflüge mit Heathrow als Ziel behoben",
+      "en": "Departures with Heathrow as destination fixed"
+     },
+     {
+      "de": "Radarbild wird jedes Bild komplett gelöscht – gegen Schlieren beim Zoomen",
+      "en": "The radar picture is fully cleared every frame – against smearing when zooming"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.24",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Pushback-Areas nur im Positions-Overlay",
+   "en": "Pushback areas only in the stand overlay"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Die deutlicheren Pushback-Areas erscheinen nur mit eingeschaltetem Positions-Overlay, die normale Ansicht bleibt wie vorher",
+      "en": "The clearer pushback areas only appear with the stand overlay on, the normal view stays as before"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.23",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Pushback-Areas & Check-in",
+   "en": "Pushback areas & check-in"
+  },
+  "sections": [
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "Frankfurt: Pushback-Areas besser zu finden",
+      "en": "Frankfurt: pushback areas easier to find"
+     },
+     {
+      "de": "Positionen werden gesprochen als „stand Victor 324“",
+      "en": "Stands are spoken as \"stand Victor 324\""
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Check-in nach Übergabe am Zwischenhaltepunkt: „holding short N11, request taxi to stand C4“",
+      "en": "Check-in after a handoff at an intermediate holding point: \"holding short N11, request taxi to stand C4\""
+     },
+     {
+      "de": "Heathrow Approach: nächste Station „London Control“",
+      "en": "Heathrow Approach: next station \"London Control\""
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.21",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Directs, Heathrow-Holdingpoints & UK-Phraseologie",
+   "en": "Directs, Heathrow holding points & UK phraseology"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "„Direct DF412“ wird zuverlässig erkannt",
+      "en": "\"Direct DF412\" is recognised reliably"
+     },
+     {
+      "de": "Heathrow: „taxi A, hold short HORKA“ hält an HORKA",
+      "en": "Heathrow: \"taxi A, hold short HORKA\" holds at HORKA"
+     },
+     {
+      "de": "„Start-up approved, for pushback contact Apron“ ist nur Startup",
+      "en": "\"Start-up approved, for pushback contact Apron\" is start-up only"
+     }
+    ]
+   },
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "QNH-Readback beim Sinken auf eine Altitude",
+      "en": "QNH readback when descending to an altitude"
+     },
+     {
+      "de": "Heathrow-Clearance in UK-Phraseologie („cleared to Athens, MODMI 1J departure, squawk 1234“)",
+      "en": "Heathrow clearance in UK phraseology (\"cleared to Athens, MODMI 1J departure, squawk 1234\")"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.20",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Label-Farben & Center-STARs",
+   "en": "Label colours & centre STARs"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "EuroScope-Labels: richtige Farben für Assumed und Unconcerned, Warnungen in Gelb und Rot",
+      "en": "EuroScope labels: correct colours for assumed and unconcerned, warnings in amber and red"
+     },
+     {
+      "de": "Center: STAR-Wechsel für Frankfurt-Anflüge funktioniert, die Bahn folgt aus dem Buchstaben",
+      "en": "Centre: STAR changes for Frankfurt arrivals work, the runway follows from the letter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.18",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Labels wie EuroScope",
+   "en": "Labels like EuroScope"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "EuroScope-Labels: Text ohne Box, Assumed / Unconcerned, aufklappen beim Hover, Klick öffnet Listen für CFL, Kurs, Speed, Direct und STAR",
+      "en": "EuroScope labels: text without a box, assumed / unconcerned, expands on hover, a click opens lists for CFL, heading, speed, direct and STAR"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Startup-Anfragen kommen wieder (TSAT lief bei wartenden Fliegern weg)",
+      "en": "Start-up requests come again (the TSAT of waiting aircraft kept moving)"
+     },
+     {
+      "de": "Heathrow: „taxi via N11“ von überall, Pushback aus Sackgassen, keine 500-m-Strafe",
+      "en": "Heathrow: \"taxi via N11\" from anywhere, pushback out of cul-de-sacs, no 500 m penalty"
+     },
+     {
+      "de": "LOT heißt „LOT“, „identified“ wird still bestätigt",
+      "en": "LOT is called \"LOT\", \"identified\" is taken silently"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.16",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Bahnkreuzungen & STAR-Freigaben",
+   "en": "Runway crossings & STAR clearances"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Nach „cross runway 07C“ rollt der Flieger auf seiner Freigabe weiter",
+      "en": "After \"cross runway 07C\" the aircraft continues on its taxi clearance"
+     },
+     {
+      "de": "„line up runway 07C, cleared for takeoff“ ist eine Startfreigabe",
+      "en": "\"line up runway 07C, cleared for takeoff\" is one takeoff clearance"
+     },
+     {
+      "de": "Frankfurt Approach: „cleared ROLIS 6 delta arrival“ ändert die Route wirklich",
+      "en": "Frankfurt Approach: \"cleared ROLIS 6 delta arrival\" really changes the route"
+     },
+     {
+      "de": "Multiplayer: Verlängerung und Squawks vom Gast werden synchronisiert",
+      "en": "Multiplayer: overtime and squawks set by a guest are synchronised"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.15",
+  "date": "2026-11-26",
+  "title": {
+   "de": "Conditional Line-up",
+   "en": "Conditional line-up"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "„behind the departing 787, line up and wait“: der Verkehr wird auf der eigenen Bahn gesucht, der genannte Typ entscheidet",
+      "en": "\"behind the departing 787, line up and wait\": the traffic is searched on the aircraft's own runway, the type you name decides"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.8",
+  "date": "2026-11-25",
+  "title": {
+   "de": "Track Miles & CDA",
+   "en": "Track miles & CDA"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "Track Miles: „25 track miles to touchdown“",
+      "en": "Track mileage: \"25 track miles to touchdown\""
+     },
+     {
+      "de": "Continuous Descent: „descend in a continuous descent“, „descend when ready“, „at your discretion“ – der Pilot plant den Sinkflug selbst",
+      "en": "Continuous descent: \"descend in a continuous descent\", \"descend when ready\", \"at your discretion\" – the pilot plans the descent himself"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.7",
+  "date": "2026-11-25",
+  "title": {
+   "de": "Schnellere Spracherkennung",
+   "en": "Faster speech recognition"
+  },
+  "sections": [
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "Spracherkennung wieder schneller (kürzerer Hinweistext)",
+      "en": "Speech recognition faster again (shorter hint text)"
+     },
+     {
+      "de": "Neu: „cancel approach clearance“, „cleared LOGAN 2H arrival“, „disregard“",
+      "en": "New: \"cancel approach clearance\", \"cleared LOGAN 2H arrival\", \"disregard\""
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Lyon: „taxi to holding point A2“ geht genau zu A2",
+      "en": "Lyon: \"taxi to holding point A2\" goes to exactly A2"
+     },
+     {
+      "de": "Frankfurt: „taxi via P“ direkt nach dem Abrollen über P10",
+      "en": "Frankfurt: \"taxi via P\" right after vacating via P10"
+     },
+     {
+      "de": "Frankfurt G16A: Nase zum Pier",
+      "en": "Frankfurt G16A: nose towards the pier"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.6",
+  "date": "2026-11-25",
+  "title": {
+   "de": "Heathrow: Halten an Zwischenpunkten",
+   "en": "Heathrow: holding at intermediate points"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "„hold at K1“ / „hold LOKKI“: der Pilot liest nur zurück, was er wirklich fliegen kann, und hält dann dort",
+      "en": "\"hold at K1\" / \"hold LOKKI\": the pilot only reads back what he can really do, and then stops there"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.16.2",
+  "date": "2026-11-25",
+  "title": {
+   "de": "Heathrow wie in echt",
+   "en": "Heathrow as in real life"
+  },
+  "sections": [
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "Heathrow Ostbetrieb: Landung 09L, Start 09R",
+      "en": "Heathrow easterly operation: land 09L, depart 09R"
+     },
+     {
+      "de": "Zwei Feuerwachen (Fire 1 Nord, Fire 2 Süd)",
+      "en": "Two fire stations (Fire 1 north, Fire 2 south)"
+     },
+     {
+      "de": "Abrollwege wie geflogen, T5A nur bis A321neo",
+      "en": "Runway exits as flown, T5A only up to the A321neo"
+     },
+     {
+      "de": "Intersection-Departures („hold at NB3“, „taxi to holding point NB3“)",
+      "en": "Intersection departures (\"hold at NB3\", \"taxi to holding point NB3\")"
+     },
+     {
+      "de": "Heathrow Approach: Anrufe vor dem Stack, echte Holdings an BNN, LAM, BIG und OCK",
+      "en": "Heathrow Approach: calls before the stack, real holds at BNN, LAM, BIG and OCK"
+     },
+     {
+      "de": "Düsseldorf: nur eine Bahn in Betrieb (05R/23L), 05L/23R auf Anfrage",
+      "en": "Düsseldorf: one runway in use (05R/23L), 05L/23R on request"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Keine Köln-Namen mehr in Heathrow",
+      "en": "No more Köln names at Heathrow"
+     },
+     {
+      "de": "„turn left/right 10 degrees“ funktioniert, „zero“ und „seven“ werden besser unterschieden",
+      "en": "\"turn left/right 10 degrees\" works, \"zero\" and \"seven\" are told apart better"
+     },
+     {
+      "de": "Klick irgendwo aufs Label wählt den Flieger aus",
+      "en": "A click anywhere on the label selects the aircraft"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.15.18",
+  "date": "2026-11-24",
+  "title": {
+   "de": "Neuer Flughafen: Düsseldorf",
+   "en": "New airport: Düsseldorf"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "Düsseldorf (EDDL) im Tower und Approach",
+      "en": "Düsseldorf (EDDL) in Tower and Approach",
+      "sub": [
+       [
+        "Bahnen 05L/23R und 05R/23L, Betriebsrichtung automatisch aus dem METAR",
+        "Runways 05L/23R and 05R/23L, direction automatically from the METAR"
+       ],
+       [
+        "Rollwegnetz nach den offiziellen Bodenkarten, 114 Positionen mit echten Namen",
+        "Taxiway network from the official ground charts, 114 stands with real names"
+       ],
+       [
+        "SIDs mit den echten Bezeichnern, Transitions und echte Frequenzen",
+        "SIDs with the real designators, transitions and real frequencies"
+       ]
+      ]
+     },
+     {
+      "de": "Flughafenliste nach Ländern gruppiert",
+      "en": "Airport list grouped by country"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "MVA östlich von Düsseldorf: 3000 ft auf dem 23L-Endanflug",
+      "en": "MVA east of Düsseldorf: 3000 ft on the 23L final"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.15.17",
+  "date": "2026-11-24",
+  "title": {
+   "de": "Frankfurt: verlängerte Pistenachsen",
+   "en": "Frankfurt: extended centrelines"
+  },
+  "sections": [
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Frankfurt 07C/07R: Flieger halten an den echten Haltebalken (Y2, Y4, Y6, Y12, S33, Y10, M, M2) statt 40 m neben der Anfluglinie",
+      "en": "Frankfurt 07C/07R: aircraft hold at the real stop bars (Y2, Y4, Y6, Y12, S33, Y10, M, M2) instead of 40 m beside the approach"
+     },
+     {
+      "de": "Kreuzen der verlängerten Pistenachse braucht nur eine Freigabe, solange auf der Bahn gelandet wird",
+      "en": "Crossing the extended centreline needs a clearance only while that runway has landings"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.15.11",
+  "date": "2026-11-23",
+  "title": {
+   "de": "Sector Inbound List",
+   "en": "Sector Inbound List"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "Sector Inbound List für das Radar wie in EuroScope (Knopf „SIL“): Rufzeichen, Typ, ADEP/ADES, Bahn, Squawk, ETA, STAR, COPX/XFL, RFL – nach ETA sortiert",
+      "en": "Sector Inbound List for the radar like EuroScope (button \"SIL\"): callsign, type, ADEP/ADES, runway, squawk, ETA, STAR, COPX/XFL, RFL – ordered by ETA"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Das Flughafen-Banner („Rollweg M gesperrt“) verschwindet nach Schichtende",
+      "en": "The airport event banner (\"Taxiway M closed\") disappears after the shift"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "version": "0.15.10",
+  "date": "2026-11-23",
+  "title": {
+   "de": "Verkehrsregler, CTR-Ansicht & Mithören",
+   "en": "Traffic control, CTR view & listening in"
+  },
+  "sections": [
+   {
+    "kind": "new",
+    "items": [
+     {
+      "de": "Verkehr während der Schicht einstellen (Knopf „Traffic“): Minimum, Maximum, Spitzen, Ankunftsanteil und Voreinstellungen Ruhig / Normal / Voll / Rushhour",
+      "en": "Set the traffic during the shift (button \"Traffic\"): minimum, maximum, peaks, arrival share and presets Quiet / Normal / Busy / Rush hour"
+     },
+     {
+      "de": "Radar 2 im Tower: Knopf „CTR“ zeigt die Kontrollzone mit Entfernungsringen und verlängerten Pisten­achsen",
+      "en": "Radar 2 in Tower: button \"CTR\" shows the control zone with range rings and extended centrelines"
+     },
+     {
+      "de": "Gemeinsame Sitzungen: „Mithören“-Knöpfe für die anderen besetzten Positionen",
+      "en": "Shared sessions: \"Listen\" buttons for the other staffed positions"
+     }
+    ]
+   },
+   {
+    "kind": "imp",
+    "items": [
+     {
+      "de": "Multiple Line-up: Wirbelschleppen-Kategorie egal, die Line-up-Punkte müssen mindestens 500 m auseinander liegen",
+      "en": "Multiple line-up: wake category does not matter, the line-up points must be at least 500 m apart"
+     },
+     {
+      "de": "Spracherkennung: Rufzeichen und Directs werden deutlich zuverlässiger erkannt",
+      "en": "Speech recognition: callsigns and directs are recognised much more reliably"
+     },
+     {
+      "de": "Lyon: Initial Climb FL070 wie in echt",
+      "en": "Lyon: initial climb FL070 as in real life"
+     }
+    ]
+   },
+   {
+    "kind": "fix",
+    "items": [
+     {
+      "de": "Nach einem Verbindungsabbruch behält ein Radar-Spieler seine Position",
+      "en": "After a dropped connection a radar player keeps his position"
+     },
+     {
+      "de": "Live-Stimmen: du hörst nur noch deine Stationsgruppe und die Positionen, die du mithörst",
+      "en": "Live voice: you only hear your own station group and the positions you listen to"
+     }
+    ]
+   }
+  ]
+ },
+ {
   "version": "0.9.4",
   "date": "2026-11-14",
   "title": {
