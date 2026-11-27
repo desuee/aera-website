@@ -317,8 +317,8 @@ function evStatus() { const ev = DB.event; if (!ev) return { event: null };
 
 // ---------------- live map ----------------
 // Every signed-in game sends a heartbeat every 30 s while a shift runs (airport, mode, positions, multiplayer room). The
-// website shows on /aera/live where controllers are working right now (solo and multiplayer split). A name is public only
-// if the player ticked "show my name on the live map" in the game; otherwise the map says "Controller". The admin view
+// website shows on /aera/live where controllers are working right now (solo and multiplayer split). The name is shown unless
+// the player switched "show my name on the live map" off in the game (default on since 0.17.0); then the map says "Controller". The admin view
 // (website login) sees everybody plus activity per player (last played, minutes, shifts) – to see which testers still play.
 const LIVE = new Map();   // user id -> { id, name, avatar, apt, mode, pos, cs, room, ver, share, foot, since, last }
 const LIVE_TTL = 90 * 1000;
@@ -333,7 +333,7 @@ function liveBeat(me, b) {
   const pos = (Array.isArray(b.pos) ? b.pos : []).map(String).filter(x => POS_OK.includes(x)).slice(0, 4);
   const cs = (Array.isArray(b.cs) ? b.cs : []).map(x => String(x).toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 16)).filter(Boolean).slice(0, 4);
   const room = /^[A-Z0-9]{5}$/.test(String(b.room || '')) && ROOMS.has(b.room) ? b.room : null;
-  const foot = mode === 'ctr' && Array.isArray(b.foot) ? b.foot.slice(0, 80).filter(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite)).map(q => [Math.round(q[0] * 1000) / 1000, Math.round(q[1] * 1000) / 1000]) : null;
+  const foot = (mode === 'ctr' || mode === 'app') && Array.isArray(b.foot) ? b.foot.slice(0, 80).filter(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite)).map(q => [Math.round(q[0] * 1000) / 1000, Math.round(q[1] * 1000) / 1000]) : null;
   const old = LIVE.get(id); const shift = String(b.shift || '').slice(0, 24);
   LIVE.set(id, { id, name: me.name, avatar: me.avatar || '', apt, mode, pos, cs, room, ver: String(b.ver || '').slice(0, 16), share: !!b.share, foot,
     shift, since: old && old.shift === shift ? old.since : now, last: now });
@@ -349,11 +349,11 @@ function livePub() {
   for (const r of ROOMS.values()) {
     if (r.state !== 'run' || !r.cfg) continue; const apt = String(r.cfg.apt || ''); if (!/^[A-Z]{4}$/.test(apt)) continue;
     for (const m of r.members.values()) { if (m.away) continue; const id = String(m.user.id); seen.add(id); const L = LIVE.get(id);
-      for (const ps of (m.pos || [])) st.push({ apt, pos: ps, cs: (L && L.cs && L.cs.find(x => x.endsWith('_' + ps))) || `${apt}_${ps === 'RHN' ? 'CTR' : ps}`, kind: r.event ? 'event' : 'mp', room: r.event ? 'Event' : r.cfg.pub ? r.code : 'private', name: L && L.share ? m.user.name : null, since: L ? L.since : null, foot: L && ps === 'CTR' ? L.foot : null }); }
+      for (const ps of (m.pos || [])) st.push({ apt, pos: ps, cs: (L && L.cs && L.cs.find(x => x.endsWith('_' + ps))) || `${apt}_${ps === 'RHN' ? 'CTR' : ps}`, kind: r.event ? 'event' : 'mp', room: r.event ? 'Event' : r.cfg.pub ? r.code : 'private', name: L && !L.share ? null : m.user.name, since: L ? L.since : null, foot: L && ['CTR', 'RHN', 'APP', 'ARR', 'DEP'].includes(ps) ? L.foot : null }); }
   }
   for (const L of LIVE.values()) { if (seen.has(L.id)) continue; if (L.room && ROOMS.has(L.room)) continue;
     const pos = L.pos.length ? L.pos : [L.mode === 'twr' ? 'TWR' : L.mode === 'ctr' ? 'CTR' : 'APP'];
-    pos.forEach((ps, i) => st.push({ apt: L.apt, pos: ps, cs: L.cs[i] || `${L.apt}_${ps}`, kind: 'solo', name: L.share ? L.name : null, since: L.since, foot: ps === 'CTR' ? L.foot : null })); }
+    pos.forEach((ps, i) => st.push({ apt: L.apt, pos: ps, cs: L.cs[i] || `${L.apt}_${ps}`, kind: 'solo', name: L.share ? L.name : null, since: L.since, foot: ['CTR', 'RHN', 'APP', 'ARR', 'DEP'].includes(ps) ? L.foot : null })); }
   const players = new Set([...seen, ...[...LIVE.values()].map(x => x.id)]);
   return { t: Date.now(), players: players.size, solo: st.filter(x => x.kind === 'solo').length, mp: st.filter(x => x.kind !== 'solo').length,
     rooms: [...ROOMS.values()].filter(r => r.state === 'run').length, stations: st };

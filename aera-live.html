@@ -34,16 +34,20 @@
 
 <main id="top">
 <style>
-.lv{position:relative;height:calc(100vh - 72px);margin-top:72px;background:#081322;overflow:hidden}
+.lv{position:relative;height:calc(100vh - 72px);margin-top:72px;background:#050c17;overflow:hidden}
 .lv svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
 .lv svg.drag{cursor:grabbing}
-.lv .land path{fill:#11233a;stroke:#20395a;stroke-width:.6;vector-effect:non-scaling-stroke}
-.lv .app{fill:rgba(74,163,240,.10);stroke:#4aa3f0;stroke-width:1.6;vector-effect:non-scaling-stroke}
-.lv .ctr{fill:rgba(255,255,255,.06);stroke:#e8eef7;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.lv .land path{fill:#172b45;stroke:#34557d;stroke-width:.8;vector-effect:non-scaling-stroke}
+.lv .app{fill:rgba(74,163,240,.16);stroke:#4aa3f0;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.lv .ctr{fill:rgba(232,238,247,.07);stroke:#e8eef7;stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.lv .covl{font:700 12px Arial,Helvetica,sans-serif;paint-order:stroke;stroke:#081322;stroke-width:3px;text-anchor:middle;pointer-events:none}
+.lv .covl.a{fill:#7cc0ff}.lv .covl.c{fill:#e8eef7}
+.lv .covl tspan.n{font-weight:400;font-size:11px;fill:#c9d6e6}
 .lv .solo.app,.lv .solo.ctr{stroke-dasharray:6 4}
 .lv .apt{cursor:pointer}
 .lv .apt text{font:700 13px Arial,Helvetica,sans-serif;fill:#e8eef7;paint-order:stroke;stroke:#081322;stroke-width:3px}
-.lv .apt .dot{fill:#e8eef7}
+.lv .apt .dot{fill:#e8eef7;stroke:#081322;stroke-width:1.5}
+.lv .apt .nm{font:400 11px Arial,Helvetica,sans-serif;fill:#c9d6e6}
 .lv .apt .bd rect{stroke:#081322;stroke-width:1}
 .lv .apt .bd text{font:700 11px Arial,Helvetica,sans-serif;fill:#fff;stroke:none}
 .lv-panel{position:absolute;left:20px;top:20px;width:340px;max-height:calc(100% - 40px);overflow:auto;background:rgba(6,14,26,.92);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 18px 14px;font-family:Arial,Helvetica,sans-serif;color:#e8eef7;z-index:2}
@@ -82,7 +86,7 @@
 @media (max-width:760px){.lv-panel{left:10px;right:10px;width:auto;top:auto;bottom:10px;max-height:45%}}
 </style>
 <section class="lv" id="lv">
-  <svg id="lvMap" xmlns="http://www.w3.org/2000/svg"><g id="lvView"><g class="land" id="lvLand"></g><g id="lvCov"></g><g id="lvApt"></g></g></svg>
+  <svg id="lvMap" xmlns="http://www.w3.org/2000/svg"><g id="lvView"><g class="land" id="lvLand"></g><g id="lvCov"></g><g id="lvLbl"></g><g id="lvApt"></g></g></svg>
   <div class="lv-panel">
     <h1>AERA Live</h1>
     <div class="sub" data-de="Wo gerade gelotst wird – aktualisiert alle 15 Sekunden." data-en="Where controllers are working right now – updates every 15 seconds.">Wo gerade gelotst wird – aktualisiert alle 15 Sekunden.</div>
@@ -111,8 +115,14 @@
   const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const x in a)e.setAttribute(x,a[x]);if(p)p.appendChild(e);return e;};
   const land=document.getElementById('lvLand');for(const d of M.paths)el('path',{d},land);
   const svg=document.getElementById('lvMap');let vb=null;
-  function fit(){const c=P(50.6,6.5);const r=svg.getBoundingClientRect();const w=170,h=w*r.height/Math.max(1,r.width);vb=[c[0]-w*.38,c[1]-h/2,w,h];setVB();}
-  const setVB=()=>{svg.setAttribute('viewBox',vb.join(' '));drawApt();};
+  // view: all active stations (with room for the panel on the left), else central Europe with London, Lyon and Frankfurt
+  function fit(){const r=svg.getBoundingClientRect();const ar=r.height/Math.max(1,r.width);let pts=[];
+    try{for(const s of (D&&D.stations)||[]){const p=APT[s.apt];if(p)pts.push(P(p[0],p[1]));if(Array.isArray(s.foot))for(const q of s.foot)pts.push(P(q[0],q[1]));}}catch(_){}
+    if(!pts.length)pts=[P(52.2,-1.5),P(45.4,5.5),P(50.5,9.5)];
+    let x0=Math.min(...pts.map(q=>q[0])),x1=Math.max(...pts.map(q=>q[0])),y0=Math.min(...pts.map(q=>q[1])),y1=Math.max(...pts.map(q=>q[1]));
+    let w=Math.max(60,(x1-x0)*1.5),h=Math.max(60*ar,(y1-y0)*1.6);if(h/w>ar)w=h/ar;else h=w*ar;const panel=r.width>760?380/r.width*w:0;w+=panel;h=w*ar;
+    vb=[(x0+x1)/2-(w-panel)/2-panel,(y0+y1)/2-h/2,w,h];setVB();}
+  const setVB=()=>{svg.setAttribute('viewBox',vb.join(' '));drawApt();drawLbl();};
   const zoom=(f,cx,cy)=>{const r=svg.getBoundingClientRect();cx=cx==null?.5:cx;cy=cy==null?.5:cy;const nw=Math.max(15,Math.min(M.W,vb[2]*f)),nh=nw*vb[3]/vb[2];vb=[vb[0]+(vb[2]-nw)*cx,vb[1]+(vb[3]-nh)*cy,nw,nh];setVB();};
   svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect();zoom(e.deltaY>0?1.2:1/1.2,(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height);},{passive:false});
   let dr=null;svg.addEventListener('pointerdown',e=>{if(e.target.closest('.apt'))return;dr={x:e.clientX,y:e.clientY,v:vb.slice()};svg.classList.add('drag');svg.setPointerCapture(e.pointerId);closePop();});
@@ -124,16 +134,26 @@
   const vis=()=>D.stations.filter(s=>F==='all'||(F==='solo'?s.kind==='solo':s.kind!=='solo'));
   const byApt=()=>{const o={};for(const s of vis()){(o[s.apt]=o[s.apt]||[]).push(s);}return o;};
   const nmY=(la,nm)=>{const a=P(la,0),b=P(la+nm/60,0);return Math.abs(a[1]-b[1]);};
-  function drawCov(){const g=document.getElementById('lvCov');g.innerHTML='';const A=byApt();
+  function drawCov(){const g=document.getElementById('lvCov');g.innerHTML='';LBL=[];const A=byApt();
     for(const a in A){const p=APT[a];if(!p)continue;const [x,y]=P(p[0],p[1]);
       for(const s of A[a]){const cls=s.kind==='solo'?'solo':'';
-        if(['APP','ARR','DEP'].includes(s.pos)){el('circle',{cx:x,cy:y,r:nmY(p[0],40),class:'app '+cls},g);}
-        else if(s.pos==='CTR'||s.pos==='RHN'){if(Array.isArray(s.foot)&&s.foot.length>2)el('path',{d:s.foot.map((q,i)=>(i?'L':'M')+P(q[0],q[1]).join(' ')).join('')+'Z',class:'ctr '+cls},g);else el('circle',{cx:x,cy:y,r:nmY(p[0],110),class:'ctr '+cls},g);}}}}
+        const isA=['APP','ARR','DEP'].includes(s.pos),isC=s.pos==='CTR'||s.pos==='RHN';if(!isA&&!isC)continue;
+        let cx=x,cy=y;
+        if(Array.isArray(s.foot)&&s.foot.length>2){const Q=s.foot.map(q=>P(q[0],q[1]));el('path',{d:Q.map((q,i)=>(i?'L':'M')+q.join(' ')).join('')+'Z',class:(isA?'app ':'ctr ')+cls},g);
+          cx=Q.reduce((a,q)=>a+q[0],0)/Q.length;cy=Math.max(...Q.map(q=>q[1]));}
+        else el('circle',{cx:x,cy:y,r:nmY(p[0],isA?30:110),class:(isA?'app ':'ctr ')+cls},g);
+        LBL.push({x:cx,y:isA&&!(Array.isArray(s.foot)&&s.foot.length>2)?y+nmY(p[0],30):cy,cs:s.cs,name:s.name,cls:isA?'a':'c',below:true});}}
+    drawLbl();}
+  // coverage labels: callsign + name, constant size on screen
+  let LBL=[];function drawLbl(){const g=document.getElementById('lvLbl');if(!g)return;g.innerHTML='';if(!vb)return;const r=svg.getBoundingClientRect();const u=vb[2]/Math.max(1,r.width);
+    for(const L of LBL){const t=el('text',{class:'covl '+L.cls,transform:`translate(${L.x} ${L.y}) scale(${u})`},g);const a=el('tspan',{x:0,dy:16},t);a.textContent=L.cs;
+      if(L.name){const n=el('tspan',{x:0,dy:14,class:'n'},t);n.textContent=L.name;}}}
   function drawApt(){const g=document.getElementById('lvApt');g.innerHTML='';if(!vb)return;const r=svg.getBoundingClientRect();const u=vb[2]/Math.max(1,r.width);const A=byApt();
     for(const a in A){const p=APT[a];if(!p)continue;const [x,y]=P(p[0],p[1]);const gg=el('g',{class:'apt','data-a':a,transform:`translate(${x} ${y}) scale(${u})`},g);
       el('circle',{r:4,class:'dot'},gg);const t=el('text',{x:8,y:-8},gg);t.textContent=a;
       const bd=el('g',{class:'bd',transform:'translate(8 0)'},gg);let i=0;
-      for(const ps of ['DEL','GND','TWR']){const s=A[a].find(z=>z.pos===ps);if(!s)continue;el('rect',{x:i*19,y:0,width:17,height:15,rx:3,fill:COL[ps],'fill-opacity':s.kind==='solo'?.55:1},bd);const tt=el('text',{x:i*19+8.5,y:11.5,'text-anchor':'middle'},bd);tt.textContent=ps[0];i++;}
+      for(const ps of ['DEL','GND','TWR']){const s=A[a].find(z=>z.pos===ps);if(!s)continue;el('rect',{x:i*19,y:0,width:17,height:15,rx:3,fill:COL[ps],'fill-opacity':s.kind==='solo'?.7:1},bd);const tt=el('text',{x:i*19+8.5,y:11.5,'text-anchor':'middle'},bd);tt.textContent=ps[0];i++;}
+      {const nm=[...new Set(A[a].filter(z=>['DEL','GND','TWR'].includes(z.pos)).map(z=>z.name).filter(Boolean))];if(nm.length){const t2=el('text',{x:8,y:30,class:'nm'},gg);t2.textContent=nm.join(', ');}}
       gg.addEventListener('click',e=>{e.stopPropagation();pop(a,e);});}}
   const since=t=>{if(!t)return '';const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min';};
   const kindTxt=k=>k==='solo'?'Solo':k==='event'?'Event':'Multiplayer';
@@ -148,7 +168,7 @@
     L.querySelectorAll('.a').forEach(x=>x.onclick=()=>{const p=APT[x.dataset.a];if(!p)return;const [cx,cy]=P(p[0],p[1]);const w=60,h=w*vb[3]/vb[2];vb=[cx-w/2,cy-h/2,w,h];setVB();});}
   function render(){const n=new Set(D.stations.map(s=>s.cs));document.getElementById('lvN').textContent=D.players||0;document.getElementById('lvS').textContent=D.stations.filter(s=>s.kind==='solo').length;document.getElementById('lvM').textContent=D.stations.filter(s=>s.kind!=='solo').length;drawCov();drawApt();list();}
   document.querySelectorAll('.lv-f button').forEach(b=>b.onclick=()=>{F=b.dataset.f;document.querySelectorAll('.lv-f button').forEach(x=>x.classList.toggle('on',x===b));closePop();render();});
-  async function load(){try{D=await fetch('/api/aera/live',{cache:'no-store'}).then(r=>r.json());render();}catch(_){}}
+  let fitted=false;async function load(){try{D=await fetch('/api/aera/live',{cache:'no-store'}).then(r=>r.json());render();if(!fitted&&D.stations&&D.stations.length){fitted=true;fit();}}catch(_){}}
   // ---- admin (website login only)
   const dt=t=>t?new Date(t).toLocaleString(en()?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'–';
   async function admin(){try{const r=await fetch('/api/aera-live/admin',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const j=await r.json();document.getElementById('lvAdm').style.display='block';
