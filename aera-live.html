@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+<head><script src="/consent.js?v=1"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AERA – Live</title>
+<meta name="description" content="AERA Live: wo gerade gelotst wird – Delivery, Ground, Tower, Approach und Center, solo und im Multiplayer.">
+<meta name="theme-color" content="#07111f">
+<link rel="icon" type="image/png" href="/img/aera-favicon.png">
+<link rel="apple-touch-icon" href="/img/aera-touch-icon.png">
+<link rel="stylesheet" href="/aera.css?v=5">
+</head>
+<body class="cl-page">
+
+<header class="nav solid" id="nav">
+  <div class="in">
+    <a class="brand" href="/aera"><img src="/img/aera-icon.png" alt=""><span><b>AERA</b><small>Airspace &amp; Enroute Radar Authority</small></span></a>
+    <nav>
+      <a href="/aera#sectors" data-de="Sektoren" data-en="Sectors">Sektoren</a>
+      <a href="/aera#features">Features</a>
+      <a href="/aera#screens">Screenshots</a>
+      <a href="/aera#roadmap">Roadmap</a>
+      <a href="/aera/live" class="on">Live</a>
+      <a href="/aera/changelog" >Changelog</a>
+      <a href="/beta">Beta</a>
+      <a href="/aera#faq">FAQ</a>
+      <a href="/aera/about" data-de="Über AERA" data-en="About">Über AERA</a>
+    </nav>
+    <a class="nav-dc" href="https://discord.gg/aera" target="_blank" rel="noopener" title="Discord"><svg class="dc-ic" viewBox="0 0 127.14 96.36" aria-hidden="true"><path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg><span>Discord</span></a>
+    <div class="lang"><button data-lang="de">DE</button><button data-lang="en">EN</button></div>
+    <a class="back" href="/aera" title="AERA"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span>AERA</span></a>
+  </div>
+</header>
+
+<main id="top">
+<style>
+.lv{position:relative;height:calc(100vh - 72px);margin-top:72px;background:#081322;overflow:hidden}
+.lv svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+.lv svg.drag{cursor:grabbing}
+.lv .land path{fill:#11233a;stroke:#20395a;stroke-width:.6;vector-effect:non-scaling-stroke}
+.lv .app{fill:rgba(74,163,240,.10);stroke:#4aa3f0;stroke-width:1.6;vector-effect:non-scaling-stroke}
+.lv .ctr{fill:rgba(255,255,255,.06);stroke:#e8eef7;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.lv .solo.app,.lv .solo.ctr{stroke-dasharray:6 4}
+.lv .apt{cursor:pointer}
+.lv .apt text{font:700 13px Arial,Helvetica,sans-serif;fill:#e8eef7;paint-order:stroke;stroke:#081322;stroke-width:3px}
+.lv .apt .dot{fill:#e8eef7}
+.lv .apt .bd rect{stroke:#081322;stroke-width:1}
+.lv .apt .bd text{font:700 11px Arial,Helvetica,sans-serif;fill:#fff;stroke:none}
+.lv-panel{position:absolute;left:20px;top:20px;width:340px;max-height:calc(100% - 40px);overflow:auto;background:rgba(6,14,26,.92);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 18px 14px;font-family:Arial,Helvetica,sans-serif;color:#e8eef7;z-index:2}
+.lv-panel h1{font:700 30px/1 Arial,Helvetica,sans-serif;margin:0 0 4px;letter-spacing:-.5px}
+.lv-panel .sub{color:#9fb0c6;font-size:13px;margin-bottom:14px}
+.lv-big{display:flex;gap:8px;margin-bottom:12px}
+.lv-big div{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px}
+.lv-big b{display:block;font:700 30px/1 Arial,Helvetica,sans-serif}
+.lv-big span{font-size:11px;font-weight:700;letter-spacing:.06em;color:#9fb0c6;text-transform:uppercase}
+.lv-f{display:flex;gap:6px;margin:4px 0 12px}
+.lv-f button{flex:1;padding:8px 0;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#e8eef7;font:700 13px Arial,Helvetica,sans-serif;cursor:pointer}
+.lv-f button.on{background:#1e88e5;border-color:#1e88e5}
+.lv-l .a{padding:10px 0;border-top:1px solid rgba(255,255,255,.08);cursor:pointer}
+.lv-l .a b{font:700 16px Arial,Helvetica,sans-serif}
+.lv-l .a small{color:#9fb0c6;margin-left:6px}
+.lv-l .st{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px}
+.lv-l .st i{font-style:normal;font:700 11px Arial,Helvetica,sans-serif;width:20px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;color:#fff;flex:none}
+.lv-l .st .cs{font-family:"Lucida Console",Consolas,monospace;min-width:96px}
+.lv-l .st .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-l .st .k{margin-left:auto;font-size:10.5px;font-weight:700;color:#9fb0c6;text-transform:uppercase;white-space:nowrap}
+.lv-l .st .k.mp{color:#3ddc97}.lv-l .st .k.event{color:#ffd23f}
+.lv-empty{color:#9fb0c6;font-size:14px;padding:14px 0}
+.lv-key{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:#9fb0c6;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.lv-key i{display:inline-block;width:14px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.lv-pop{position:absolute;z-index:3;min-width:240px;background:rgba(6,14,26,.96);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;font-family:Arial,Helvetica,sans-serif;color:#e8eef7;pointer-events:auto}
+.lv-pop h3{margin:0 0 6px;font:700 18px Arial,Helvetica,sans-serif}
+.lv-zoom{position:absolute;right:20px;bottom:20px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.lv-zoom button{width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(6,14,26,.92);color:#fff;font:700 20px Arial,sans-serif;cursor:pointer}
+.lv-adm{max-width:1200px;margin:0 auto;padding:40px 20px 80px;font-family:Arial,Helvetica,sans-serif;display:none}
+.lv-adm h2{font:700 28px Arial,Helvetica,sans-serif;margin:0 0 6px}
+.lv-adm table{width:100%;border-collapse:collapse;margin:14px 0 36px;font-size:14px}
+.lv-adm th,.lv-adm td{padding:8px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left}
+.lv-adm th{color:#7f8ea6;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.lv-adm td.n{text-align:right;font-variant-numeric:tabular-nums}
+.lv-adm .old{color:#ff6b7a}.lv-adm .on{color:#3ddc97;font-weight:700}
+@media (max-width:760px){.lv-panel{left:10px;right:10px;width:auto;top:auto;bottom:10px;max-height:45%}}
+</style>
+<section class="lv" id="lv">
+  <svg id="lvMap" xmlns="http://www.w3.org/2000/svg"><g id="lvView"><g class="land" id="lvLand"></g><g id="lvCov"></g><g id="lvApt"></g></g></svg>
+  <div class="lv-panel">
+    <h1>AERA Live</h1>
+    <div class="sub" data-de="Wo gerade gelotst wird – aktualisiert alle 15 Sekunden." data-en="Where controllers are working right now – updates every 15 seconds.">Wo gerade gelotst wird – aktualisiert alle 15 Sekunden.</div>
+    <div class="lv-big"><div><b id="lvN">0</b><span data-de="Lotsen live" data-en="Controllers">Lotsen live</span></div><div><b id="lvS">0</b><span>Solo</span></div><div><b id="lvM">0</b><span>Multiplayer</span></div></div>
+    <div class="lv-f"><button data-f="all" class="on" data-de="Alle" data-en="All">Alle</button><button data-f="solo">Solo</button><button data-f="mp">Multiplayer</button></div>
+    <div class="lv-l" id="lvList"><div class="lv-empty">…</div></div>
+    <div class="lv-key"><span><i style="background:#3b82f6"></i>Delivery</span><span><i style="background:#22c55e"></i>Ground</span><span><i style="background:#ef4444"></i>Tower</span><span><i style="border:2px solid #4aa3f0"></i>Approach</span><span><i style="border:2px solid #e8eef7"></i>Center</span><span data-de="gestrichelt = Solo" data-en="dashed = solo">gestrichelt = Solo</span></div>
+  </div>
+  <div class="lv-zoom"><button id="lvZi" title="Zoom in">+</button><button id="lvZo" title="Zoom out">−</button></div>
+</section>
+<section class="lv-adm" id="lvAdm">
+  <h2>Admin · online</h2><table id="lvOn"></table>
+  <h2 data-de="Admin · Aktivität der Spieler" data-en="Admin · player activity">Admin · Aktivität der Spieler</h2>
+  <div style="color:#9fb0c6;font-size:13px" data-de="Rot = seit mehr als 14 Tagen nicht gespielt. Gezählt wird erst ab dieser Version des Spiels." data-en="Red = not played for more than 14 days. Counted from this game version on.">Rot = seit mehr als 14 Tagen nicht gespielt. Gezählt wird erst ab dieser Version des Spiels.</div>
+  <table id="lvAct"></table>
+</section>
+<script src="/aera-live-map.js?v=1"></script>
+<script>
+(function(){
+  const M=window.AERA_MAP,NS='http://www.w3.org/2000/svg';const en=()=>(document.documentElement.lang||'de')==='en';
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const APT={EDDK:[50.8659,7.1427,'Köln/Bonn'],EDDF:[50.0333,8.5706,'Frankfurt'],EDDL:[51.2895,6.7668,'Düsseldorf'],EGLL:[51.47,-0.4543,'London Heathrow'],LFLL:[45.7256,5.0811,'Lyon Saint-Exupéry'],
+    GCTS:[28.0445,-16.5725,'Tenerife South'],EDDN:[49.4987,11.0669,'Nürnberg'],EDDB:[52.3667,13.5033,'Berlin'],EDDM:[48.3538,11.7861,'München'],EDDP:[51.4239,12.2364,'Leipzig'],LEPA:[39.5517,2.7388,'Palma'],LEMD:[40.4719,-3.5626,'Madrid'],LFPG:[49.0097,2.5479,'Paris CDG'],LKPR:[50.1008,14.26,'Prag'],EHRD:[51.9569,4.4372,'Rotterdam'],EGCC:[53.3537,-2.275,'Manchester'],EGKK:[51.1481,-0.1903,'Gatwick'],LOWW:[48.1103,16.5697,'Wien'],LOWI:[47.2602,11.344,'Innsbruck'],LEIB:[38.8729,1.3731,'Ibiza'],EGFF:[51.3967,-3.3433,'Cardiff']};
+  const k=M.W/((M.L1-M.L0)*Math.PI/180),my=l=>Math.log(Math.tan(Math.PI/4+l*Math.PI/360)),Y0=my(M.B1);
+  const P=(la,lo)=>[(lo-M.L0)*Math.PI/180*k,(Y0-my(la))*k];
+  const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const x in a)e.setAttribute(x,a[x]);if(p)p.appendChild(e);return e;};
+  const land=document.getElementById('lvLand');for(const d of M.paths)el('path',{d},land);
+  const svg=document.getElementById('lvMap');let vb=null;
+  function fit(){const c=P(50.6,6.5);const r=svg.getBoundingClientRect();const w=170,h=w*r.height/Math.max(1,r.width);vb=[c[0]-w*.38,c[1]-h/2,w,h];setVB();}
+  const setVB=()=>{svg.setAttribute('viewBox',vb.join(' '));drawApt();};
+  const zoom=(f,cx,cy)=>{const r=svg.getBoundingClientRect();cx=cx==null?.5:cx;cy=cy==null?.5:cy;const nw=Math.max(15,Math.min(M.W,vb[2]*f)),nh=nw*vb[3]/vb[2];vb=[vb[0]+(vb[2]-nw)*cx,vb[1]+(vb[3]-nh)*cy,nw,nh];setVB();};
+  svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect();zoom(e.deltaY>0?1.2:1/1.2,(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height);},{passive:false});
+  let dr=null;svg.addEventListener('pointerdown',e=>{if(e.target.closest('.apt'))return;dr={x:e.clientX,y:e.clientY,v:vb.slice()};svg.classList.add('drag');svg.setPointerCapture(e.pointerId);closePop();});
+  svg.addEventListener('pointermove',e=>{if(!dr)return;const r=svg.getBoundingClientRect();const s=dr.v[2]/r.width;vb=[dr.v[0]-(e.clientX-dr.x)*s,dr.v[1]-(e.clientY-dr.y)*s,dr.v[2],dr.v[3]];setVB();});
+  svg.addEventListener('pointerup',()=>{dr=null;svg.classList.remove('drag');});
+  document.getElementById('lvZi').onclick=()=>zoom(1/1.4);document.getElementById('lvZo').onclick=()=>zoom(1.4);
+  // ---- data
+  let D={stations:[]},F='all';const COL={DEL:'#3b82f6',GND:'#22c55e',TWR:'#ef4444'};
+  const vis=()=>D.stations.filter(s=>F==='all'||(F==='solo'?s.kind==='solo':s.kind!=='solo'));
+  const byApt=()=>{const o={};for(const s of vis()){(o[s.apt]=o[s.apt]||[]).push(s);}return o;};
+  const nmY=(la,nm)=>{const a=P(la,0),b=P(la+nm/60,0);return Math.abs(a[1]-b[1]);};
+  function drawCov(){const g=document.getElementById('lvCov');g.innerHTML='';const A=byApt();
+    for(const a in A){const p=APT[a];if(!p)continue;const [x,y]=P(p[0],p[1]);
+      for(const s of A[a]){const cls=s.kind==='solo'?'solo':'';
+        if(['APP','ARR','DEP'].includes(s.pos)){el('circle',{cx:x,cy:y,r:nmY(p[0],40),class:'app '+cls},g);}
+        else if(s.pos==='CTR'||s.pos==='RHN'){if(Array.isArray(s.foot)&&s.foot.length>2)el('path',{d:s.foot.map((q,i)=>(i?'L':'M')+P(q[0],q[1]).join(' ')).join('')+'Z',class:'ctr '+cls},g);else el('circle',{cx:x,cy:y,r:nmY(p[0],110),class:'ctr '+cls},g);}}}}
+  function drawApt(){const g=document.getElementById('lvApt');g.innerHTML='';if(!vb)return;const r=svg.getBoundingClientRect();const u=vb[2]/Math.max(1,r.width);const A=byApt();
+    for(const a in A){const p=APT[a];if(!p)continue;const [x,y]=P(p[0],p[1]);const gg=el('g',{class:'apt','data-a':a,transform:`translate(${x} ${y}) scale(${u})`},g);
+      el('circle',{r:4,class:'dot'},gg);const t=el('text',{x:8,y:-8},gg);t.textContent=a;
+      const bd=el('g',{class:'bd',transform:'translate(8 0)'},gg);let i=0;
+      for(const ps of ['DEL','GND','TWR']){const s=A[a].find(z=>z.pos===ps);if(!s)continue;el('rect',{x:i*19,y:0,width:17,height:15,rx:3,fill:COL[ps],'fill-opacity':s.kind==='solo'?.55:1},bd);const tt=el('text',{x:i*19+8.5,y:11.5,'text-anchor':'middle'},bd);tt.textContent=ps[0];i++;}
+      gg.addEventListener('click',e=>{e.stopPropagation();pop(a,e);});}}
+  const since=t=>{if(!t)return '';const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min';};
+  const kindTxt=k=>k==='solo'?'Solo':k==='event'?'Event':'Multiplayer';
+  const stRow=s=>`<div class="st"><i style="background:${COL[s.pos]||'transparent'};${COL[s.pos]?'':'border:2px solid '+(s.pos==='CTR'||s.pos==='RHN'?'#e8eef7':'#4aa3f0')}">${COL[s.pos]?s.pos[0]:''}</i><span class="cs">${esc(s.cs)}</span><span class="nm">${esc(s.name||(en()?'Controller':'Lotse'))}</span><span class="k ${s.kind}">${s.kind==='solo'?'Solo':s.kind==='event'?'Event':'MP'}${s.since?' · '+since(s.since):''}</span></div>`;
+  let popEl=null;const closePop=()=>{if(popEl){popEl.remove();popEl=null;}};
+  function pop(a,e){closePop();const sec=document.getElementById('lv'),r=sec.getBoundingClientRect();popEl=document.createElement('div');popEl.className='lv-pop';
+    popEl.innerHTML=`<h3>${a} <small style="color:#9fb0c6;font-size:13px">${esc((APT[a]||[])[2]||'')}</small></h3>`+(byApt()[a]||[]).map(stRow).join('');sec.appendChild(popEl);
+    popEl.style.left=Math.min(r.width-280,e.clientX-r.left+14)+'px';popEl.style.top=Math.min(r.height-200,e.clientY-r.top+14)+'px';}
+  function list(){const L=document.getElementById('lvList');const A=byApt();const ks=Object.keys(A).sort((a,b)=>A[b].length-A[a].length);
+    if(!ks.length){L.innerHTML=`<div class="lv-empty">${en()?'Nobody is controlling right now. Start a shift in AERA!':'Gerade lotst niemand. Starte eine Schicht in AERA!'}</div>`;return;}
+    L.innerHTML=ks.map(a=>`<div class="a" data-a="${a}"><b>${a}</b><small>${esc((APT[a]||[])[2]||'')}</small>${A[a].map(stRow).join('')}</div>`).join('');
+    L.querySelectorAll('.a').forEach(x=>x.onclick=()=>{const p=APT[x.dataset.a];if(!p)return;const [cx,cy]=P(p[0],p[1]);const w=60,h=w*vb[3]/vb[2];vb=[cx-w/2,cy-h/2,w,h];setVB();});}
+  function render(){const n=new Set(D.stations.map(s=>s.cs));document.getElementById('lvN').textContent=D.players||0;document.getElementById('lvS').textContent=D.stations.filter(s=>s.kind==='solo').length;document.getElementById('lvM').textContent=D.stations.filter(s=>s.kind!=='solo').length;drawCov();drawApt();list();}
+  document.querySelectorAll('.lv-f button').forEach(b=>b.onclick=()=>{F=b.dataset.f;document.querySelectorAll('.lv-f button').forEach(x=>x.classList.toggle('on',x===b));closePop();render();});
+  async function load(){try{D=await fetch('/api/aera/live',{cache:'no-store'}).then(r=>r.json());render();}catch(_){}}
+  // ---- admin (website login only)
+  const dt=t=>t?new Date(t).toLocaleString(en()?'en-GB':'de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'–';
+  async function admin(){try{const r=await fetch('/api/aera-live/admin',{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const j=await r.json();document.getElementById('lvAdm').style.display='block';
+    document.getElementById('lvOn').innerHTML='<tr><th>Name</th><th>Station</th><th>Mode</th><th>Room</th><th>Version</th><th>Name public</th><th>Since</th></tr>'+(j.online.length?j.online.map(o=>`<tr><td>${esc(o.name)}</td><td>${esc((o.cs||[]).join(' · ')||o.apt)}</td><td>${o.mode.toUpperCase()}</td><td>${esc(o.room||'Solo')}</td><td>${esc(o.ver)}</td><td>${o.share?'✓':'–'}</td><td>${since(o.since)}</td></tr>`).join(''):'<tr><td colspan="7">–</td></tr>');
+    document.getElementById('lvAct').innerHTML='<tr><th>Name</th><th>Last played</th><th class="n">Days</th><th class="n">Minutes</th><th class="n">Shifts</th><th class="n">Solo</th><th class="n">MP</th><th>Airports</th><th>Version</th></tr>'+j.act.map(a=>`<tr><td class="${a.online?'on':''}">${esc(a.name)}${a.online?' ●':''}</td><td class="${a.days>14?'old':''}">${dt(a.last)}</td><td class="n ${a.days>14?'old':''}">${a.days==null?'–':a.days}</td><td class="n">${a.min}</td><td class="n">${a.shifts}</td><td class="n">${a.solo}</td><td class="n">${a.mp}</td><td>${esc(Object.entries(a.apts||{}).sort((x,y)=>y[1]-x[1]).map(([k,v])=>k+' '+v).join(', '))}</td><td>${esc(a.ver)}</td></tr>`).join('');}catch(_){}}
+  fit();addEventListener('resize',()=>{const c=[vb[0]+vb[2]/2,vb[1]+vb[3]/2];const r=svg.getBoundingClientRect();vb[3]=vb[2]*r.height/Math.max(1,r.width);vb[0]=c[0]-vb[2]/2;vb[1]=c[1]-vb[3]/2;setVB();});
+  load();admin();setInterval(load,15000);setInterval(admin,60000);
+})();
+</script>
+</main>
+
+<footer class="foot">
+  <div class="in">
+    <span class="fl"><img src="/img/aera-icon.png" alt=""><span>© 2026 AERA · Aviation Entertainment, Resources &amp; Add-ons · <a href="/">aerastudios.de</a></span></span>
+    <span class="sp"></span>
+    <a href="https://discord.gg/aera" target="_blank" rel="noopener">Discord</a>
+    <a href="https://www.tiktok.com/@aera_atc" target="_blank" rel="noopener">TikTok</a>
+    <a href="https://www.linkedin.com/company/aera-studios-germany/" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="/">aerastudios.de</a>
+    <a href="/aera/lizenz" data-de="Lizenz" data-en="Licence">Lizenz</a>
+    <a href="/impressum.html">Impressum</a>
+    <a href="/datenschutz.html" data-de="Datenschutz" data-en="Privacy">Datenschutz</a>
+  </div>
+</footer>
+
+<script src="/aera.js?v=4"></script>
+</body>
+</html>

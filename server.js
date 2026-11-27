@@ -350,7 +350,7 @@ const ipOf = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAd
 const secure = req => req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
 const TYPES = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain; charset=utf-8', webmanifest: 'application/manifest+json; charset=utf-8', woff2: 'font/woff2' };
 // public website: only these files / the img folder (never server code or package files)
-const SITE = new Set(['brand.css', 'index.html', 'impressum.html', 'datenschutz.html', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-ranked.html', 'beta-page.js', 'consent.js']);
+const SITE = new Set(['brand.css', 'index.html', 'impressum.html', 'datenschutz.html', 'robots.txt', 'aera.html', 'aera.css', 'aera.js', 'aera-changelog.html', 'aera-lizenz.html', 'aera-about.html', 'aera-ranked.html', 'aera-live.html', 'aera-live-map.js', 'beta-page.js', 'consent.js']);
 const SITE_CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 function serveFile(res, file, cache, csp) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return send(res, 404, notFound(), TYPES.html);
@@ -430,6 +430,7 @@ const SERVER = http.createServer(async (req, res) => {
       if (p === '/join' || p === '/join/' || p === '/jobs' || p === '/mitmachen') return serveFile(res, path.join(ROOT, 'join.html'), 'no-cache', SITE_CSP);
       if (p === '/team' || p === '/team/' || p === '/crew') return serveFile(res, path.join(ROOT, 'team.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https:"));
       if (p === '/aera/ranked' || p === '/aera/leaderboard' || p === '/aera/bestenliste') return serveFile(res, path.join(ROOT, 'aera-ranked.html'), 'no-cache', SITE_CSP.replace("img-src 'self' data:", "img-src 'self' data: https://cdn.discordapp.com"));
+      if (p === '/aera/live' || p === '/aera/live/' || p === '/live' || p === '/aera/map') return serveFile(res, path.join(ROOT, 'aera-live.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/changelog' || p === '/aera/changelog/') return serveFile(res, path.join(ROOT, 'aera-changelog.html'), 'no-cache', SITE_CSP);
       if (p === '/aera/discord.json') return send(res, 200, await discordStats(), 'application/json', { 'Cache-Control': 'public, max-age=120', 'X-Robots-Tag': 'noindex' });
       const name = decodeURIComponent(p.slice(1));
@@ -510,6 +511,7 @@ const SERVER = http.createServer(async (req, res) => {
     if (!s) return send(res, 401, { error: 'Nicht angemeldet' });
     s.last = Date.now();
 
+    if (p === '/api/aera-live/admin') return send(res, 200, aeraOnline.liveAdmin());   // live map: everybody online + activity per player (admin login only)
     if (p === '/api/dashboard') {
       const [fl, bl, dl, dc, cl] = await Promise.allSettled([api.folders(s), api.betaList(s), beta.stats(), discordStats(), calendar.upcoming(s.user, 5)]);
       const val = r => r.status === 'fulfilled' ? r.value : null;

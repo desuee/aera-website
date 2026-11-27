@@ -314,6 +314,58 @@ function evStatus() { const ev = DB.event; if (!ev) return { event: null };
   return { event: evPub(ev), groups: ev.groups.map(g => { const r = ROOMS.get(g.code); return { n: g.n, code: g.code, lang: g.lang, state: r ? r.state : 'none', host: r ? String(r.host) : null,
     members: g.members.map(m => { const x = r && r.members.get(m.id); return { id: m.id, name: m.name, pos: m.pos, here: !!(x && !x.away), now: x ? x.pos : [] }; }) }; }) }; }
 
+
+// ---------------- live map ----------------
+// Every signed-in game sends a heartbeat every 30 s while a shift runs (airport, mode, positions, multiplayer room). The
+// website shows on /aera/live where controllers are working right now (solo and multiplayer split). A name is public only
+// if the player ticked "show my name on the live map" in the game; otherwise the map says "Controller". The admin view
+// (website login) sees everybody plus activity per player (last played, minutes, shifts) – to see which testers still play.
+const LIVE = new Map();   // user id -> { id, name, avatar, apt, mode, pos, cs, room, ver, share, foot, since, last }
+const LIVE_TTL = 90 * 1000;
+const POS_OK = ['DEL', 'GND', 'TWR', 'APP', 'ARR', 'DEP', 'CTR', 'RHN'];
+const liveClean = () => { const now = Date.now(); for (const [k, v] of LIVE) if (now - v.last > LIVE_TTL) LIVE.delete(k); };
+setInterval(liveClean, 30000).unref();
+function liveBeat(me, b) {
+  b = b || {}; const now = Date.now(); const id = String(me.id);
+  if (b.bye || b.run === false) { LIVE.delete(id); return; }
+  const apt = /^[A-Z]{4}$/.test(String(b.apt || '')) ? b.apt : null; if (!apt) return;
+  const mode = ['twr', 'app', 'ctr'].includes(b.mode) ? b.mode : 'app';
+  const pos = (Array.isArray(b.pos) ? b.pos : []).map(String).filter(x => POS_OK.includes(x)).slice(0, 4);
+  const cs = (Array.isArray(b.cs) ? b.cs : []).map(x => String(x).toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 16)).filter(Boolean).slice(0, 4);
+  const room = /^[A-Z0-9]{5}$/.test(String(b.room || '')) && ROOMS.has(b.room) ? b.room : null;
+  const foot = mode === 'ctr' && Array.isArray(b.foot) ? b.foot.slice(0, 80).filter(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite)).map(q => [Math.round(q[0] * 1000) / 1000, Math.round(q[1] * 1000) / 1000]) : null;
+  const old = LIVE.get(id); const shift = String(b.shift || '').slice(0, 24);
+  LIVE.set(id, { id, name: me.name, avatar: me.avatar || '', apt, mode, pos, cs, room, ver: String(b.ver || '').slice(0, 16), share: !!b.share, foot,
+    shift, since: old && old.shift === shift ? old.since : now, last: now });
+  // activity (admin): minutes played, shifts, first / last seen
+  const A = DB.act || (DB.act = {}); const a = A[id] || (A[id] = { name: me.name, first: now, last: 0, min: 0, shifts: 0, solo: 0, mp: 0, apts: {} });
+  a.name = me.name; if (a.last && now - a.last < 3 * 60 * 1000) a.min += Math.min(now - a.last, 60 * 1000) / 60000;
+  if (!old || old.shift !== shift) { a.shifts++; if (room) a.mp++; else a.solo++; a.apts[apt] = (a.apts[apt] || 0) + 1; }
+  a.last = now; a.ver = String(b.ver || '').slice(0, 16); save();
+}
+function livePub() {
+  liveClean(); const st = []; const seen = new Set();
+  // multiplayer rooms that are running: every member with his positions
+  for (const r of ROOMS.values()) {
+    if (r.state !== 'run' || !r.cfg) continue; const apt = String(r.cfg.apt || ''); if (!/^[A-Z]{4}$/.test(apt)) continue;
+    for (const m of r.members.values()) { if (m.away) continue; const id = String(m.user.id); seen.add(id); const L = LIVE.get(id);
+      for (const ps of (m.pos || [])) st.push({ apt, pos: ps, cs: (L && L.cs && L.cs.find(x => x.endsWith('_' + ps))) || `${apt}_${ps === 'RHN' ? 'CTR' : ps}`, kind: r.event ? 'event' : 'mp', room: r.event ? 'Event' : r.cfg.pub ? r.code : 'private', name: L && L.share ? m.user.name : null, since: L ? L.since : null, foot: L && ps === 'CTR' ? L.foot : null }); }
+  }
+  for (const L of LIVE.values()) { if (seen.has(L.id)) continue; if (L.room && ROOMS.has(L.room)) continue;
+    const pos = L.pos.length ? L.pos : [L.mode === 'twr' ? 'TWR' : L.mode === 'ctr' ? 'CTR' : 'APP'];
+    pos.forEach((ps, i) => st.push({ apt: L.apt, pos: ps, cs: L.cs[i] || `${L.apt}_${ps}`, kind: 'solo', name: L.share ? L.name : null, since: L.since, foot: ps === 'CTR' ? L.foot : null })); }
+  const players = new Set([...seen, ...[...LIVE.values()].map(x => x.id)]);
+  return { t: Date.now(), players: players.size, solo: st.filter(x => x.kind === 'solo').length, mp: st.filter(x => x.kind !== 'solo').length,
+    rooms: [...ROOMS.values()].filter(r => r.state === 'run').length, stations: st };
+}
+function liveAdmin() {
+  liveClean(); const now = Date.now();
+  const online = [...LIVE.values()].map(x => ({ id: x.id, name: x.name, apt: x.apt, mode: x.mode, pos: x.pos, cs: x.cs, room: x.room, ver: x.ver, share: x.share, since: x.since, last: x.last }));
+  const act = Object.entries(DB.act || {}).map(([id, a]) => ({ id, name: a.name, first: a.first, last: a.last, min: Math.round(a.min), shifts: a.shifts, solo: a.solo, mp: a.mp, apts: a.apts, ver: a.ver || '', days: a.last ? Math.floor((now - a.last) / 86400000) : null, online: LIVE.has(id) }))
+    .sort((a, b) => (b.last || 0) - (a.last || 0));
+  return Object.assign(livePub(), { online, act });
+}
+
 // ---------------- http routes ----------------
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Dsue', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const configured = () => !!(CID && CSECRET);
@@ -433,9 +485,11 @@ async function handle(req, res, u, p, send, readJson) {
     if (p === '/api/aera/event/bot/status') { J(200, evStatus()); return true; }
     J(404, { error: 'Not found' }); return true;
   }
+  if (p === '/api/aera/live') { J(200, livePub()); return true; }
   if (p === '/api/aera/status') { J(200, { login: configured() || DEV, stt: sttOn(), nlu: nluOn(), ranked: true, storage: !!FILE, week: week(), queues: QUEUES, ranks: RANKS, rooms: ROOMS.size }); return true; }
   const me = bearer(req);
   if (!me) { J(401, { error: 'Not signed in' }); return true; }
+  if (p === '/api/aera/live/beat' && req.method === 'POST') { const b = await readJson(req); liveBeat(me, b); J(200, { ok: true }); return true; }
   if (p === '/api/aera/event/me') { const ev = DB.event; J(200, { event: evPub(ev), mine: evMine(ev, me.id), admin: isAdmin(me) }); return true; }
   if (p === '/api/aera/event/start' && req.method === 'POST') { if (!isAdmin(me)) { J(403, { error: 'no access' }); return true; } const b = await readJson(req); const r = evStart(b && b.delay); J(r.error ? 409 : 200, r); return true; }
   if (p === '/api/aera/event/stop' && req.method === 'POST') { if (!isAdmin(me)) { J(403, { error: 'no access' }); return true; } if (DB.event) { DB.event.state = 'scheduled'; DB.event.t0 = null; DB.event.seed = null; save(); for (const r of ROOMS.values()) if (r.event) { r.state = 'lobby'; bcast(r, roomInfo(r)); } evBroadcast(); } J(200, { ok: true }); return true; }
@@ -584,4 +638,4 @@ function attach(server) {
   console.log('AERA multiplayer ready on /aera/ws');
 }
 
-module.exports = { handle, attach, perf, rankOf, check, makeToken, readToken, sttStats: () => STT_STATS, nluStats: () => NLU_STATS };
+module.exports = { handle, attach, liveAdmin, perf, rankOf, check, makeToken, readToken, sttStats: () => STT_STATS, nluStats: () => NLU_STATS };
