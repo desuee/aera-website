@@ -349,7 +349,7 @@ function livePub() {
   for (const r of ROOMS.values()) {
     if (r.state !== 'run' || !r.cfg) continue; const apt = String(r.cfg.apt || ''); if (!/^[A-Z]{4}$/.test(apt)) continue;
     for (const m of r.members.values()) { if (m.away) continue; const id = String(m.user.id); seen.add(id); const L = LIVE.get(id);
-      for (const ps of (m.pos || [])) st.push({ apt, pos: ps, cs: (L && L.cs && L.cs.find(x => x.endsWith('_' + ps))) || `${apt}_${ps === 'RHN' ? 'CTR' : ps}`, kind: r.event ? 'event' : 'mp', room: r.event ? 'Event' : r.cfg.pub ? r.code : 'private', name: L && !L.share ? null : m.user.name, since: L ? L.since : null, foot: L && ['CTR', 'RHN', 'APP', 'ARR', 'DEP'].includes(ps) ? L.foot : null }); }
+      for (const ps of (m.pos || [])) st.push({ apt, pos: ps, cs: (L && L.cs && L.cs.find(x => x.endsWith('_' + ps))) || `${apt}_${ps === 'RHN' ? 'CTR' : ({ TWRN: 'N_TWR', TWRS: 'S_TWR', GNDW: 'WA_GND', GNDE: 'EA_GND' })[ps] || ps}`, kind: r.event ? 'event' : 'mp', room: r.event ? 'Event' : r.cfg.pub ? r.code : 'private', name: L && !L.share ? null : m.user.name, since: L ? L.since : null, foot: L && ['CTR', 'RHN', 'APP', 'ARR', 'DEP'].includes(ps) ? L.foot : null }); }
   }
   for (const L of LIVE.values()) { if (seen.has(L.id)) continue; if (L.room && ROOMS.has(L.room)) continue;
     const pos = L.pos.length ? L.pos : [L.mode === 'twr' ? 'TWR' : L.mode === 'ctr' ? 'CTR' : 'APP'];
@@ -533,6 +533,11 @@ const ROOMS = new Map();
 const ROOM_MAX = 6;   // Tower + Radar: e.g. DEL, GND, TWR, ARR, DEP, CTR
 const BOOT = crypto.randomBytes(4).toString('hex');   // changes with every server start – clients can tell a restart from a network drop   // code -> { code, host, cfg, state, members: Map(id -> { ws, user, pos }) }
 const code6 = () => { let c; do { c = Array.from(crypto.randomBytes(5), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); } while (ROOMS.has(c)); return c; };
+// Frankfurt split seats (0.17.0.1): N_TWR/S_TWR (TWRN/TWRS) and WA_GND/EA_GND (GNDW/GNDE). A split seat and its whole
+// position (TWR / GND) exclude each other.
+const POSOK = ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP', 'ARR', 'DEP', 'TWRN', 'TWRS', 'GNDW', 'GNDE'];
+const SUBG = { TWRN: 'TWR', TWRS: 'TWR', GNDW: 'GND', GNDE: 'GND' };
+function blockSet(list) { const t = new Set(list); for (const p of list) { if (SUBG[p]) t.add(SUBG[p]); for (const [k, g] of Object.entries(SUBG)) if (p === g) t.add(k); } return t; }
 function roomInfo(r) { return { t: 'room', event: !!r.event, code: r.code, host: r.host, state: r.state, cfg: r.cfg, members: [...r.members.values()].map(m => ({ id: m.user.id, name: m.user.name, avatar: m.user.avatar, pos: m.pos || [] })) }; }
 function bcast(r, msg, except) { const s = JSON.stringify(msg); for (const m of r.members.values()) if (m.ws !== except && m.ws.readyState === 1) m.ws.send(s); }
 function leave(ws) {
@@ -596,8 +601,8 @@ function attach(server) {
         const room = ROOMS.get(String(m.code || '').toUpperCase().trim()); let me = room && room.members.get(ws.user.id);
         if (room && !me && room.event && !(room.allow && room.allow.has(String(ws.user.id))) && !ADMINS().includes(String(ws.user.id))) { ws.send(JSON.stringify({ t: 'err', e: 'event' })); return; }
         if (room && !me && room.members.size < ROOM_MAX) {   // room was brought back by the host after a restart: take your seat again
-          const taken = new Set([...room.members.values()].flatMap(x => x.pos || []));
-          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP', 'ARR', 'DEP'].includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
+          const taken = blockSet([...room.members.values()].flatMap(x => x.pos || []));
+          me = { ws, user: ws.user, pos: (Array.isArray(m.pos) ? m.pos : []).filter(x => POSOK.includes(x) && !taken.has(x)) }; room.members.set(ws.user.id, me);
         }
         if (!me) { ws.send(JSON.stringify({ t: 'err', e: 'room' })); return; }
         const old = me.ws; me.ws = ws; me.away = 0; ws.room = room.code; if (old && old !== ws) { old.room = null; try { old.close(); } catch {} }
@@ -605,9 +610,9 @@ function attach(server) {
       }
       if (!r) return;
       if (m.t === 'leave') { leave(ws); ws.send(JSON.stringify({ t: 'left' })); return; }
-      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => ['DEL', 'GND', 'TWR', 'RHN', 'CTR', 'APP', 'ARR', 'DEP'].includes(x));   // CTR/APP: "Center × Approach" rooms
+      if (m.t === 'pos') { const me = r.members.get(ws.user.id); const want = (Array.isArray(m.pos) ? m.pos : []).filter(x => POSOK.includes(x));   // CTR/APP: "Center × Approach" rooms
         // a position belongs to one controller only
-        const taken = new Set([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
+        const taken = blockSet([...r.members.values()].filter(x => x !== me).flatMap(x => x.pos || []));
         me.pos = want.filter(x => !taken.has(x)); bcast(r, roomInfo(r)); return; }
       if (m.t === 'cfg' && r.host === ws.user.id) { r.cfg = Object.assign(r.cfg, m.cfg || {}); bcast(r, roomInfo(r)); return; }
       if (m.t === 'host' && r.host === ws.user.id) { const k = r.members.get(String(m.id)); if (k && r.state !== 'run') { r.host = k.user.id; bcast(r, roomInfo(r)); } return; }   // hand the room to another member (Tower + Radar: the tower runs the shift)
